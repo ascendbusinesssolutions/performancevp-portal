@@ -1,6 +1,6 @@
 # PerformanceVP Online Subscription: Build Plan (v2)
 
-**Status:** Approved by Michael on 21 September 2026. This plan supersedes the June 2026 plan, which is archived at `archive/PORTAL_BUILD_PLAN_v1.md` for history only. The engine specification from that plan is preserved verbatim in `docs/ENGINE_SPEC.md`.
+**Status:** Approved by Michael on 21 September 2026. Amended 22 September 2026: subscriptions are sales-led with no online payment (Sections 0, 1, 2.8, 4, 11, 12, 13 and 15). This plan supersedes the June 2026 plan, which is archived at `archive/PORTAL_BUILD_PLAN_v1.md` for history only. The engine specification from that plan is preserved verbatim in `docs/ENGINE_SPEC.md`.
 **Read with:** `Performance_Equation_Online_Measurement_Specification.md` and `Performance_Equation_Online_Recommendations_Specification.md`. Those two documents are the source for every online-specific rule in this plan. This plan says how to build what they define.
 
 ---
@@ -21,10 +21,10 @@ Four areas carry the most risk and are treated as foundational: the calculation 
 
 | | Items |
 |---|---|
-| **Carried over unchanged** | The engine and its parity regime (v1 Section 5). Stack, repository separation, environments, Sydney data residency. Organisation as the tenant boundary, RLS on every table, deny by default, role facts in tables. Anonymous surveys on single-use unlinkable tokens, with the shared-link fallback. Validity rules, display thresholds and suppression enforced in the database. Append-only calculation runs and audit design. Dashboard display rules. No organisational P. Default archetype only. Offboarding export then purge within 30 days. |
+| **Carried over unchanged** | The engine and its parity regime (v1 Section 5). Stack, repository separation, environments, Sydney data residency. Organisation as the tenant boundary, RLS on every table, deny by default, role facts in tables. Anonymous surveys on single-use unlinkable tokens, with the shared-link fallback. Validity rules, display thresholds and suppression enforced in the database. Append-only calculation runs and audit design. Dashboard display rules. No organisational P. Default archetype only. Offboarding as the Owner's deletion flow (Section 11). |
 | **Removed** | The analyst workspace and manual Type A, B and C entry. Tier assignment. The analyst publish gate. Analyst assignments per organisation. The DLP decision log and DLP results. Evidence file uploads. The analyst-authored intervention design module with versions and P-impact authoring. |
-| **Added** | Self-serve setup. The persistent employee directory with the Excel template, upload preview, campaign snapshots and unit lineage. Five respondent audiences with module deployment. The identified manager rating flow with retained ratings. The formal performance ratings route for C3. The intake package. Automatic scoring with administrator review and release. The recommendations package, pattern cards, what-if simulator and action tracking. Cadence scheduling and event-trigger prompts. Plans, entitlements and billing. PerformanceVP support access, logged and visible to the client. |
-| **Settled decisions superseded** | `PII_RETENTION` (contact data purged 30 days after campaign close) is replaced by a persistent directory. "Clients never see raw inputs" is replaced by administrator visibility of manager ratings. "No self-service sign-up" is replaced by self-serve onboarding, switched on at launch. "The analyst remains the gate" is replaced by automatic scoring behind validity gates. Each needs a dated entry in `DECISIONS.md`. |
+| **Added** | Self-serve setup. The persistent employee directory with the Excel template, upload preview, campaign snapshots and unit lineage. Five respondent audiences with module deployment. The identified manager rating flow with retained ratings. The formal performance ratings route for C3. The intake package. Automatic scoring with administrator review and release. The recommendations package, pattern cards, what-if simulator and action tracking. Cadence scheduling and event-trigger prompts. Plans, entitlements and sales-led provisioning. PerformanceVP support access, logged and visible to the client. |
+| **Settled decisions superseded** | `PII_RETENTION` (contact data purged 30 days after campaign close) is replaced by a persistent directory. "Clients never see raw inputs" is replaced by administrator visibility of manager ratings. "No self-service sign-up" stands: organisations are provisioned by the Owner or support staff on signature of an agreement, and there is no sign-up flag (amended 22 September 2026). "The analyst remains the gate" is replaced by automatic scoring behind validity gates. Each needs a dated entry in `DECISIONS.md`. |
 
 ---
 
@@ -34,11 +34,11 @@ Four areas carry the most risk and are treated as foundational: the calculation 
 
 The marketing site is untouched apart from the approved "Client login" link. The portal is its own Next.js application in its own repository, deployed as its own Vercel project at `app.performancevp.com.au`.
 
-The online product may one day be sold separately from the consultancy. To keep that option open at no cost, the portal uses its own repository, Vercel project, Supabase projects, Stripe account and Resend API keys, and depends on none of the consultancy's tooling (Google Workspace, the workbooks, the Document Production Loop). The repository carries the application, three pure packages, the Supabase migrations and a `docs/source-ip` snapshot that now includes the two online specifications, the Tier 3 Module Library and the Survey Processing Workbook Spec.
+The online product may one day be sold separately from the consultancy. To keep that option open at no cost, the portal uses its own repository, Vercel project, Supabase projects and Resend API keys, and depends on none of the consultancy's tooling (Google Workspace, the workbooks, the Document Production Loop). The repository carries the application, three pure packages, the Supabase migrations and a `docs/source-ip` snapshot that now includes the two online specifications, the Tier 3 Module Library and the Survey Processing Workbook Spec.
 
 ### 1.2 Stack
 
-Unchanged from v1: Next.js (App Router), TypeScript strict, Tailwind with the four brand tokens, Supabase (Postgres, Auth, RLS, Storage), Resend for all email including auth email over custom SMTP. Additions: Stripe for subscription billing; a scheduled-job runner (Supabase scheduled functions or Vercel cron) for campaign opening, reminders, closing, aggregation, purges and event-trigger detection; a server-side spreadsheet library for generating and parsing the directory template as `.xlsx`. Uploaded files are parsed server-side only, size-limited, stored in the private bucket with a hash, and never executed or rendered.
+Unchanged from v1: Next.js (App Router), TypeScript strict, Tailwind with the four brand tokens, Supabase (Postgres, Auth, RLS, Storage), Resend for all email including auth email over custom SMTP. Additions: a scheduled-job runner (Supabase scheduled functions or Vercel cron) for campaign opening, reminders, closing, aggregation, subscription renewal reminders and lapse transitions, purges and event-trigger detection; a server-side spreadsheet library for generating and parsing the directory template as `.xlsx`. Uploaded files are parsed server-side only, size-limited, stored in the private bucket with a hash, and never executed or rendered.
 
 ### 1.3 Layers
 
@@ -112,9 +112,9 @@ Carried from v1: `ref_sub_dimensions`, `ref_archetype_weights`, `ref_survey_item
 
 `suggestions` (run, sub-dimension, pattern, position, whether it leads or is the alternative, which signal fired, the client's self-check answer) and `action_records` (status of Considering, Under way, Completed or Set aside; start date; note). Measured movement is derived from later runs, not stored.
 
-### 2.8 Billing and audit
+### 2.8 Subscriptions and audit
 
-`subscriptions` (Stripe identifiers, band, status, period). `audit_logs` as v1, extended with directory uploads, rating views and exports, results releases and every support-staff access.
+`subscriptions` (band; status of `pending`, `active`, `grace`, `suspended` or `cancelled`; period start and end; agreement date; invoice reference; provisioned by). `audit_logs` as v1, extended with directory uploads, rating views and exports, results releases, every support-staff access, provisioning, subscription changes and organisation deletion.
 
 ---
 
@@ -132,7 +132,7 @@ Unchanged: the organisation is the tenant, RLS on every table, deny by default, 
 |---|---|
 | **Owner** (one PerformanceVP account) | System administration, reference data deployments, audit review. Least privilege, with audited break-glass, as v1. |
 | **Support staff** (designated PerformanceVP accounts) | Access a client's account, including ratings, to assist with setup and support, where the organisation's `support_access_enabled` is true (the default). Every access is logged and visible to the account owner. |
-| **Account owner** | Everything an administrator can do, plus billing, user management, the support-access switch and the data-contribution opt-out. |
+| **Account owner** | Everything an administrator can do, plus the subscription view, user management, the support-access switch and the data-contribution opt-out. |
 | **Administrator** | Directory, unit context, campaigns, checklists, review and release of results, the ratings area, exports. |
 | **Executive viewer** | All released results across the organisation. No directory editing, no ratings. |
 | **Unit viewer** | Released results for nominated units and descendants. No ratings. |
@@ -175,7 +175,7 @@ Suppression is unchanged from v1 Section 3.6: the higher of the anonymity floor 
 
 Supabase Auth with `@supabase/ssr` sessions and middleware gating, as v1. Multi-factor authentication is mandatory for the Owner, support staff, account owners and administrators, because those roles can see identified ratings. Executive and unit viewers are offered it. Managers use the one-time email code.
 
-Self-serve sign-up exists but sits behind a feature flag, off by default. During build and test, organisations are created by the Owner or support staff, which matches the decision to build and test before opening to clients. At launch the flag is switched on together with Stripe checkout (Milestone 9).
+There is no self-serve sign-up. Organisations are provisioned by the Owner or support staff on signature of an agreement (Section 11), and the account owner is invited by email. Public sign-up is disabled in Supabase Auth.
 
 ---
 
@@ -243,9 +243,19 @@ Built to the Online Recommendations Specification. `packages/recommendations` im
 
 ---
 
-## 11. Plans, entitlements and billing
+## 11. Subscriptions, entitlements and provisioning
 
-One entitlement field, `employee_band`, exists from Milestone 3 so nothing is reworked later. The entitlement check compares active directory headcount with the band, with a configurable tolerance; the enforcement rule itself is a commercial decision and is left as a named placeholder (`ENTITLEMENT_ENFORCEMENT`). Stripe Checkout and the customer portal arrive at Milestone 9. Price levels, Guided Setup scope, the support model and the legal terms are outside this plan and are settled before launch, not before build.
+There is no online payment. Subscriptions are sales-led: an organisation signs an agreement and is invoiced outside the portal from the accounting system. The portal holds the subscription record and enforces its consequences; it never takes a payment.
+
+**Entitlement.** One entitlement field, `employee_band`, exists from Milestone 3 so nothing is reworked later. The entitlement check compares active directory headcount with the band, with a configurable tolerance; the enforcement rule itself is a commercial decision and is left as a named placeholder (`ENTITLEMENT_ENFORCEMENT`).
+
+**Provisioning.** On signature, the Owner or support staff creates the organisation, sets its employee band and subscription period, records the agreement date and invoice reference, and invites the account owner by email. Onboarding (Section 7) follows. The subscription record carries who provisioned it, and provisioning is audit-logged.
+
+**Renewal reminders.** The account owner and PerformanceVP are reminded at 60 and 30 days before the period ends. A renewal is recorded by the Owner or support staff extending the period.
+
+**Lapse.** On expiry the organisation enters a 30-day read-only grace period: released results stay viewable, no campaign can be launched, and the directory and unit context cannot be changed. After the grace period the organisation is suspended and client access is closed. Its data is retained until the Owner deletes the organisation, a manual, audited action that exports first and then purges. The legal review may set a maximum retention period for suspended organisations; until it does, retention is until deletion. This supersedes the earlier offboarding rule of export and purge within 30 days of cessation.
+
+Price levels, Guided Setup scope, the support model and the legal terms are outside this plan and are settled before launch, not before build.
 
 ---
 
@@ -269,9 +279,9 @@ One entitlement field, `employee_band`, exists from Milestone 3 so nothing is re
 
 **Milestone 8: Cadence scheduling and event-trigger prompts.**
 
-**Milestone 9: Plans and billing.** Stripe, the sign-up flag, the Northwind demo tenant, help content.
+**Milestone 9: Subscriptions and provisioning.** The subscription record, the provisioning flow with the account-owner invitation, the renewal reminder jobs, grace and suspension behaviour, Owner deletion with export, the Northwind demo tenant, help content.
 
-**Milestone 10: Hardening.** External penetration test, backup and restore rehearsal, observability, accessibility, offboarding export and purge, copy review, legal pages, production cutover. Note from Milestone 0: decide whether `GET /api/health`, public since the scaffold so the staging deploy could be verified, stays public. It reports the environment, the commit and the package versions, and no secrets. `VERCEL_ENV_SPLIT` and `ERROR_TRACKING_PROVIDER` (root README, Named placeholders) are also settled here.
+**Milestone 10: Hardening.** External penetration test, backup and restore rehearsal, observability, accessibility, offboarding through the Owner deletion flow of Section 11, copy review, legal pages, production cutover. Note from Milestone 0: decide whether `GET /api/health`, public since the scaffold so the staging deploy could be verified, stays public. It reports the environment, the commit and the package versions, and no secrets. `VERCEL_ENV_SPLIT` and `ERROR_TRACKING_PROVIDER` (root README, Named placeholders) are also settled here.
 
 Milestones 7 and 8 are independent of each other and can reorder.
 
@@ -281,14 +291,14 @@ Milestones 7 and 8 are independent of each other and can reorder.
 
 None is executed as part of the build without sign-off.
 
-1. Create the portal repository and Vercel project; two Supabase projects in Sydney; a Stripe account and Resend keys that belong to the online product alone.
-2. Environment variables as v1 Section 11, plus the Stripe keys and webhook secret.
-3. Supabase Auth configuration as v1, with public sign-up controlled by the application flag.
+1. Create the portal repository and Vercel project; two Supabase projects in Sydney; Resend keys that belong to the online product alone.
+2. Environment variables as v1 Section 11; the register is `apps/portal/.env.example`.
+3. Supabase Auth configuration as v1, with public sign-up disabled.
 4. Resend identity `surveys@performancevp.com.au`, verified, with a live test send before any campaign depends on it.
 5. The VentraIP CNAME for `app`, additive only, at cutover. MX and TXT records untouched.
 6. The "Client login" link on the marketing site, prepared as a reviewable change.
 7. Carry the gap-flag guard correction into the production workbook, then supply parity fixture outputs during Milestone 1.
-8. Before launch, not before build: subscription terms that make the client responsible for its data with PerformanceVP as service provider, cover support-staff access, the data-contribution default and opt-out, and the handling of access requests; a privacy notice that reflects the persistent directory and retained ratings; the respondent-facing statement separating anonymous surveys from identified ratings; and confirmation of which entity owns the IP.
+8. Before launch, not before build: subscription terms that make the client responsible for its data with PerformanceVP as service provider, cover support-staff access, the data-contribution default and opt-out, the handling of access requests, and the retention of suspended organisations until the Owner deletes them or until any maximum period the review sets; a privacy notice that reflects the persistent directory and retained ratings; the respondent-facing statement separating anonymous surveys from identified ratings; and confirmation of which entity owns the IP.
 
 ---
 
@@ -312,13 +322,15 @@ None is executed as part of the build without sign-off.
 
 **Carried from v1 and still binding:** `CALCULATION_TRUTH`, `BINDING_CONSTRAINT_METHOD`, `PARITY_TOLERANCE`, `GAP_COMPOSITE_RULE`, `CONVERSION_TEXT_CORRECTIONS`, `ANONYMITY_FLOOR_N`, `SURVEY_DELIVERY_MODEL`, `PORTAL_SUBDOMAIN`, `ENV_TOPOLOGY`, `MAIL_FROM_IDENTITY`, `C4_TEAM_ENTRY`, `REPO_LAYOUT`, `ORG_AGGREGATION_METHOD`, and the Owner role.
 
-**Superseded:** `PII_RETENTION`; the analyst gate; no self-service sign-up; clients never seeing inputs; `ANALYST_MFA` (widened to every role that can see ratings).
+**Superseded:** `PII_RETENTION`; the analyst gate; no self-service sign-up; clients never seeing inputs; `ANALYST_MFA` (widened to every role that can see ratings); the offboarding rule of export and purge within 30 days of cessation (22 September 2026, replaced by retention until Owner deletion, Section 11).
 
 **New, settled 21 September 2026 in the two online specifications:** the online measurement route for all 17 sub-dimensions; M-C2-MGR and the three administrator checklists; the inflation guard; no C2 fallback; open text omitted in v1; identified ratings retained and visible to administrators; formal performance ratings as an optional C3 input under the 12-month rule, per unit, with the Measurement Reference acceptance rules; PerformanceVP support access; the persistent directory with the Excel template; suggestion depth, the 8-point margin, action tracking in v1 and case sketches withheld.
 
-**Made in this plan and confirmed with its approval on 21 September 2026:** mandatory MFA for account owners and administrators; one-time email code sign-in for managers; self-serve sign-up behind a flag until launch; DLP tables not built; the first plan's engine sections preserved in `docs/ENGINE_SPEC.md`.
+**Made in this plan and confirmed with its approval on 21 September 2026:** mandatory MFA for account owners and administrators; one-time email code sign-in for managers; self-serve sign-up behind a flag until launch (withdrawn 22 September 2026, Section 11); DLP tables not built; the first plan's engine sections preserved in `docs/ENGINE_SPEC.md`.
 
-**Deferred:** archetype weight sets; M1 behavioural lookups and the survey-behavioural flag; machine-themed open text; HRIS and engagement-platform integrations; the internal comparison set, pending legal review; `ENTITLEMENT_ENFORCEMENT`.
+**Made on 22 September 2026:** sales-led subscriptions with no online payment; the lapse and retention policy (Section 11; `DECISIONS.md` 5.5).
+
+**Deferred:** archetype weight sets; M1 behavioural lookups and the survey-behavioural flag; machine-themed open text; HRIS and engagement-platform integrations; the internal comparison set, pending legal review; `ENTITLEMENT_ENFORCEMENT`; Stripe Invoicing, as a possible later addition if invoicing ever moves out of the accounting system.
 
 ---
 

@@ -257,13 +257,13 @@ One entitlement field, `employee_band`, exists from Milestone 3 so nothing is re
 
 **Milestone 2: Intake package.** Exit: Survey Processing Workbook parity on the Northwind example; all online-rule fixtures pass.
 
-**Milestone 3: Tenancy, roles and directory.** Schema for Sections 2.1, 2.2 and 2.8; helper functions; RLS for every table; auth including the one-time-code manager sign-in and mandatory MFA; the Excel template, upload preview, snapshots and lineage; audit triggers. Exit: the RLS matrix in Section 3.3 proven by tests across two seeded organisations, including that executive and unit viewers cannot read ratings and that no role can read anonymous responses.
+**Milestone 3: Tenancy, roles and directory.** Schema for Sections 2.1, 2.2 and 2.8; helper functions; RLS for every table; auth including the one-time-code manager sign-in and mandatory MFA; the Excel template, upload preview, snapshots and lineage; audit triggers. Exit: the RLS matrix in Section 3.3 proven by tests across two seeded organisations, including that executive and unit viewers cannot read ratings and that no role can read anonymous responses. Notes from Milestone 0. Data API grants: Supabase no longer auto-exposes new tables to `anon`, `authenticated` and `service_role` (the CLI's `auto_expose_new_tables` default is off, and the field is removed on 30 October 2026), so the first migration states the grants explicitly rather than assuming either the old or the new default, and the "no grants to `anon`" rule in 3.1 is asserted by a pgTAP test beside the RLS-on-every-table invariant that already exists. Key naming: Supabase issues publishable and secret keys alongside the legacy anon and service-role keys, and the local CLI prints both; the names in `apps/portal/.env.example` are confirmed against the staging project when it is created and renamed if the new keys are adopted. Whether RLS is also forced for the table owner is decided with the policies.
 
 **Milestone 4: Setup flows.** Section 7 end to end with placeholder templates. Exit: a new organisation reaches a passing readiness check without help.
 
 **Milestone 5: Campaign engine.** All five audiences, both member parts, reminders, validity, aggregation, thresholds and roll-up.
 
-**Milestone 6: The vertical slice, then results.** First the slice: one organisation, one unit, one baseline campaign with seeded responses through intake, engine, review, release and a unit dashboard seen by an executive viewer. Then the full dashboards, trends, footer, pulse trajectory and the ratings area.
+**Milestone 6: The vertical slice, then results.** First the slice: one organisation, one unit, one baseline campaign with seeded responses through intake, engine, review, release and a unit dashboard seen by an executive viewer. Then the full dashboards, trends, footer, pulse trajectory and the ratings area. Note from Milestone 0: Tailwind's default palette is removed from the application, so the Green, Amber and Red status bands and any other status colour must be defined as deliberate tokens in `apps/portal/app/globals.css`, with contrast checked, before the display rules are built. No off-brand colour can be typed ad hoc.
 
 **Milestone 7: Suggestions, what-if and action tracking.**
 
@@ -271,7 +271,7 @@ One entitlement field, `employee_band`, exists from Milestone 3 so nothing is re
 
 **Milestone 9: Plans and billing.** Stripe, the sign-up flag, the Northwind demo tenant, help content.
 
-**Milestone 10: Hardening.** External penetration test, backup and restore rehearsal, observability, accessibility, offboarding export and purge, copy review, legal pages, production cutover.
+**Milestone 10: Hardening.** External penetration test, backup and restore rehearsal, observability, accessibility, offboarding export and purge, copy review, legal pages, production cutover. Note from Milestone 0: decide whether `GET /api/health`, public since the scaffold so the staging deploy could be verified, stays public. It reports the environment, the commit and the package versions, and no secrets. `VERCEL_ENV_SPLIT` and `ERROR_TRACKING_PROVIDER` (root README, Named placeholders) are also settled here.
 
 Milestones 7 and 8 are independent of each other and can reorder.
 

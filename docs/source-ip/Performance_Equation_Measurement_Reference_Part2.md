@@ -3,7 +3,7 @@
 
 **Author:** Michael, PerformanceVP
 **Status:** Working draft. Second half of the consolidated Measurement Reference; covers Opportunity (O), Synergy (S), the Decision Latency Protocol, sector classification metadata, triangulation rules and final composite scoring.
-**Last updated:** 9 July 2026 (each O and S sub-dimension "Theoretical foundation" line and the DLP construct extended with meta-analytic / large-scale cumulative-evidence anchors, to support the Diagnostic Companion Appendix A research layer; the S3 line re-attributed so the task/relationship typology credits Jehn (1995, 1997) with De Dreu & Weingart (2003) and de Wit et al. (2012) as the meta-analytic evidence; construct definitions, weights and scoring rules unchanged. Prior, 11 June 2026: Part 9.4 binding-constraint narrative revised to the realistic-P-gain ranking, weighted toward genuine relative weaknesses, per Diagnostic Workbook Spec Part 10. Earlier 10 June 2026 corrections retained: where an O1/O2/O3 audit-perception gap exceeds 15 points, the perception score is the value that feeds the O composite, aligning this document with Diagnostic Workbook Spec 6.6; and the perception-score formula shorthand carries the "− 1" in the (mean − 1) × 25 conversion throughout, consistent with Part 1.3 and the worked examples)
+**Last updated:** 21 September 2026 (the O1 reporting threshold in 4.1 now states that a missing layer makes O1 insufficient data; this deliberately removes the earlier "perception alone = Tier 2 at best" route as a rule alignment, so O1 now matches 4.2 and 4.3, which already required both layers; the false-consensus condition in 5.3 and 8.3 now names TSI3-01 and TSI3-02 individually and fires only when all three inputs are measured, matching the corrected Diagnostic Workbook. Prior, 9 July 2026: each O and S sub-dimension "Theoretical foundation" line and the DLP construct extended with meta-analytic / large-scale cumulative-evidence anchors, to support the Diagnostic Companion Appendix A research layer; the S3 line re-attributed so the task/relationship typology credits Jehn (1995, 1997) with De Dreu & Weingart (2003) and de Wit et al. (2012) as the meta-analytic evidence; construct definitions, weights and scoring rules unchanged. Prior, 11 June 2026: Part 9.4 binding-constraint narrative revised to the realistic-P-gain ranking, weighted toward genuine relative weaknesses, per Diagnostic Workbook Spec Part 10. Earlier 10 June 2026 corrections retained: where an O1/O2/O3 audit-perception gap exceeds 15 points, the perception score is the value that feeds the O composite, aligning this document with Diagnostic Workbook Spec 6.6; and the perception-score formula shorthand carries the "− 1" in the (mean − 1) × 25 conversion throughout, consistent with Part 1.3 and the worked examples)
 **Companion documents:** Measurement Reference Part 1 of 2 (Introduction, Capability and Motivation); Performance Equation Strategy; Sub-Dimension × Cadence Master Reference; Survey Blueprint; Diagnostic Delivery Handbook; Tier 1 & 2 Data Collection Guide; Data Audit Template; Diagnostic Workbook (spreadsheet artefact); Client Report Template (PowerPoint artefact).
 
 ---
@@ -204,7 +204,7 @@ That divergence pattern is more diagnostically valuable than a single number.
 
 ### Reporting threshold and confidence
 
-O1 requires both the audit and perception components to be measured. Perception alone with no audit = Tier 2 at best; audit alone with no perception score = insufficient for full O1 score.
+O1 requires both the audit and perception components to be measured. If either is missing, O1 is reported as insufficient data and its weight is reallocated within O (Part 9.2); neither layer is scored on its own.
 
 Confidence:
 - Audit: High for 12 months, Medium at 14, Low at 18
@@ -1068,7 +1068,7 @@ The consultant records inputs in the workbook's "S3 Conflict Health" section:
 | Relationship conflict items mean (adjusted) | After reverse-scoring |
 | S3 score | 0–100, from all 5 items after reverse-scoring |
 
-**False-consensus pattern flag.** Where the task-conflict items (TSI3-01, TSI3-02) score below 60 AND psychological safety (M2) scores above 75, this is flagged as a "false consensus" pattern — apparent safety masking suppressed disagreement. Reported as a separate diagnostic finding.
+**False-consensus pattern flag.** Where the task-conflict items (TSI3-01, TSI3-02) score below 60 AND psychological safety (M2) scores above 75, this is flagged as a "false consensus" pattern — apparent safety masking suppressed disagreement. Reported as a separate diagnostic finding. The flag fires only when all three scores are measured; a missing input means no flag.
 
 ### Worked example
 
@@ -1415,10 +1415,10 @@ If Gap > 15 points:
 
 ## 8.3 False-consensus pattern flag
 
-Where TSI3-01 and TSI3-02 (the productive disagreement items) score below 60 AND M2 psychological safety scores above 75, the false-consensus pattern is flagged:
+Where TSI3-01 and TSI3-02 (the productive disagreement items) each score below 60 AND M2 psychological safety scores above 75, the false-consensus pattern is flagged. All three must be measured; where any is missing, the flag does not fire:
 
 ```
-If (task conflict items < 60) AND (M2 > 75):
+If (TSI3-01 < 60) AND (TSI3-02 < 60) AND (M2 > 75), all three measured:
   - Flag as "False consensus pattern" diagnostic finding
   - Interpretation: apparent psychological safety masks suppressed disagreement
   - Recommendation: investigate whether group norms penalise contested debate even though they don't penalise dissent in general; coach leaders on inviting and rewarding productive disagreement

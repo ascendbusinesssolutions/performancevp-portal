@@ -3,7 +3,7 @@
 
 **Author:** Michael, PerformanceVP
 **Status:** Working draft. Source-of-truth file for the book, consulting offering and diagnostic instrument. This revision reconciles the Strategy with the consolidated measurement model used across the operational document set (Measurement Reference Parts 1 and 2, Sub-Dimension × Cadence Master Reference, Survey Blueprint, Data Audit Template, Tier 1 & 2 Data Collection Guide, Tier 3 Module Library, Diagnostic Delivery Handbook).
-**Last updated:** 11 June 2026 (binding-constraint identification in Parts 4.2 and 4.3 revised to the realistic-P-gain ranking, weighted toward genuine relative weaknesses via the unit mean; supersedes the earlier lift-to-ceiling contribution ranking; see Diagnostic Workbook Spec Part 10)
+**Last updated:** 21 September 2026 (the paired-measurement and triangulation passages now state that the perception score feeds the O composite when the audit-perception gap exceeds 15. Prior, 11 June 2026: binding-constraint identification in Parts 4.2 and 4.3 revised to the realistic-P-gain ranking, weighted toward genuine relative weaknesses via the unit mean; supersedes the earlier lift-to-ceiling contribution ranking; see Diagnostic Workbook Spec Part 10)
 **Companion documents:** Performance Equation Measurement Reference Part 1 of 2 (Capability and Motivation); Measurement Reference Part 2 of 2 (Opportunity, Synergy, DLP); Sub-Dimension × Cadence Master Reference; Survey Blueprint; Data Audit Template; Tier 1 & 2 Data Collection Guide; Tier 3 Module Library; Diagnostic Delivery Handbook.
 
 ---
@@ -276,7 +276,7 @@ This requirement is a fixed principle of the offering, captured here and operati
 
 The consolidation merges the earlier eight Opportunity sub-dimensions into five: decision rights, role clarity and strategic clarity combine into O1 (respondents experience these as one question — do I know what I am meant to do, what I am authorised to decide, and how my work connects up); and the standalone coordination/governance sub-dimension is absorbed into O1 and the DLP. O5 Leadership enablement now also carries the leadership-behaviour aspect previously sitting in Capability.
 
-**The paired-measurement design.** O1, O2 and O3 each combine a structural audit (what exists on paper) with a perception survey (what is experienced). Where the two diverge by more than 15 points, the gap is reported as a key diagnostic finding rather than averaged — frequently the most valuable Opportunity finding in an engagement.
+**The paired-measurement design.** O1, O2 and O3 each combine a structural audit (what exists on paper) with a perception survey (what is experienced). Where the two diverge by more than 15 points, the gap is reported as a key diagnostic finding rather than averaged — frequently the most valuable Opportunity finding in an engagement. Above 15 points the perception score is the value that feeds the O composite.
 
 **Decision Latency Protocol (DLP).** The single most diagnostic Opportunity-related metric is decision latency: the elapsed time from a decision being recognised as needed to its authorised execution, sampled across operational, tactical and strategic decision classes. The DLP produces a Decision Latency Score (DLS) on a 0–100 scale. The DLS is reported alongside the O composite — **not** averaged into it — because it carries independent diagnostic weight and is often the most actionable single finding in an engagement.
 
@@ -318,7 +318,7 @@ Four design rules hold across all instruments:
 
 **Empirical validation pathway.** Each proprietary instrument follows a validation pathway: pilot across 30+ teams; Cronbach's alpha targets per sub-dimension; confirmatory factor analysis once sufficient responses accumulate; and criterion-validity correlation against external performance outcomes. An organisational psychologist with academic affiliation advises on the survey instruments; an operating-model specialist advises on the audit components.
 
-**Triangulation against objective data.** Every survey-based score is paired with at least one objective behavioural indicator. Where the two diverge by more than 15 points, the gap is flagged as a diagnostic finding rather than averaged. This applies to Motivation (survey vs behavioural) and to Opportunity (audit vs perception).
+**Triangulation against objective data.** Every survey-based score is paired with at least one objective behavioural indicator. Where the two diverge by more than 15 points, the gap is flagged as a diagnostic finding rather than averaged. This applies to Motivation (survey vs behavioural) and to Opportunity (audit vs perception). For Opportunity, the perception score is then the value that feeds the composite.
 
 ---
 

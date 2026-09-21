@@ -3,7 +3,7 @@
 
 **Author:** Michael, PerformanceVP
 **Status:** Working draft. The build specification for the Diagnostic Workbook — the Excel scoring engine for a Performance Equation Diagnostic engagement. This is a *specification* (structure + logic blueprint), not the workbook itself; it is detailed enough that building the Excel file is a translation task, not a design task. (28 May 2026: input model revised to the three-input-type taxonomy — Type A raw item means the workbook converts; Type B structured counts the analyst pre-adjusts then the workbook does the final formula; Type C finished module/platform scores the analyst computes outside the workbook — and the O1/O2/O3 structural+perception layering, fully aligned with Measurement Reference Parts 1–2, the Tier 3 Module Library and the Diagnostic Delivery Handbook.)
-**Last updated:** 25 June 2026 (Parts 13 and 14 rewritten to define the full deliverable data contract as labelled, named-range cells on the Report Data and Methodology Footer tabs, so the Unit-level Report and Client Report build is a one-tab read rather than a hunt across the engine; added Part 14A (the named-range scheme and how Claude Cowork consumes the contract), a new Tab 13 Analyst Evidence holding the qualitative narrative inputs for the [WRITE] drafting, and a Decision description field on the DLP log. Prior, 24 June 2026: Type A note corrected: with Google Forms confirmed as the survey platform, the upstream Survey Processing and Scoring Workbook produces validity-screened item means, not the survey platform itself; the M-C5-TL reference is corrected to the house convention `(mean of 12 items − 1) × 25`. Prior, 11 June 2026: binding-constraint identification revised to rank by realistic P gain, a bounded diminishing-returns improvement toward a research-informed ceiling, weighted toward genuine relative weaknesses via the unit mean; supersedes the earlier lift-to-ceiling contribution ranking)
+**Last updated:** 21 September 2026 (O1, O2 and O3 take the perception score when the structural-perception gap exceeds 15, as Part 6.6 and Measurement Reference Part 2 require, and the rows now say so plainly; new Part 1.8: an empty input never scores as zero, a sub-dimension or layer computes only when every component it requires is present, and an empty tier selector counts as insufficient data; O4 and O5 rows aligned with Measurement Reference Part 2 4.4 and 4.5; false-consensus flag guarded against blank inputs and its label aligned to the workbook; a missing date now reads Low confidence, P confidence is blank when P is blank, the exclusions summary counts every sub-dimension without a score, and an unmeasured trip-wire is reported as not measured. Prior, 21 September 2026: gap-flag formulas for O1, M1 and S2 rewritten as a nested guard, so a gap that cannot be computed returns blank rather than an error, matching the corrected production workbook; O2 and O3 follow O1; S2 telemetry-perception gap and gap-flag rows added to 7.2 from the workbook and Measurement Reference Part 2; flag labels aligned to the workbook's hyphenated strings. Prior, 25 June 2026: Parts 13 and 14 rewritten to define the full deliverable data contract as labelled, named-range cells on the Report Data and Methodology Footer tabs, so the Unit-level Report and Client Report build is a one-tab read rather than a hunt across the engine; added Part 14A (the named-range scheme and how Claude Cowork consumes the contract), a new Tab 13 Analyst Evidence holding the qualitative narrative inputs for the [WRITE] drafting, and a Decision description field on the DLP log. Prior, 24 June 2026: Type A note corrected: with Google Forms confirmed as the survey platform, the upstream Survey Processing and Scoring Workbook produces validity-screened item means, not the survey platform itself; the M-C5-TL reference is corrected to the house convention `(mean of 12 items − 1) × 25`. Prior, 11 June 2026: binding-constraint identification revised to rank by realistic P gain, a bounded diminishing-returns improvement toward a research-informed ceiling, weighted toward genuine relative weaknesses via the unit mean; supersedes the earlier lift-to-ceiling contribution ranking)
 **Companion documents:** Strategy; Sub-Dimension × Cadence Master Reference; Measurement Reference Parts 1 and 2 (the scoring authority this spec implements); Survey Blueprint; Tier 1 & 2 Data Collection Guide; Tier 3 Module Library; Data Audit Template; Diagnostic Delivery Handbook (Part 8 describes how the analyst uses this workbook).
 
 ---
@@ -75,7 +75,7 @@ Three Opportunity sub-dimensions are **two-layer composites**, and the workbook 
    - `O2 structural = 0.35 × tool-inventory doc-review + 0.40 × M-O2-IA + 0.25 × integration doc-review`
    - `O3 structural = M-O3-PF (aggregate across audited processes)`
 2. **Perception layer** — the survey score (Type A) from the OI1/OI2/OI3 items, which the **workbook** converts from item means.
-3. **Composite** — `O_composite = (structural + perception) / 2`, with the **>15-point gap rule**: where structural and perception diverge by more than 15 points, both are reported separately and the divergence is flagged as a diagnostic finding rather than averaged silently.
+3. **Composite** — `O_composite = (structural + perception) / 2` where the two layers are within 15 points, with the **>15-point gap rule**: where structural and perception diverge by more than 15 points, the perception score is the value that feeds the O composite, both layers and the gap are reported separately, and the divergence is flagged as a diagnostic finding rather than averaged silently. Both layers are required; if either is missing, the sub-dimension score is blank.
 
 The workbook can compute the structural composite *if* the analyst enters its components (the module score and the doc-review scores) — or the analyst can assemble the structural score outside and enter it as one finished number. The spec below provides input fields for the components (the more transparent option) and computes the structural score in-workbook, then does the structural-vs-perception composite and gap flag. This keeps the gap calculation — which is mechanical — inside the workbook while leaving the judgement-laden module and doc-review scoring outside it.
 
@@ -115,6 +115,10 @@ The workbook has 13 tabs (plus a hidden Reference tab), matching Measurement Ref
 
 Tabs are ordered for workflow: the analyst works left to right. Tabs 10 to 12 are entirely calculated and the analyst enters nothing there. Tab 13 (Analyst Evidence) is the one input tab filled later, at the reporting stage, after the scores have computed.
 
+## 1.8 Empty inputs never score as zero
+
+An empty input cell is 0 in Excel arithmetic, so an unguarded formula would score a missing input as zero and pull its component down. The workbook never does this. A sub-dimension, and any layer or composite inside one (the O1, O2 and O3 structural layers, O4 and S1), computes only when every component it requires is numeric; otherwise it is blank. A blank sub-dimension is treated as insufficient data: it drops out of its component, the remaining weights are rescaled to sum to 1 (Measurement Reference Part 1 section 1.3 and Part 2 section 9.2), and the methodology footer counts it in the exclusions summary. An empty tier selector on Tab 2 is treated the same as `Insufficient data`, whichever inputs are filled. Averages over survey item means that leave out items not deployed at a cadence are unaffected (Part 15, build note 2), as are the repeatable input tables (C1 role families, C2 domains, O5 teams), whose unused rows are already excluded. Where no Synergy sub-dimension is available, S defaults to 1.00 (Measurement Reference Part 2 section 5.4).
+
 ---
 
 # Part 2 — Tab 1: Engagement Metadata
@@ -148,10 +152,10 @@ One row per sub-dimension (17 rows + 3 trip-wires + DLP):
 | Column | Kind | Notes |
 |---|---|---|
 | Sub-dimension | [CALCULATED] | Pre-filled label (C1…S3, TW1–3, DLP) |
-| **Tier selector** | [INPUT] | Dropdown: `Tier 1`, `Tier 2`, `Tier 3`, `Insufficient data`. For O1/O2/O3 the structural + perception layering (Part 1.4) always applies regardless of the tier of each layer's source. |
+| **Tier selector** | [INPUT] | Dropdown: `Tier 1`, `Tier 2`, `Tier 3`, `Insufficient data`. For O1/O2/O3 the structural + perception layering (Part 1.4) always applies regardless of the tier of each layer's source. An empty selector is treated as `Insufficient data` (Part 1.8). |
 | Source identifier | [INPUT] | Text — the specific source (e.g. "Workday turnover report") |
 | Vintage (data date) | [INPUT] | Date — drives confidence decay |
-| Confidence | [CALCULATED] | High/Medium/Low, computed from vintage vs the sub-dimension's cadence (Cadence Master Part 7) |
+| Confidence | [CALCULATED] | High/Medium/Low, computed from vintage vs the sub-dimension's cadence (Cadence Master Part 7). `n/a` where the selector is empty or `Insufficient data`; Low where the vintage or the engagement date is missing, so P confidence never reads High without the dates that justify it |
 | Notes | [INPUT] | Free text for methodology footer |
 
 **How the selector drives the input tabs.** Each sub-dimension's section on Tabs 3–7 contains input blocks for *each possible route*. The active block is the one matching the Tier Assignment selector; inactive blocks are greyed and ignored by the score formula. Implement with conditional formatting (grey out inactive blocks) and an `IF`/`CHOOSE` on the sub-dimension score that reads the selected route. This is what lets one workbook handle a sub-dimension sourced from Tier 1 in one engagement and Tier 3 in another.
@@ -184,9 +188,9 @@ C1 is **Type B** on the Tier 1/2 route and **Type C** on the Tier 3 route. Per M
 | Input field | Kind | Notes |
 |---|---|---|
 | M-C1-MGR module score | [INPUT — finished score, analyst-computed outside workbook] | 0–100. The analyst computes it per Tier 3 Module Library 4.1 (coverage ratio + 15% audit-sample adjustment) **before** entry; the workbook does not recompute it |
-| **C1 score (Tier 3)** | [CALCULATED] | = the entered module score |
+| **C1 score (Tier 3)** | [CALCULATED] | = the entered module score; blank if none is entered |
 
-**C1 sub-dimension score** [CALCULATED] = the active route's score per the Tier Assignment selector.
+**C1 sub-dimension score** [CALCULATED] = the active route's score per the Tier Assignment selector. Blank when the selector is empty or `Insufficient data` (Part 1.8).
 
 ## 4.2 C2 — Knowledge (weight 15% within C)
 
@@ -257,7 +261,7 @@ Note: C4 reporting threshold is team-level (min 4 valid respondents and 70% per 
 
 Where both indicator and module data exist, Measurement Reference 2.5 blends them `0.6 × indicator mean + 0.4 × module`; provide an optional blend cell.
 
-**C5 sub-dimension score** [CALCULATED] = active route's score.
+**C5 sub-dimension score** [CALCULATED] = active route's score. Blank when the selector is empty or `Insufficient data` (Part 1.8).
 
 ## 4.6 Capability composite (computed on Composite Scoring tab, shown here for reference)
 
@@ -281,7 +285,7 @@ M1 has two routes. **Tier 1/2 (Type C):** a recognised engagement platform (Cult
 | Input field | Kind | Notes |
 |---|---|---|
 | Platform engagement composite (0–100) | [INPUT — finished score, analyst-computed outside workbook] | From the platform, already on 0–100 (Measurement Reference 3.1) |
-| **M1 score (Tier 1/2)** | [CALCULATED] | = entered composite |
+| **M1 score (Tier 1/2)** | [CALCULATED] | = entered composite; blank if none is entered |
 
 **Tier 3 route (Type A):** 8-item bank; at a given cadence the analyst enters the item means present at that cadence.
 
@@ -292,7 +296,7 @@ M1 has two routes. **Tier 1/2 (Type C):** a recognised engagement platform (Cult
 | Reverse-scoring | [CALCULATED] | Flip MI1-04: `6 − mean` |
 | **M1 score (Tier 3)** | [CALCULATED] | `((mean of valid entered items, MI1-04 flipped) − 1) × 25` |
 
-**M1 sub-dimension score** [CALCULATED] = active route's score. The formula averages only the non-blank entered items (so it works at any cadence). Use `AVERAGE` over the range ignoring blanks, after flipping MI1-04. The behavioural composite (Tab 8) is reported alongside for the gap flag — it does **not** average into M1 (Measurement Reference 3.1).
+**M1 sub-dimension score** [CALCULATED] = active route's score. Blank when the selector is empty or `Insufficient data` (Part 1.8). The formula averages only the non-blank entered items (so it works at any cadence). Use `AVERAGE` over the range ignoring blanks, after flipping MI1-04. The behavioural composite (Tab 8) is reported alongside for the gap flag — it does **not** average into M1 (Measurement Reference 3.1).
 
 ## 5.2 M2 — Psychological safety (weight 20% within M)
 
@@ -331,9 +335,9 @@ M1 has two routes. **Tier 1/2 (Type C):** a recognised engagement platform (Cult
 | **TW-01 score** | [CALCULATED] | `(mean − 1) × 25` |
 | **TW-02 score** | [CALCULATED] | `(mean − 1) × 25` |
 | **TW-03 score** | [CALCULATED] | `(mean − 1) × 25` |
-| **TW-01 flag** | [CALCULATED] | `IF(score<60,"CRITICAL FINDING","")` |
-| **TW-02 flag** | [CALCULATED] | `IF(score<60,"CRITICAL FINDING","")` |
-| **TW-03 flag** | [CALCULATED] | `IF(score<60,"CRITICAL FINDING","")` |
+| **TW-01 flag** | [CALCULATED] | `IF(AND(ISNUMBER(score),score<60),"CRITICAL FINDING","")` |
+| **TW-02 flag** | [CALCULATED] | `IF(AND(ISNUMBER(score),score<60),"CRITICAL FINDING","")` |
+| **TW-03 flag** | [CALCULATED] | `IF(AND(ISNUMBER(score),score<60),"CRITICAL FINDING","")` |
 
 Trip-wires do not feed the M composite (Survey Blueprint 7.6). They surface on the Composite Scoring and Methodology Footer tabs as independent flags.
 
@@ -358,7 +362,7 @@ O1, O2, O3 are **two-layer composites** (structural + perception) per Part 1.4 �
 | M-O1-LT decision-rights score | [INPUT — finished score, analyst-computed outside workbook] | 0–100, computed per Tier 3 Module Library 3.1 (60% agreement + 40% clarity) before entry |
 | Role-architecture doc-review score | [INPUT — finished score, analyst-computed outside workbook] | 0–100, analyst document review of position descriptions |
 | M-O1-CASCADE score | [INPUT — finished score, analyst-computed outside workbook] | 0–100, per Tier 3 Module Library 2.1 (or OKR-cascade doc review where Tier 1/2) |
-| **O1 structural** | [CALCULATED] | `0.40 × M-O1-LT + 0.30 × role-architecture + 0.30 × M-O1-CASCADE` |
+| **O1 structural** | [CALCULATED] | `0.40 × M-O1-LT + 0.30 × role-architecture + 0.30 × M-O1-CASCADE`; blank unless all three are entered (Part 1.8) |
 
 **Perception layer** (Type A survey):
 
@@ -374,8 +378,10 @@ O1, O2, O3 are **two-layer composites** (structural + perception) per Part 1.4 �
 | Field | Kind | Notes |
 |---|---|---|
 | **O1 gap** | [CALCULATED] | `structural − perception` |
-| **O1 gap flag** | [CALCULATED] | `IF(ABS(gap)>15,"GAP — report separately","")` (Measurement Reference 8.1) |
-| **O1 composite score** | [CALCULATED] | `(structural + perception)/2` where `ABS(gap)<=15`; where gap >15, both layers reported separately and flagged (Survey Blueprint 4.1.5) |
+| **O1 gap flag** | [CALCULATED] | `IF(ISNUMBER(gap),IF(ABS(gap)>15,"GAP - report separately",""),"")` (Measurement Reference 8.1) |
+| **O1 composite score** | [CALCULATED] | `(structural + perception)/2` where `ABS(gap)<=15`; where gap >15, the perception score feeds the O composite, with both layers reported separately and flagged; blank if either layer is missing. Workbook form: `IF(ISNUMBER(gap),IF(ABS(gap)>15,perception,(structural+perception)/2),"")` (Survey Blueprint 4.1.5; Measurement Reference Part 2 section 8.1) |
+
+*Blank gaps.* A gap that cannot be computed, because a layer is missing, is blank, and its flag returns blank, meaning not fired, never an error. The guard is nested because Excel's AND evaluates both arguments, so `AND(ISNUMBER(gap),ABS(gap)>15)` returns #VALUE! on a blank gap and the error cascades into the Methodology Footer and Report Data tabs. Every gap flag in the workbook uses this guard: O1 to O3 here, S2 on Tab 6 and M1 on Tab 8.
 
 ## 6.2 O2 — Tools & information (weight 25% within O) — structural + perception
 
@@ -386,7 +392,7 @@ O1, O2, O3 are **two-layer composites** (structural + perception) per Part 1.4 �
 | Tool-inventory doc-review score | [INPUT — finished score, analyst-computed outside workbook] | 0–100, analyst document review |
 | M-O2-IA information-access score | [INPUT — finished score, analyst-computed outside workbook] | 0–100, per Tier 3 Module Library 2.2 |
 | Integration doc-review score | [INPUT — finished score, analyst-computed outside workbook] | 0–100, analyst document review |
-| **O2 structural** | [CALCULATED] | `0.35 × tool-inventory + 0.40 × M-O2-IA + 0.25 × integration` |
+| **O2 structural** | [CALCULATED] | `0.35 × tool-inventory + 0.40 × M-O2-IA + 0.25 × integration`; blank unless all three are entered (Part 1.8) |
 
 **Perception layer** (Type A survey):
 
@@ -397,7 +403,7 @@ O1, O2, O3 are **two-layer composites** (structural + perception) per Part 1.4 �
 | Reverse-scoring | [CALCULATED] | Flip OI2-04 |
 | **O2 perception** | [CALCULATED] | `((mean, OI2-04 flipped) − 1) × 25` |
 
-**Composite + gap:** `O2 gap`, `O2 gap flag`, `O2 composite` [CALCULATED] — same structural-vs-perception gap rule as O1.
+**Composite + gap:** `O2 gap`, `O2 gap flag`, `O2 composite` [CALCULATED] — same structural-vs-perception gap rule as O1. Where the gap exceeds 15, the O2 perception score feeds the composite.
 
 ## 6.3 O3 — Process & workflow (weight 20% within O) — structural + perception
 
@@ -406,7 +412,7 @@ O1, O2, O3 are **two-layer composites** (structural + perception) per Part 1.4 �
 | Input field | Kind | Notes |
 |---|---|---|
 | M-O3-PF process-friction score | [INPUT — finished score, analyst-computed outside workbook] | 0–100, per Tier 3 Module Library 2.3 (mean across the 2–3 audited processes) |
-| **O3 structural** | [CALCULATED] | = M-O3-PF score (single-component structural layer) |
+| **O3 structural** | [CALCULATED] | = M-O3-PF score (single-component structural layer); blank if none is entered |
 
 **Perception layer** (Type A survey):
 
@@ -417,7 +423,7 @@ O1, O2, O3 are **two-layer composites** (structural + perception) per Part 1.4 �
 | Reverse-scoring | [CALCULATED] | Flip OI3-05 |
 | **O3 perception** | [CALCULATED] | `((mean, OI3-05 flipped) − 1) × 25` |
 
-**Composite + gap:** `O3 gap`, `O3 gap flag`, `O3 composite` [CALCULATED] — same structural-vs-perception gap rule as O1.
+**Composite + gap:** `O3 gap`, `O3 gap flag`, `O3 composite` [CALCULATED] — same structural-vs-perception gap rule as O1. Where the gap exceeds 15, the O3 perception score feeds the composite.
 
 ## 6.4 O4 — Resource adequacy (weight 10% within O) — survey + capacity data
 
@@ -428,22 +434,24 @@ O1, O2, O3 are **two-layer composites** (structural + perception) per Part 1.4 �
 | Reverse-scoring | [CALCULATED] | Flip OI4-03 |
 | **O4 survey score** | [CALCULATED] | `((mean, OI4-03 flipped) − 1) × 25` |
 | Capacity data inputs (overtime, backlog, etc.) | [INPUT — raw] | Feed behavioural triangulators (Tab 8); see Measurement Reference Part 2 |
-| **O4 score** | [CALCULATED] | Survey score, triangulated with capacity data per Measurement Reference Part 2 |
+| Capacity-analysis score (0–100) | [INPUT — finished score, analyst-computed outside workbook] | From the capacity analysis (workload-to-capacity ratio, overtime, sick leave, backlog), per Measurement Reference Part 2 section 4.4 |
+| **O4 score** | [CALCULATED] | `(capacity-analysis score + O4 survey score) / 2`, blended directly with no gap rule; both components required, blank if either is missing (Measurement Reference Part 2 section 4.4) |
 
-## 6.5 O5 — Leadership enablement (weight 15% within O) — survey only (Type A)
+## 6.5 O5 — Leadership enablement (weight 15% within O) — survey only, scored per team
 
 | Input field | Kind | Notes |
 |---|---|---|
-| OI5-01, OI5-02, OI5-03 mean | [INPUT — raw, workbook converts] | 1.00–5.00 raw (all 3, no reverse) |
-| Response rate % | [INPUT — raw] | |
-| **O5 score** | [CALCULATED] | `((mean of 3 items) − 1) × 25` |
+| Team or manager | [INPUT] | One row per team in the unit (repeatable rows) |
+| Team FTE | [INPUT — raw] | |
+| Team O5 score (0–100) | [INPUT — finished score, analyst-computed outside workbook] | Per team, `((mean of OI5-01 to OI5-03) − 1) × 25` from that team's responses (all 3 items, no reverse), or the Tier 1/2 equivalent (Measurement Reference Part 2 section 4.5) |
+| **O5 score** | [CALCULATED] | FTE-weighted average of the team scores, `Σ(team O5 × team FTE) / Σ(team FTE)`, over teams with a score (Measurement Reference Part 2 section 4.5) |
 
 ## 6.6 Opportunity composite (Composite Scoring tab)
 
 ```
 O = 0.30(O1) + 0.25(O2) + 0.20(O3) + 0.10(O4) + 0.15(O5)
 ```
-For O1/O2/O3, the value entering the composite is the structural-perception composite where gap ≤15, else the perception score with annotation (Survey Blueprint 4.1.5).
+For O1/O2/O3, the value entering the composite is the structural-perception composite where gap ≤15, else the perception score with annotation (Survey Blueprint 4.1.5). Put plainly: above a 15-point gap the perception score feeds the composite, and the two layers are not averaged. A sub-dimension missing either layer is blank and its weight is reallocated (Part 1.8).
 
 ---
 
@@ -454,7 +462,7 @@ For O1/O2/O3, the value entering the composite is the structural-perception comp
 | Input field | Kind | Notes |
 |---|---|---|
 | Skill-profile diversity / complementarity inputs | [INPUT] | Derived analytically from C1 skill data (Survey Blueprint notes S1 uses C1 data analytically; Measurement Reference Part 2 gives the rule) |
-| **S1 score** | [CALCULATED] | Per Measurement Reference Part 2 S1 rule |
+| **S1 score** | [CALCULATED] | Per Measurement Reference Part 2 S1 rule: `0.40 × breadth + 0.35 × depth + 0.25 × distribution`; blank unless all three are entered (Part 1.8) |
 
 ## 7.2 S2 — Collaboration friction (weight 40% within S) — survey + telemetry
 
@@ -465,6 +473,8 @@ For O1/O2/O3, the value entering the composite is the structural-perception comp
 | Reverse-scoring | [CALCULATED] | Flip TSI2-03 |
 | **S2 survey score** | [CALCULATED] | `((mean of 3, TSI2-03 flipped) − 1) × 25` |
 | Workplace Analytics inputs (meeting hrs, fragmented time, after-hours) | [INPUT] | Optional telemetry; triangulates the survey score (Measurement Reference Part 2) |
+| **S2 telemetry-perception gap** | [CALCULATED] | `behavioural composite − S2 survey score`, the behavioural composite being built from the Workplace Analytics inputs (Measurement Reference Part 2) |
+| **S2 gap flag** | [CALCULATED] | `IF(ISNUMBER(gap),IF(ABS(gap)>15,"GAP - diagnostic finding",""),"")` (Measurement Reference Part 2) |
 | **S2 score** | [CALCULATED] | Survey score, triangulated with telemetry where available |
 
 ## 7.3 S3 — Conflict health (weight 30% within S) — survey
@@ -475,7 +485,7 @@ For O1/O2/O3, the value entering the composite is the structural-perception comp
 | Response rate % | [INPUT] | |
 | Reverse-scoring | [CALCULATED] | Flip TSI3-04, TSI3-05 |
 | **S3 score** | [CALCULATED] | `((mean of valid items, TSI3-04/05 flipped) − 1) × 25` |
-| **False-consensus flag** | [CALCULATED] | `IF(AND(TSI3-01 score<60, TSI3-02 score<60, M2 score>75),"FALSE CONSENSUS — suppressed disagreement","")` (Survey Blueprint 5.2.4 / 7.7) |
+| **False-consensus flag** | [CALCULATED] | `IF(AND(ISNUMBER(TSI3-01 score), ISNUMBER(TSI3-02 score), ISNUMBER(M2 score)),IF(AND(TSI3-01 score<60, TSI3-02 score<60, M2 score>75),"FALSE CONSENSUS - suppressed disagreement",""),"")`; does not fire unless all three are measured (Survey Blueprint 5.2.4 / 7.7) |
 
 ## 7.4 Synergy coefficient (Composite Scoring tab)
 
@@ -554,9 +564,9 @@ Entirely [CALCULATED]. Pulls sub-dimension scores from Tabs 3–7, applies the a
 | S_internal | `0.30(S1)+0.40(S2)+0.30(S3)` |
 | S coefficient | `0.85 + (S_internal/100)×0.30` |
 | **P score** | `S × (C^0.35 × M^0.40 × O^0.25)` |
-| P confidence | High/Medium/Low — driven by the freshness of underlying sub-dimensions (worst-case or weighted across components per Cadence Master Part 7) |
+| P confidence | High/Medium/Low — driven by the freshness of underlying sub-dimensions (worst-case or weighted across components per Cadence Master Part 7). Blank when P is blank; a band of `n/a` does not lower it, and a missing date reads Low (Part 3) |
 
-**Weight reallocation rule.** Where a sub-dimension is "Insufficient data", drop it from its component formula and proportionally rescale the remaining weights to sum to 1 (Measurement Reference 1.3). Implement so the component formula divides by the sum of the *available* weights, not a hardcoded denominator.
+**Weight reallocation rule.** Where a sub-dimension is "Insufficient data" or blank (Part 1.8), drop it from its component formula and proportionally rescale the remaining weights to sum to 1 (Measurement Reference 1.3). Implement so the component formula divides by the sum of the *available* weights, not a hardcoded denominator.
 
 **Binding constraint identification (realistic P gain, weighted toward genuine weaknesses):**
 
@@ -595,7 +605,7 @@ where `unitMean` is the mean of the 14 C/M/O sub-dimension scores. rel is 0.5 at
 | Binding constraint statement | Concatenated text leading with the top-ranked (highest-priority) sub-dimension; notes the binding component (lowest of C, M, O) as the weakest force |
 | Trip-wire override note | If any trip-wire fired, flag that it takes priority regardless of P (Diagnostic Handbook 8.4) |
 
-The displayed "realistic P gain" (ΔP) is the honest, bounded P-points estimate for that sub-dimension; the ordering is by Priority, so a sub-dimension can show a higher realistic P gain yet rank lower when it is not a relative weakness. The full per-sub-dimension computation lives in a hidden helper block (one row each); only the top-six table and the statement are visible on the tab.
+The displayed "realistic P gain" (ΔP) is the honest, bounded P-points estimate for that sub-dimension; the ordering is by Priority, so a sub-dimension can show a higher realistic P gain yet rank lower when it is not a relative weakness. The full per-sub-dimension computation lives in a hidden helper block (one row each); only the top-six table and the statement are visible on the tab. When P is blank, the helper block and the ranking are blank rather than in error.
 
 **Range checks** (validation, not scoring): S should fall 0.85–1.15; P typically 45–80; flag values outside expected bounds for manual cross-check (Diagnostic Handbook 8.2 Step 4).
 
@@ -613,7 +623,7 @@ Holds the behavioural data that triangulates survey scores and fires the survey-
 | Overtime / after-hours / backlog (for O4, S2) | [INPUT] | |
 | **Behavioural composite (for M1 gap)** | [CALCULATED] | Per Measurement Reference Part 2 |
 | **M1 survey-behavioural gap** | [CALCULATED] | `M1 survey score − behavioural composite` |
-| **M1 gap flag** | [CALCULATED] | `IF(ABS(gap)>15,"GAP — key finding","")` (Survey Blueprint 7.7) |
+| **M1 gap flag** | [CALCULATED] | `IF(ISNUMBER(gap),IF(ABS(gap)>15,"GAP - key finding",""),"")` (Survey Blueprint 7.7) |
 
 ---
 
@@ -631,12 +641,12 @@ Entirely [CALCULATED], auto-populated from the other tabs. It is one of the thre
 |---|---|---|---|
 | Tier mix | Per sub-dimension: tier, source, vintage (the full sub-dimension block) | `mf_TIER_MIX` | Tier Assignment (Tab 2) |
 |  | Composite tier rating | `mf_COMPOSITE_TIER_RATING` | Tier Assignment |
-| Validity and exclusions | Response rate per construct, as a labelled list | `mf_RESPONSE_RATES` | the per-construct response-rate cells on Tabs 3 to 7 |
-|  | Exclusions summary: sub-dimensions suppressed for insufficient data, weight reallocations applied, responses excluded | `mf_EXCLUSIONS` | Composite Scoring reallocation logic and Tier Assignment |
+| Validity and exclusions | Response rate per construct, as a labelled list; blank where no response rate is entered | `mf_RESPONSE_RATES` | the per-construct response-rate cells on Tabs 3 to 7 |
+|  | Exclusions summary: sub-dimensions suppressed for insufficient data, weight reallocations applied, responses excluded | `mf_EXCLUSIONS` | Composite Scoring availability flags: every sub-dimension without a score is counted, whatever the reason (Part 1.8) |
 | Confidence | Per sub-dimension confidence (the 17-row block) | `mf_CONFIDENCE_TABLE` | Tier Assignment confidence column |
 |  | Overall P confidence | `mf_P_CONFIDENCE` | Composite Scoring |
 | Gap flags fired | O1/O2/O3 audit-perception, M1 survey-behavioural, false-consensus, S2 telemetry-perception | `mf_GAP_FLAGS_FIRED` | the gap-flag cells on Tabs 5, 6, 8 |
-| Critical findings | Trip-wire breaches and DLP critical findings, consolidated | `mf_CRITICAL_FINDINGS` | Motivation Inputs trip-wire flags and DLP |
+| Critical findings | Trip-wire breaches and DLP critical findings, consolidated. A trip-wire without a score is listed as not measured; "No critical findings identified" appears only when all three trip-wires are measured and nothing has fired | `mf_CRITICAL_FINDINGS` | Motivation Inputs trip-wire flags and DLP |
 | Internal comparison | The standing note that no external-company benchmark and no accumulated cross-client comparison is applied | `mf_INTERNAL_COMPARISON_NOTE` | standing text |
 | Non-standard definitions | Any client-specific data definition recorded during the engagement (for example a turnover definition) | `mf_NONSTANDARD_DEFINITIONS` | mirrors `ev_NONSTANDARD` on Analyst Evidence |
 
@@ -656,7 +666,7 @@ Three rules govern the tab:
 
 The blocks, each field bound to the named range shown:
 
-*Identity (mirrored from Engagement Metadata).* `rd_CLIENT`, `rd_UNIT`, `rd_UNIT_FTE`, `rd_SECTOR`, `rd_SUBSECTOR`, `rd_SIZE_BAND`, `rd_UNIT_TYPE`, `rd_ARCHETYPE`, `rd_ENGAGEMENT_DATE`, `rd_ANALYST`, `rd_DIAGNOSTIC_REF`.
+*Identity (mirrored from Engagement Metadata; an empty field mirrors as blank, not 0).* `rd_CLIENT`, `rd_UNIT`, `rd_UNIT_FTE`, `rd_SECTOR`, `rd_SUBSECTOR`, `rd_SIZE_BAND`, `rd_UNIT_TYPE`, `rd_ARCHETYPE`, `rd_ENGAGEMENT_DATE`, `rd_ANALYST`, `rd_DIAGNOSTIC_REF`.
 
 *Headline.* `rd_P_SCORE`, `rd_P_BAND`, `rd_P_CONFIDENCE`, `rd_C_SCORE`, `rd_C_BAND`, `rd_M_SCORE`, `rd_M_BAND`, `rd_O_SCORE`, `rd_O_BAND`, `rd_S_COEFF`, `rd_S_INTERNAL`.
 
@@ -668,7 +678,7 @@ The blocks, each field bound to the named range shown:
 
 *Binding constraint.* `rd_BINDING_STATEMENT` (the concatenated one-sentence statement leading with the top-ranked sub-dimension), `rd_BINDING_COMPONENT` (the lowest of C, M, O, reported as the weakest force), and `rd_PRIORITY_TABLE` (the top-six block: rank, component, sub-dimension, raw score, realistic P gain ΔP, Priority).
 
-*Diagnostic findings.* `rd_O1_GAP_FLAG`, `rd_O2_GAP_FLAG`, `rd_O3_GAP_FLAG`, `rd_M1_GAP_FLAG`, `rd_FALSE_CONSENSUS_FLAG`, and `rd_CRITICAL_FINDINGS` (the consolidated list of trip-wire breaches and DLP critical findings).
+*Diagnostic findings.* `rd_O1_GAP_FLAG`, `rd_O2_GAP_FLAG`, `rd_O3_GAP_FLAG`, `rd_M1_GAP_FLAG`, `rd_FALSE_CONSENSUS_FLAG`, and `rd_CRITICAL_FINDINGS` (the consolidated list of trip-wire breaches and DLP critical findings, with any unmeasured trip-wire listed as not measured).
 
 *Cross-unit comparison contributory row.* `rd_UNIT_COMPARISON_ROW`: one row carrying this unit's name, P (with band), C, M, O, S and its top-ranked binding sub-dimension. A single unit's workbook never builds the comparison table; the engagement-level build assembles it by reading this one row from each unit's workbook (Unit-level Report Spec Part 3.9). Exposing it as a named row is what makes that assembly clean.
 
@@ -741,7 +751,7 @@ These are points where this spec references another document's rule that should 
 1. **Per-sub-dimension Tier 1/2 conversion rules** for C1, C2, C3, C5, S1, O4 capacity, S2 telemetry — read the exact rule in Measurement Reference Part 1 (C) / Part 2 (O, S) for each.
 2. **DLP latency→score conversion and class weighting** — Measurement Reference Part 2 DLP section.
 3. **The six archetype weight sets** — populate from the Cadence Master / Measurement Reference weight tables.
-4. **O4 and S2 triangulation rules** (how the survey score combines with capacity/telemetry data) — Measurement Reference Part 2. (The O1/O2/O3 structural+perception layering is now modelled in Part 6; what remains to confirm at build time is the exact O4/S2 triangulation arithmetic.)
+4. **O4 and S2 triangulation rules** (how the survey score combines with capacity/telemetry data) — Measurement Reference Part 2. (The O1/O2/O3 structural+perception layering is now modelled in Part 6; what remains to confirm at build time is the exact O4/S2 triangulation arithmetic.) O4 is now settled in Part 6.4: the two components are blended directly and both are required; only the S2 arithmetic remains to confirm.
 5. **Confidence-decay rules** (vintage → High/Medium/Low) — Cadence Master Part 7.
 
 None of these change the workbook *structure* defined here; they fill in specific conversion constants the implementer wires into the [CALCULATED] cells.

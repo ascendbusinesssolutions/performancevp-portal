@@ -3,7 +3,7 @@
 
 **Author:** Michael, PerformanceVP
 **Status:** Working draft. Reference library of Tier 3 survey modules deployable when client Tier 1/2 data is unavailable.
-**Last updated:** 24 June 2026 (module-score conversions corrected to the house convention `(mean − 1) × 25`, replacing the earlier `mean × 25`; M-C5-TL per-team-leader score corrected to `(mean of 12 items − 1) × 25`, replacing the earlier `(sum / 60) × 100`; added a C2 handoff note that the per-domain KDS scores are weighted into overall C2 downstream in the Diagnostic Workbook. Prior: 14 May 2026)
+**Last updated:** 21 September 2026 (the O1 gap context and Part 9.1 now state that the perception score feeds the O composite when the audit-perception gap exceeds 15, and that a missing component or layer leaves the score blank, matching Measurement Reference Part 2 and the corrected Diagnostic Workbook. Prior, 24 June 2026: module-score conversions corrected to the house convention `(mean − 1) × 25`, replacing the earlier `mean × 25`; M-C5-TL per-team-leader score corrected to `(mean of 12 items − 1) × 25`, replacing the earlier `(sum / 60) × 100`; added a C2 handoff note that the per-domain KDS scores are weighted into overall C2 downstream in the Diagnostic Workbook. Prior: 14 May 2026)
 **Companion documents:** Performance Equation Strategy; Sub-Dimension × Cadence Master Reference; Survey Blueprint; Measurement Reference Parts 1 and 2; Data Inventory Templates; Diagnostic Delivery Handbook (to be revised around this module library).
 
 ---
@@ -113,7 +113,7 @@ Where role architecture is assessed via analyst document review of position desc
 
 ### Audit-perception gap context
 
-The O1 structural composite (from this module plus the decision rights module plus document review) is compared to the O1 perception score from the Diagnostic Survey's OI1 module. Gap > 15 points triggers the diagnostic finding per the Measurement Reference Part 8.1.
+The O1 structural composite (from this module plus the decision rights module plus document review) is compared to the O1 perception score from the Diagnostic Survey's OI1 module. Gap > 15 points triggers the diagnostic finding per the Measurement Reference Part 8.1, and the O1 perception score then feeds the O composite.
 
 ## 2.2 M-O2-IA — Information Access module
 
@@ -841,7 +841,7 @@ This section describes how the module outputs feed the Measurement Reference sco
 
 ## 9.1 Per-sub-dimension synthesis
 
-For each sub-dimension where Tier 3 modules are deployed, the analyst synthesises module outputs with any document-review-derived scores per the Measurement Reference rules.
+For each sub-dimension where Tier 3 modules are deployed, the analyst synthesises module outputs with any document-review-derived scores per the Measurement Reference rules. Each structural layer needs all of its components; a missing component leaves the layer, and so the sub-dimension, blank rather than scored as zero.
 
 ### O1 Clarity and decision rights
 
@@ -852,7 +852,9 @@ O1 structural = 0.40 × M-O1-LT score
 
 O1 perception = (from Diagnostic Survey OI1 module)
 
-O1 composite = (Structural + Perception) / 2, with gap rule per Measurement Reference Part 8.1
+O1 composite = (Structural + Perception) / 2 where the gap is 15 or less;
+               Perception where it exceeds 15 (gap rule per Measurement Reference Part 8.1);
+               blank if either layer is missing
 ```
 
 ### O2 Tools and information
@@ -864,7 +866,8 @@ O2 structural = 0.35 × Tool inventory (document review)
 
 O2 perception = (from Diagnostic Survey OI2 module)
 
-O2 composite = (Structural + Perception) / 2, with gap rule
+O2 composite = (Structural + Perception) / 2 where the gap is 15 or less;
+               Perception where it exceeds 15; blank if either layer is missing
 ```
 
 ### O3 Process and workflow
@@ -874,7 +877,8 @@ O3 structural = M-O3-PF score (aggregate across processes)
 
 O3 perception = (from Diagnostic Survey OI3 module)
 
-O3 composite = (Structural + Perception) / 2, with gap rule
+O3 composite = (Structural + Perception) / 2 where the gap is 15 or less;
+               Perception where it exceeds 15; blank if either layer is missing
 ```
 
 ### O4 Resource adequacy

@@ -2,7 +2,7 @@
 ## Online Measurement Specification
 
 **Author:** Michael, PerformanceVP
-**Status:** Working draft v0.6, for review. Proposed new source document. All decisions raised in drafting were settled on 21 September 2026 and are recorded in Part 11.1. Later decisions supersede earlier ones where noted.
+**Status:** Working draft v0.7, for review. Proposed new source document. All decisions raised in drafting were settled on 21 September 2026 and are recorded in Part 11.1. Later decisions supersede earlier ones where noted.
 **Last updated:** 21 September 2026
 **Companion documents:** Performance Equation Strategy; Sub-Dimension × Cadence Master Reference; Measurement Reference Parts 1 and 2; Survey Blueprint; Tier 3 Module Library; Survey Processing and Scoring Workbook Spec; Diagnostic Workbook Spec; Intervention Design Library; PORTAL_BUILD_PLAN.md, CLAUDE.md and DECISIONS.md (all three revised on 21 September 2026 to implement this document).
 
@@ -37,7 +37,7 @@ Where this document repeats a rule from a higher document it does so for buildab
 
 1. **The engine does not change.** Sub-dimension weights, component composites, the Synergy mapping, the weighted form of P, the realistic-P-gain ranking, trip-wire logic, gap rules, weight reallocation, carry-forward and confidence decay are all applied exactly as the Measurement Reference and the Diagnostic Workbook specify. The online route changes only how inputs arrive.
 2. **Instruments only.** The online route uses PerformanceVP instruments throughout. It does not ingest the client's existing platform data. In tier terms the whole route is Tier 3, self-administered. Use of the client's own data remains a feature of the consultant-led Diagnostic. The one exception is C3, where a client may supply its own formal performance ratings as the input (Part 6.4).
-3. **All 17 sub-dimensions are scored.** In consultant-led work some modules are conditional on materiality (C5, C2). Online, every sub-dimension has a default route so that P and the full ranking are always available.
+3. **Every sub-dimension has a default route.** In consultant-led work some modules are conditional on materiality (C5, C2). Online, all 17 sub-dimensions are measured by default. A sub-dimension is still reported as insufficient where its validity thresholds are not met or a component it requires is missing, and its weight then reallocates.
 4. **Rules replace judgement.** Each analyst step is replaced by one of three things: a mechanical rule already in the IP, a short factual checklist completed by the client's administrator, or a platform-enforced validity threshold. Where none of these can stand in for the analyst, the step is dropped and the loss is disclosed (Part 5).
 5. **A fixed instrument.** Clients configure context (unit names, role families, skills, knowledge domains, decision types, processes, systems). They cannot edit item wording, scales, scoring, thresholds or weights. This protects instrument validity and the comparability of the research dataset.
 6. **Unit-level measurement, anonymous surveys, identified ratings.** Every score, finding and suggestion is about a unit. Survey responses are anonymous and are never linked to a directory record. Manager ratings are different in kind: they are identified, retained for traceability and visible to the client's administrators (Part 7). The two are kept strictly apart, and respondents are told so.
@@ -132,7 +132,7 @@ Each entry states the source rule, the online input, and what stands in for the 
   - M-O1-LT: the unit leader selects 8 to 12 decision types at setup from a starter list by unit type, adding their own. Leaders assign RAPID roles by position title from the directory. Scoring unchanged (0.60 agreement, 0.40 clarity). Needs 75% response and at least 3 respondents.
   - ADM-O1: the role-architecture checklist (Part 4.2) replaces the analyst's position-description review.
   - M-O1-CASCADE: scored from Part B.
-- **Where the leadership team has fewer than 3 people:** M-O1-LT cannot produce an agreement score. The structural layer is then 0.50 × ADM-O1 + 0.50 × M-O1-CASCADE by proportional reallocation, annotated.
+- **Where the leadership team has fewer than 3 respondents:** M-O1-LT cannot produce an agreement score, so the structural layer cannot be computed. Under the blank-input rule settled for the workbook on 21 September 2026 (a composite computes only when every component it requires is numeric, with no reallocation inside a composite), O1 is then reported as insufficient and its weight reallocates. Setup guidance steers each unit to name at least three leadership-team respondents.
 - **Perception layer:** OI1 items in Part A. **Composite and gap rule:** unchanged (mean where the gap is 15 or less; perception feeds the composite where it exceeds 15; both layers and the gap shown).
 
 ### O2 Tools and information
@@ -145,10 +145,10 @@ Each entry states the source rule, the online input, and what stands in for the 
 
 ### O4 Resource adequacy
 - **Source rule:** Measurement Reference 4.4. The source describes the capacity analysis score as a composite without giving a mechanical formula, and the Diagnostic Workbook takes it as a finished Type C score.
-- **Online input:** ADM-O4 capacity facts (Part 4.3a) scored by rule, blended 50/50 with the OI4 perception score. No gap rule, per the source. With fewer than 3 capacity facts entered, O4 is the perception score alone, annotated.
+- **Online input:** ADM-O4 capacity facts (Part 4.3a) scored by rule, blended 50/50 with the OI4 perception score. No gap rule, per the source. Both components are required (Measurement Reference 4.4): with fewer than 3 capacity facts entered, or no valid perception score, O4 is reported as insufficient and its weight reallocates.
 
 ### O5 Leadership enablement
-- **Source rule:** Measurement Reference 4.5. Unchanged, from Part A.
+- **Source rule:** Measurement Reference 4.5. Unchanged, from Part A. O5 is scored per team (each manager's team rating their manager) and FTE-weighted to the unit, as the workbook does, using the directory's team field in the same way as C4. The source validity rule applies: a team needs 4 valid respondents and 70% response, and the unit needs 75% of its teams valid. The workbook leaves that check to the analyst, so the intake package enforces it.
 
 ## 3.4 Synergy
 
@@ -424,6 +424,7 @@ A separate pure package converts responses into these inputs. It mirrors the Sur
 7. **Identified manager ratings are retained and visible to administrators** (Part 7), for traceability. Supersedes decision 1.
 8. **Formal performance ratings as an optional C3 input** (Part 6.4). Where uploaded, dated within the last 12 months (aligned with the Measurement Reference) and covering 80% of the unit, they are the C3 input and managers do not rate for C3. Where blank, managers rate. The switch is per unit, and the Measurement Reference's acceptance rules apply mechanically. The 12-month limit is communicated to the client. This replaces the comparison feature and the six-month limit drafted earlier the same day.
 9. **PerformanceVP support staff have access** to client accounts, including ratings, to assist (Part 7). Logged and visible to the client.
+10. **Aligned with the workbook's blank-input rule** (settled 21 September 2026 in the workbook maintenance pass): a composite computes only when every component it requires is numeric, and there is no reallocation inside a composite. The engine mirrors the workbook, so the online route cannot do otherwise. Two provisions of earlier drafts are withdrawn: the O4 fallback to perception alone, and the proportional reallocation of the O1 structural layer for small leadership teams. Both cases now report the sub-dimension as insufficient.
 
 No decisions remain open in this document.
 

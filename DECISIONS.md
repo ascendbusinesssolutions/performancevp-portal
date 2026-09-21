@@ -15,7 +15,7 @@ This register records the settled decisions behind the portal build and the reas
 
 **Reasoning.** The gap rule exists to surface the divergence between structural reality and lived experience as a finding in its own right. Once that divergence is reported separately, the score that should feed P is the one that best represents performance-relevant reality, and for an operating unit that is what staff actually experience, because perception drives behaviour. Averaging the two layers produces a number that represents neither and quietly buries the signal the gap rule exists to expose.
 
-**Provenance.** Settled 28 May 2026 in the Diagnostic Workbook (Survey Blueprint 4.1.5). Measurement Reference Part 2 carried stale "mean of both layers" wording and was aligned to the workbook on 10 June 2026. The workbook was correct throughout; the document was the drift.
+**Provenance.** Settled 28 May 2026 in the Diagnostic Workbook (Survey Blueprint 4.1.5). Measurement Reference Part 2 carried stale "mean of both layers" wording and was aligned to the workbook on 10 June 2026. Corrected 21 September 2026: the workbook was not correct throughout. The rule was never implemented there; versions 1 to 5 all averaged the two layers whatever the gap, and Survey Blueprint 4.1.5 said only that the layers were "reported separately" above 15, without saying which value feeds the composite. The production workbook implements the rule from 21 September 2026 (archive v5 is the last version without it), and the Workbook Spec and Survey Blueprint now state it plainly.
 
 ### 1.2 Binding constraint: realistic-P-gain ranking
 
@@ -41,6 +41,14 @@ Ranked by Priority, descending, with a deterministic row-fraction tiebreak, pres
 **Reasoning.** The model operates at unit level and deliberately keeps external sector conditions out of the equation. Computing a top-level P by aggregating C, M and O across a whole organisation would contradict the unit-level design and produce a figure the model does not support. An average is honest. Showing the spread and emphasising the weakest unit preserves the weakest-link logic the model rests on, which an average alone would hide.
 
 **Provenance.** Settled 10 June 2026.
+
+### 1.4 An empty input never scores as zero
+
+**Resolution.** A score, layer or composite computes only when every component it requires is present; otherwise it is blank. A blank sub-dimension is treated as insufficient data: it drops out of its component and the remaining weights are rescaled to sum to 1. An unset measurement route counts as insufficient data, whichever inputs are filled. There is no proportional reallocation inside a composite: the O1 and O2 structural layers need all three of their components, O4 needs both the capacity analysis and the perception score, and S1 needs all three of its components. Averages over survey item means that leave out items not deployed at a cadence are unaffected. Where no Synergy sub-dimension is available, S is 1.00.
+
+**Reasoning.** The Measurement Reference never scores a missing sub-dimension as zero. It marks it insufficient data and reallocates its weight proportionally within the component (Part 1 section 1.3; Part 2 section 9.2), and Synergy falls back to a neutral 1.00 when nothing is measurable (Part 2 section 5.4). A zero is a strong low score, not an absence: an input scored as zero drags its component down, can name a false binding constraint and can fire findings that are not there. In Excel an empty cell is 0 in arithmetic, so unguarded formulas did exactly that. On the Northwind example an empty M1 platform score produced M1 = 0 and moved P from 72.3 to 54.2, and one missing structural component fired a spurious O1 gap flag. The engine inherits the rule because it mirrors the workbook.
+
+**Provenance.** Settled 21 September 2026 and implemented in the production Diagnostic Workbook the same day, with the perception-only gap rule (1.1), the false-consensus guard, Low confidence where a date is missing, a blank P confidence where there is no P, an exclusions summary that counts every sub-dimension without a score, and "not measured" reporting for a trip-wire without a score. Documented in Workbook Spec Part 1.8.
 
 ---
 
@@ -106,7 +114,8 @@ These are document or configuration tasks, not build tasks, but the build assume
 3. **Resend verification.** Confirm the Resend domain is verified and a live send tested before surveys depend on the pipeline.
 4. **Subscription terms and privacy notice.** Before any client data enters the portal: terms that make the client responsible for its data with PerformanceVP as service provider, and that cover support-staff access, the data-contribution default and opt-out, and the handling of access requests; a privacy notice that reflects the persistent directory and retained ratings; and the respondent-facing statement that separates anonymous surveys from identified manager ratings.
 5. **IP ownership.** Written confirmation of which entity owns the Performance Equation IP, which any sale of the online product on its own would depend on.
-6. **Gap-flag guard.** Carry the gap-flag guard correction into the production Diagnostic Workbook before parity fixtures are generated in Milestone 1.
+6. **Gap-flag guard.** Carry the gap-flag guard correction into the production Diagnostic Workbook before parity fixtures are generated in Milestone 1. Completed 21 September 2026: the five gap-flag formulas in the production Diagnostic Workbook (Opportunity Inputs D22, D39 and D55; Synergy Inputs D25; Behavioural Triangulators C11) now carry the nested guard from the B&D copy, with the prior version archived as `archive/PerformanceVP-Diagnostic-Workbook v4.xlsx`; the Workbook Spec documents the same guard, and its `docs/source-ip` copy was refreshed from the corrected root file.
+7. **Perception-only gap rule and blank-input rule.** Implement both in the production Diagnostic Workbook before parity fixtures are generated in Milestone 1. Completed 21 September 2026: 87 formula cells changed in one pass (1.1, 1.4), with the prior version archived as `archive/PerformanceVP-Diagnostic-Workbook v5.xlsx`; the Workbook Spec, the Survey Blueprint and the engine specification note were corrected, and the pass's branch-test and partial-entry results are kept as parity fixtures in `tools/workbook-maintenance/fixtures/`. The same 87-cell change was applied to the B&D engagement copy on the same day, with a dated backup beside it, its stale stored values cleared and a full recalculation set for its next opening in Excel.
 
 ---
 

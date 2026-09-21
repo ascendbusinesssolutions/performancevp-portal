@@ -3,7 +3,7 @@
 
 **Author:** Michael, PerformanceVP
 **Status:** Working draft. Master reference for sub-dimension specification, data collection, cadence and refresh logic.
-**Last updated:** 22 May 2026
+**Last updated:** 21 September 2026 (O1 audit-perception gap analysis now states which value feeds the O composite. Prior: 22 May 2026)
 **Companion documents:** Performance Equation Strategy (master reference); Diagnostic Delivery Handbook; Tier 1 & 2 Data Collection Guide; Data Audit Template.
 
 ---
@@ -480,7 +480,7 @@ O = 0.30(O1) + 0.25(O2) + 0.20(O3) + 0.10(O4) + 0.15(O5)
 | 2 | McKinsey OHI Accountability/Direction data, Galbraith Star audit, HRIS reporting structure with role-level definitions, partial OKR cascade, position descriptions within 24 months | Partial Tier 2 components combinable |
 | 3 | **OI-Clarity audit + survey** (PerformanceVP) | Half-day workshop (decision rights mapping + role architecture + cascade audit on 5–10 goal-traces) + 8-item perception survey |
 
-**Audit-perception gap analysis.** The audit produces a structural score (0–100); the survey produces a perception score (0–100). Where they diverge by more than 15 points, this is reported as a key diagnostic finding rather than averaged away.
+**Audit-perception gap analysis.** The audit produces a structural score (0–100); the survey produces a perception score (0–100). Where they diverge by more than 15 points, this is reported as a key diagnostic finding rather than averaged away. Within 15 points the two are averaged; beyond 15, the perception score feeds the O composite.
 
 **Cadence: Half-yearly + annual for the survey component; annual for the audit.** Survey perception of clarity moves with leader behaviour and organisational change; the structural audit is stable across 6-month windows.
 

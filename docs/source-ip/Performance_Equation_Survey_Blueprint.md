@@ -3,7 +3,7 @@
 
 **Author:** Michael, PerformanceVP
 **Status:** Working draft. Item-level specification for the Performance Equation Diagnostic Survey across all cadences.
-**Last updated:** 24 June 2026 (survey platform confirmed as Google Forms, the interim platform, with reverse-scoring, validity exclusions and item-mean aggregation moved downstream to the Survey Processing and Scoring Workbook; added the non-identifying CII team-selector question so collective-intelligence responses can be grouped to team level under per-department links. Prior: 28 May 2026)
+**Last updated:** 21 September 2026 (O1, O2 and O3 scoring now say which value feeds the O composite when the audit-perception gap exceeds 15: the survey (perception) score, as Measurement Reference Part 2 section 8.1 and the Diagnostic Workbook require; the gap table in 7.7 says the same. Prior, 24 June 2026: survey platform confirmed as Google Forms, the interim platform, with reverse-scoring, validity exclusions and item-mean aggregation moved downstream to the Survey Processing and Scoring Workbook; added the non-identifying CII team-selector question so collective-intelligence responses can be grouped to team level under per-department links. Prior: 28 May 2026)
 **Companion documents:** Performance Equation Strategy (master reference); Sub-Dimension × Cadence Master Reference; Diagnostic Delivery Handbook.
 
 ---
@@ -388,7 +388,7 @@ The 5 items at half-yearly cadence are: **OI1-01, OI1-02, OI1-04, OI1-05, OI1-07
 
 O1 survey score = ((mean of valid items at the given cadence, with reverse items adjusted) − 1) × 25.
 
-O1 composite combines the survey score with the Clarity audit score (run at baseline and annual). Where the two diverge by more than 15 points, this is reported as a key diagnostic finding rather than averaged. Default composite: O1 = (Survey + Audit) / 2 where the gap is ≤15 points; where the gap exceeds 15, both are reported separately with the divergence flagged.
+O1 composite combines the survey score with the Clarity audit score (run at baseline and annual). Where the two diverge by more than 15 points, this is reported as a key diagnostic finding rather than averaged. Default composite: O1 = (Survey + Audit) / 2 where the gap is ≤15 points; where the gap exceeds 15, both are reported separately with the divergence flagged, and the survey (perception) score is the value that feeds the O composite. Both scores are required; if either is missing, O1 is reported as insufficient data.
 
 ---
 
@@ -413,7 +413,7 @@ O1 composite combines the survey score with the Clarity audit score (run at base
 
 O2 survey score = ((mean of valid items, with OI2-04 reverse-scored) − 1) × 25.
 
-O2 composite combines survey with the Tools and Information Audit score; same gap-flag rule as O1.
+O2 composite combines survey with the Tools and Information Audit score; same gap-flag rule as O1. Where the gap exceeds 15, the O2 survey (perception) score feeds the O composite.
 
 ---
 
@@ -439,7 +439,7 @@ O2 composite combines survey with the Tools and Information Audit score; same ga
 
 O3 survey score = ((mean of valid items, with OI3-05 reverse-scored) − 1) × 25.
 
-O3 composite combines survey with the Process Friction Audit; same gap-flag rule as O1.
+O3 composite combines survey with the Process Friction Audit; same gap-flag rule as O1. Where the gap exceeds 15, the O3 survey (perception) score feeds the O composite.
 
 ---
 
@@ -790,7 +790,7 @@ Trip-wires do NOT enter the P calculation. Each trip-wire is reported as an inde
 
 | Gap | Definition | Action |
 |---|---|---|
-| Audit-perception gap (O1, O2, O3) | Audit score minus survey score > 15 points (either direction) | Reported as key diagnostic finding; both scores shown separately |
+| Audit-perception gap (O1, O2, O3) | Audit score minus survey score > 15 points (either direction) | Reported as key diagnostic finding; both scores shown separately; the survey score feeds the O composite |
 | Survey-behavioural gap (M1) | Survey score minus behavioural triangulator-derived score > 15 points (either direction) | Reported as key diagnostic finding |
 | False-consensus pattern (TSI3 + MI2) | Task conflict items <60 AND psych safety >75 | Reported as suppressed-disagreement finding |
 | Trip-wire failure | Any TW score <60 | Critical finding, immediate escalation |

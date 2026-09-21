@@ -1,0 +1,35 @@
+{
+  "name": "performancevp-portal",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "PerformanceVP online subscription portal: workspace root",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=11"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @performancevp/portal dev",
+    "build": "pnpm --filter @performancevp/portal build",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm --recursive typecheck",
+    "test": "pnpm --recursive test",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db",
+    "db:lint": "supabase db lint"
+  },
+  "devDependencies": {
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.3.5",
+    "prettier": "3.9.8",
+    "supabase": "2.117.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.0"
+  }
+}

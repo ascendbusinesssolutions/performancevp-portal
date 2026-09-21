@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Install scripts run only for packages listed here. The Supabase CLI downloads its binary
+# on install and is the one approved build. sharp and unrs-resolver ship prebuilt binaries
+# and need no script.
+allowBuilds:
+  supabase: true
+  sharp: false
+  unrs-resolver: false

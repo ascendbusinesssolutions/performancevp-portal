@@ -1,0 +1,6 @@
+# Normalise line endings; keep the benchmark workbooks binary so git never rewrites them.
+* text=auto eol=lf
+*.xlsx binary
+*.png binary
+*.woff2 binary
+pnpm-lock.yaml -diff linguist-generated

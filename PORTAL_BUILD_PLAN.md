@@ -45,7 +45,7 @@ Unchanged from v1: Next.js (App Router), TypeScript strict, Tailwind with the fo
 Six layers, dependencies in one direction only.
 
 1. **`packages/engine`**: pure. The formula-for-formula mirror of the Diagnostic Workbook. Unchanged from v1.
-2. **`packages/intake`**: pure. Turns aggregated responses, ratings, checklists and formal ratings into a `UnitMeasurementInput` plus methodology metadata. Depends on nothing but its own constants and the engine's input types.
+2. **`packages/intake`**: pure. Turns raw survey rows, ratings, checklists and formal ratings into a `UnitMeasurementInput` plus methodology metadata. Depends on nothing but its own constants and the engine's input types.
 3. **`packages/recommendations`**: pure. Turns a stored calculation run and its intake aggregates into ranked suggestions. Depends on the engine only for `projectImpact`.
 4. **The data layer**: schema, RLS policies, typed query modules.
 5. **Server actions, route handlers and scheduled jobs.**
@@ -191,7 +191,7 @@ Five notes for the online product. The engine returns the full fourteen-row prio
 
 New, and the second most consequential piece of code after the engine. It is the portal's mirror of the Survey Processing and Scoring Workbook, extended with the online-only rules.
 
-**Inputs.** Validated aggregates for the five audiences, identified ratings, checklist responses, formal ratings with their dates and scale map, the campaign snapshot, prior-cycle scores for carry-forward.
+**Inputs.** The raw survey rows for the member, team-leader and leadership audiences, which the intake screens itself so the validity exclusions have one home; identified ratings; checklist responses; formal ratings with their dates and scale map; the unit context; the campaign snapshot; prior-cycle scores for carry-forward.
 
 **Outputs.** A complete `UnitMeasurementInput` for the engine; the item-group means and component scores the recommendations rules use; and the methodology metadata for the footer (instruments, response rates, exclusions, insufficiencies, adjustments applied, C3 source and treatment).
 
@@ -221,7 +221,7 @@ Unit continuity follows the specification: renames keep history; merges and spli
 
 **Audiences.** Members receive Part A and Part B as two tokenised surveys inside one window. Team leaders and the leadership team receive tokenised modules. Managers receive a sign-in link to their rating forms; the C3 section is omitted for units on the formal-ratings route. Administrators complete the checklists in the portal.
 
-**Lifecycle.** Launch freezes the directory snapshot and issues invitations through Resend. Reminders go to non-completers without touching response content. At close, the validity job applies the Survey Blueprint 7.8 exclusions, writes aggregates and evaluates thresholds. The intake package assembles the engine input, the engine runs, the recommendations package runs, and the full result is stored as one calculation run in one transaction.
+**Lifecycle.** Launch freezes the directory snapshot and issues invitations through Resend. Reminders go to non-completers without touching response content. At close, the close job passes the raw survey rows, the ratings, the checklists and the frozen snapshot to the intake package, which applies the Survey Blueprint 7.8 exclusions in the form the Survey Processing Workbook implements plus the speed check, computes the aggregates and evaluates the thresholds; nothing else screens a response. The intake package assembles the engine input, the engine runs, the recommendations package runs, and the full result is stored as one calculation run in one transaction.
 
 **Review and release.** The administrator sees the run first, with the methodology footer and any insufficiency notices, and releases it. Only released runs are visible to executive and unit viewers. A pulse campaign updates the trajectory layer and never recalculates P.
 

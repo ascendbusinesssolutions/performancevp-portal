@@ -170,12 +170,8 @@ export interface TalentBand {
   /** 1 to 5. */
   band: number;
 }
-export interface RatingSession {
-  managerRef: string;
-  complete: boolean;
-}
+/** A manager counts as having responded once any rating of theirs exists, as the workbook counts raters. */
 export interface Ratings {
-  sessions?: RatingSession[];
   skills?: SkillRating[];
   knowledge?: KnowledgeRating[];
   talentBands?: TalentBand[];

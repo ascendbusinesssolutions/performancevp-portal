@@ -5,6 +5,9 @@
  */
 
 import { headcounts, type Headcounts } from "./directory";
+import { managerRows, scoreC1, type C1Result } from "./modules/c1-mgr";
+import { scoreC3, type C3Result } from "./modules/c3-mgr";
+import { scoreC5, type C5Result } from "./modules/c5-tl";
 import { PART_A_ITEMS } from "./items";
 import { blockRates, itemMeans, type BlockRate, type ItemMeans } from "./means";
 import {
@@ -17,14 +20,13 @@ import {
 import { scoreLeadership, type LtResult } from "./modules/lt";
 import { screenResponses, type ScreenedRows } from "./screening";
 import { teamCii, teamO5, type TeamCii, type TeamO5 } from "./teams";
-import type { IntakeInput, MemberResponse, PartAItem, TeamLeaderResponse } from "./types";
+import type { IntakeInput, MemberResponse, PartAItem } from "./types";
 
 export interface SurveyWorkbookResult {
   headcounts: Headcounts;
-  /** 7 Screening. */
+  /** 7 Screening: the main survey only; the workbook screens nothing else. */
   screening: {
     members: ScreenedRows<MemberResponse>;
-    teamLeaders: ScreenedRows<TeamLeaderResponse>;
   };
   /** 8 Type A Means. */
   typeA: {
@@ -39,6 +41,9 @@ export interface SurveyWorkbookResult {
     cascade: PartBModule;
     informationAccess: PartBModule;
     processFriction: ProcessFriction;
+    c1: C1Result;
+    c3: C3Result;
+    c5: C5Result;
   };
 }
 
@@ -46,9 +51,6 @@ export function runSurveyWorkbook(input: IntakeInput): SurveyWorkbookResult {
   const counts = headcounts(input.snapshot);
   const members = screenResponses(input.responses?.members ?? [], {
     headcount: counts.members,
-  });
-  const teamLeaders = screenResponses(input.responses?.teamLeaders ?? [], {
-    headcount: counts.teamLeaders,
   });
 
   const typeA = {
@@ -58,6 +60,7 @@ export function runSurveyWorkbook(input: IntakeInput): SurveyWorkbookResult {
     teamO5: teamO5(members.valid, input.unit.teams, input.snapshot),
   };
 
+  const rows = managerRows(input.ratings, input.unit.roleFamilies, input.snapshot);
   const typeC = {
     leadership: scoreLeadership(
       input.responses?.leadershipTeam ?? [],
@@ -67,7 +70,10 @@ export function runSurveyWorkbook(input: IntakeInput): SurveyWorkbookResult {
     cascade: scoreCascade(members.valid, counts.members),
     informationAccess: scoreInformationAccess(members.valid, counts.members),
     processFriction: scoreProcessFriction(members.valid, input.unit.processes),
+    c1: scoreC1(rows, input.unit.roleFamilies, input.snapshot, counts.managers),
+    c3: scoreC3(rows),
+    c5: scoreC5(input.responses?.teamLeaders ?? [], counts.teamLeaders),
   };
 
-  return { headcounts: counts, screening: { members, teamLeaders }, typeA, typeC };
+  return { headcounts: counts, screening: { members }, typeA, typeC };
 }

@@ -1,7 +1,6 @@
 {
  "name": "northwind",
- "purpose": "The Northwind Mutual worked example as shipped: 50 main-survey rows over four teams, 6 leadership respondents over 8 decision types; no manager or team-leader data. Campaign dates are not in the workbook.",
- "workbook": "northwind",
+ "purpose": "The Northwind Mutual worked example, extracted from the shipped copy and rebuilt on the template: 50 main-survey rows over four teams and 6 leadership respondents over 8 decision types; no manager, team-leader or DLP data.",
  "input": {
   "campaign": {
    "cadence": "baseline",
@@ -106,7 +105,7 @@
    }
   },
   "unit": {
-   "name": "Northwind Mutual \u2014 Member Services",
+   "name": "Northwind Mutual — Member Services",
    "teams": [
     {
      "id": "claims-mgr-a",
@@ -6581,5 +6580,6 @@
     }
    ]
   }
- }
+ },
+ "workbook": "template"
 }

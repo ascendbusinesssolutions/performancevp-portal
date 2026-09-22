@@ -5,9 +5,20 @@
 
 import {
   C5L_ITEMS,
+  MI1_ITEMS,
+  MI2_ITEMS,
+  MI3_ITEMS,
+  MI4_ITEMS,
   O1C_ITEMS,
   O2I_ITEMS,
   O3P_ITEMS,
+  OI1_ITEMS,
+  OI2_ITEMS,
+  OI3_ITEMS,
+  OI4_ITEMS,
+  TSI2_ITEMS,
+  TSI3_ITEMS,
+  TW_ITEMS,
   type C5lItem,
   type O3pItem,
   type PartAItem,
@@ -37,7 +48,7 @@ export const ROWS = {
   leadership: { first: 5, count: 150 },
   teamLeader: { first: 5, count: 40 },
   dlp: { first: 5, count: 200 },
-  teams: { first: 32, count: 12 },
+  teams: { first: 32, count: 10 },
   decisionTypes: { first: 32, count: 12 },
   roleFamilies: { first: 32, count: 10 },
   skills: 15,
@@ -111,6 +122,29 @@ export const TYPE_A_BLOCKS = [
 ] as const;
 
 export const TYPE_A_TEAM_ROWS = {
-  cii: { first: 80, count: 12 },
-  o5: { first: 95, count: 12 },
+  cii: { first: 80, count: 10 },
+  o5: { first: 95, count: 10 },
 } as const;
+
+/** 11 Output: the O5 team pass-through rows hold ten teams, two fewer than Type A Means. */
+export const OUTPUT_O5_ROWS = { first: 78, count: 10 } as const;
+
+/** 11 Output: the item-mean pass-through rows (B23:B97), item by item. */
+export const OUTPUT_ITEM_ROWS: ReadonlyArray<readonly [PartAItem, number]> = (() => {
+  const rows: Array<readonly [PartAItem, number]> = [];
+  const blocks: Array<{ items: readonly PartAItem[]; first: number }> = [
+    { items: MI1_ITEMS, first: 23 },
+    { items: MI2_ITEMS, first: 31 },
+    { items: MI3_ITEMS, first: 36 },
+    { items: MI4_ITEMS, first: 41 },
+    { items: TW_ITEMS, first: 45 },
+    { items: OI1_ITEMS, first: 49 },
+    { items: OI2_ITEMS, first: 60 },
+    { items: OI3_ITEMS, first: 67 },
+    { items: OI4_ITEMS, first: 73 },
+    { items: TSI2_ITEMS, first: 90 },
+    { items: TSI3_ITEMS, first: 93 },
+  ];
+  for (const block of blocks) block.items.forEach((item, i) => rows.push([item, block.first + i]));
+  return rows;
+})();

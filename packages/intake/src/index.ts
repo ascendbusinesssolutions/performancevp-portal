@@ -46,8 +46,8 @@ export { buildAggregates } from "./aggregates";
 export { buildMethodology } from "./methodology";
 export { headcounts, unitFte, teamFte, roleFamilyFte } from "./directory";
 
-/** Recorded on every stored calculation run as intake_version. */
-export const INTAKE_VERSION = "0.0.0";
+/** Recorded on every stored calculation run as intake_version. 1.0.0: the Milestone 2 exit criteria met on 22 September 2026. */
+export const INTAKE_VERSION = "1.0.0";
 
 /** The intake end to end for one unit and one campaign. */
 export function assembleUnit(input: IntakeInput): IntakeResult {

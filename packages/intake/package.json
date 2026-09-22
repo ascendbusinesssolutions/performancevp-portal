@@ -11,13 +11,16 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json"
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json",
+    "parity:extract-input": "tsx parity/extract-input.ts",
+    "parity:collect": "tsx parity/collect.ts"
   },
   "dependencies": {
     "@performancevp/engine": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "24.13.6",
+    "tsx": "4.23.15",
     "typescript": "6.0.3",
     "vitest": "5.0.1"
   }

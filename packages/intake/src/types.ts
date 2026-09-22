@@ -112,12 +112,12 @@ export interface SurveyRow<K extends string = string> {
   completionSeconds?: number;
 }
 
-export interface PartAResponse extends SurveyRow<PartAItem> {
+/**
+ * One member's survey: Part A and, where deployed, Part B on one row, as the workbook's Import
+ * Main lays them out (C:DB). Screening reads the whole row, process items included.
+ */
+export interface MemberResponse extends SurveyRow<PartAItem | PartBItem> {
   /** The non-identifying team selector (Survey Blueprint 6.1). */
-  teamId?: string;
-}
-
-export interface PartBResponse extends SurveyRow<PartBItem> {
   teamId?: string;
   /** M-O3-PF answers per named process. */
   processes?: Array<{ processId: string; items: Partial<Record<O3pItem, number>> }>;
@@ -141,8 +141,7 @@ export interface LeadershipResponse {
 }
 
 export interface Responses {
-  partA?: PartAResponse[];
-  partB?: PartBResponse[];
+  members?: MemberResponse[];
   teamLeaders?: TeamLeaderResponse[];
   leadershipTeam?: LeadershipResponse[];
 }
@@ -222,10 +221,10 @@ export interface Checklists {
 // Unit context, directory snapshot, formal ratings, campaign, prior cycle
 // ---------------------------------------------------------------------------------------------
 
+/** Headcounts and FTE come from the directory snapshot, never from the context. */
 export interface Team {
   id: string;
   name: string;
-  fte: number;
 }
 export interface Skill {
   id: string;
@@ -236,7 +235,6 @@ export interface Skill {
 export interface RoleFamily {
   id: string;
   name: string;
-  fte: number;
   skills: Skill[];
   /** A people-leader family, for the C1 pattern rule. */
   peopleLeader?: boolean;
@@ -249,7 +247,6 @@ export interface KnowledgeDomain {
 export interface UnitContext {
   name: string;
   clientName?: string;
-  fte: number;
   sector?: string;
   subSector?: string;
   sizeBand?: string;
@@ -323,7 +320,8 @@ export interface IntakeInput {
 // Result
 // ---------------------------------------------------------------------------------------------
 
-export type Audience = "partA" | "partB" | "teamLeaders" | "leadershipTeam" | "managers";
+/** The screened survey audiences; the leadership survey and the manager modules are not screened. */
+export type Audience = "members" | "teamLeaders";
 
 export interface ScreeningSummary {
   received: number;
@@ -331,7 +329,9 @@ export interface ScreeningSummary {
   excluded: number;
   /** Excluded over received; blank when nothing was received. */
   exclusionRate: number | undefined;
+  /** Rows failing each check; a row can fail more than one. */
   reasons: { straightLining: number; patterning: number; speed: number };
+  /** True when at least 20 responses were received, so the speed check ran. */
   speedCheckApplied: boolean;
   /** The 5th-percentile cut-off in seconds, when the speed check ran. */
   speedCutoffSeconds: number | undefined;
@@ -352,6 +352,7 @@ export interface InstrumentResult {
 export interface TeamResult {
   teamId: string;
   name: string;
+  /** From the snapshot: the response-rate denominator and the O5 and C4 weight, as the workbook's Setup FTE is. */
   fte: number;
   validCount: number;
   responseRate: number | undefined;

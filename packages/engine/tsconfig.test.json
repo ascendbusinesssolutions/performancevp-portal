@@ -5,5 +5,5 @@
     "resolveJsonModule": true,
     "rootDir": "."
   },
-  "include": ["src", "test", "vitest.config.ts"]
+  "include": ["src", "test", "parity", "vitest.config.ts"]
 }

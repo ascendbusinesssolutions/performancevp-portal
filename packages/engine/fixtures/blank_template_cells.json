@@ -1,0 +1,1426 @@
+[
+[
+"Behavioural Triangulators",
+"B5"
+],
+[
+"Behavioural Triangulators",
+"B6"
+],
+[
+"Behavioural Triangulators",
+"B7"
+],
+[
+"Behavioural Triangulators",
+"B8"
+],
+[
+"Behavioural Triangulators",
+"C5"
+],
+[
+"Behavioural Triangulators",
+"C6"
+],
+[
+"Behavioural Triangulators",
+"C7"
+],
+[
+"Behavioural Triangulators",
+"C8"
+],
+[
+"Capability Inputs",
+"A19"
+],
+[
+"Capability Inputs",
+"A20"
+],
+[
+"Capability Inputs",
+"A21"
+],
+[
+"Capability Inputs",
+"A7"
+],
+[
+"Capability Inputs",
+"A8"
+],
+[
+"Capability Inputs",
+"B19"
+],
+[
+"Capability Inputs",
+"B20"
+],
+[
+"Capability Inputs",
+"B21"
+],
+[
+"Capability Inputs",
+"B28"
+],
+[
+"Capability Inputs",
+"B29"
+],
+[
+"Capability Inputs",
+"B30"
+],
+[
+"Capability Inputs",
+"B31"
+],
+[
+"Capability Inputs",
+"B32"
+],
+[
+"Capability Inputs",
+"B37"
+],
+[
+"Capability Inputs",
+"B38"
+],
+[
+"Capability Inputs",
+"B39"
+],
+[
+"Capability Inputs",
+"B40"
+],
+[
+"Capability Inputs",
+"B41"
+],
+[
+"Capability Inputs",
+"B42"
+],
+[
+"Capability Inputs",
+"B43"
+],
+[
+"Capability Inputs",
+"B44"
+],
+[
+"Capability Inputs",
+"B45"
+],
+[
+"Capability Inputs",
+"B46"
+],
+[
+"Capability Inputs",
+"B47"
+],
+[
+"Capability Inputs",
+"B48"
+],
+[
+"Capability Inputs",
+"B49"
+],
+[
+"Capability Inputs",
+"B50"
+],
+[
+"Capability Inputs",
+"B51"
+],
+[
+"Capability Inputs",
+"B52"
+],
+[
+"Capability Inputs",
+"B59"
+],
+[
+"Capability Inputs",
+"B60"
+],
+[
+"Capability Inputs",
+"B7"
+],
+[
+"Capability Inputs",
+"B8"
+],
+[
+"Capability Inputs",
+"C19"
+],
+[
+"Capability Inputs",
+"C20"
+],
+[
+"Capability Inputs",
+"C21"
+],
+[
+"Capability Inputs",
+"C7"
+],
+[
+"Capability Inputs",
+"C8"
+],
+[
+"Capability Inputs",
+"D10"
+],
+[
+"Capability Inputs",
+"D19"
+],
+[
+"Capability Inputs",
+"D20"
+],
+[
+"Capability Inputs",
+"D21"
+],
+[
+"Capability Inputs",
+"D7"
+],
+[
+"Capability Inputs",
+"D8"
+],
+[
+"DLP",
+"A10"
+],
+[
+"DLP",
+"A11"
+],
+[
+"DLP",
+"A12"
+],
+[
+"DLP",
+"A13"
+],
+[
+"DLP",
+"A14"
+],
+[
+"DLP",
+"A15"
+],
+[
+"DLP",
+"A16"
+],
+[
+"DLP",
+"A17"
+],
+[
+"DLP",
+"A18"
+],
+[
+"DLP",
+"A19"
+],
+[
+"DLP",
+"A20"
+],
+[
+"DLP",
+"A21"
+],
+[
+"DLP",
+"A22"
+],
+[
+"DLP",
+"A23"
+],
+[
+"DLP",
+"A24"
+],
+[
+"DLP",
+"A25"
+],
+[
+"DLP",
+"A26"
+],
+[
+"DLP",
+"A27"
+],
+[
+"DLP",
+"A28"
+],
+[
+"DLP",
+"A29"
+],
+[
+"DLP",
+"A30"
+],
+[
+"DLP",
+"A31"
+],
+[
+"DLP",
+"A32"
+],
+[
+"DLP",
+"A33"
+],
+[
+"DLP",
+"A34"
+],
+[
+"DLP",
+"A35"
+],
+[
+"DLP",
+"A36"
+],
+[
+"DLP",
+"A37"
+],
+[
+"DLP",
+"A38"
+],
+[
+"DLP",
+"A39"
+],
+[
+"DLP",
+"A40"
+],
+[
+"DLP",
+"A41"
+],
+[
+"DLP",
+"A42"
+],
+[
+"DLP",
+"A43"
+],
+[
+"DLP",
+"A44"
+],
+[
+"DLP",
+"A45"
+],
+[
+"DLP",
+"A46"
+],
+[
+"DLP",
+"A47"
+],
+[
+"DLP",
+"A5"
+],
+[
+"DLP",
+"A6"
+],
+[
+"DLP",
+"A7"
+],
+[
+"DLP",
+"A8"
+],
+[
+"DLP",
+"A9"
+],
+[
+"DLP",
+"B10"
+],
+[
+"DLP",
+"B11"
+],
+[
+"DLP",
+"B12"
+],
+[
+"DLP",
+"B13"
+],
+[
+"DLP",
+"B14"
+],
+[
+"DLP",
+"B15"
+],
+[
+"DLP",
+"B16"
+],
+[
+"DLP",
+"B17"
+],
+[
+"DLP",
+"B18"
+],
+[
+"DLP",
+"B19"
+],
+[
+"DLP",
+"B20"
+],
+[
+"DLP",
+"B21"
+],
+[
+"DLP",
+"B22"
+],
+[
+"DLP",
+"B23"
+],
+[
+"DLP",
+"B24"
+],
+[
+"DLP",
+"B25"
+],
+[
+"DLP",
+"B26"
+],
+[
+"DLP",
+"B27"
+],
+[
+"DLP",
+"B28"
+],
+[
+"DLP",
+"B29"
+],
+[
+"DLP",
+"B30"
+],
+[
+"DLP",
+"B31"
+],
+[
+"DLP",
+"B32"
+],
+[
+"DLP",
+"B33"
+],
+[
+"DLP",
+"B34"
+],
+[
+"DLP",
+"B35"
+],
+[
+"DLP",
+"B36"
+],
+[
+"DLP",
+"B37"
+],
+[
+"DLP",
+"B38"
+],
+[
+"DLP",
+"B39"
+],
+[
+"DLP",
+"B40"
+],
+[
+"DLP",
+"B41"
+],
+[
+"DLP",
+"B42"
+],
+[
+"DLP",
+"B43"
+],
+[
+"DLP",
+"B44"
+],
+[
+"DLP",
+"B45"
+],
+[
+"DLP",
+"B46"
+],
+[
+"DLP",
+"B47"
+],
+[
+"DLP",
+"B5"
+],
+[
+"DLP",
+"B6"
+],
+[
+"DLP",
+"B7"
+],
+[
+"DLP",
+"B8"
+],
+[
+"DLP",
+"B9"
+],
+[
+"DLP",
+"C10"
+],
+[
+"DLP",
+"C11"
+],
+[
+"DLP",
+"C12"
+],
+[
+"DLP",
+"C13"
+],
+[
+"DLP",
+"C14"
+],
+[
+"DLP",
+"C15"
+],
+[
+"DLP",
+"C16"
+],
+[
+"DLP",
+"C17"
+],
+[
+"DLP",
+"C18"
+],
+[
+"DLP",
+"C19"
+],
+[
+"DLP",
+"C20"
+],
+[
+"DLP",
+"C21"
+],
+[
+"DLP",
+"C22"
+],
+[
+"DLP",
+"C23"
+],
+[
+"DLP",
+"C24"
+],
+[
+"DLP",
+"C25"
+],
+[
+"DLP",
+"C26"
+],
+[
+"DLP",
+"C27"
+],
+[
+"DLP",
+"C28"
+],
+[
+"DLP",
+"C29"
+],
+[
+"DLP",
+"C30"
+],
+[
+"DLP",
+"C31"
+],
+[
+"DLP",
+"C32"
+],
+[
+"DLP",
+"C33"
+],
+[
+"DLP",
+"C34"
+],
+[
+"DLP",
+"C35"
+],
+[
+"DLP",
+"C36"
+],
+[
+"DLP",
+"C37"
+],
+[
+"DLP",
+"C38"
+],
+[
+"DLP",
+"C39"
+],
+[
+"DLP",
+"C40"
+],
+[
+"DLP",
+"C41"
+],
+[
+"DLP",
+"C42"
+],
+[
+"DLP",
+"C43"
+],
+[
+"DLP",
+"C44"
+],
+[
+"DLP",
+"C45"
+],
+[
+"DLP",
+"C46"
+],
+[
+"DLP",
+"C47"
+],
+[
+"DLP",
+"C5"
+],
+[
+"DLP",
+"C6"
+],
+[
+"DLP",
+"C7"
+],
+[
+"DLP",
+"C8"
+],
+[
+"DLP",
+"C9"
+],
+[
+"Engagement Metadata",
+"D11"
+],
+[
+"Engagement Metadata",
+"D12"
+],
+[
+"Engagement Metadata",
+"D13"
+],
+[
+"Engagement Metadata",
+"D14"
+],
+[
+"Engagement Metadata",
+"D15"
+],
+[
+"Engagement Metadata",
+"D16"
+],
+[
+"Engagement Metadata",
+"D17"
+],
+[
+"Engagement Metadata",
+"D19"
+],
+[
+"Engagement Metadata",
+"D20"
+],
+[
+"Engagement Metadata",
+"D21"
+],
+[
+"Motivation Inputs",
+"B10"
+],
+[
+"Motivation Inputs",
+"B11"
+],
+[
+"Motivation Inputs",
+"B12"
+],
+[
+"Motivation Inputs",
+"B13"
+],
+[
+"Motivation Inputs",
+"B14"
+],
+[
+"Motivation Inputs",
+"B15"
+],
+[
+"Motivation Inputs",
+"B16"
+],
+[
+"Motivation Inputs",
+"B23"
+],
+[
+"Motivation Inputs",
+"B24"
+],
+[
+"Motivation Inputs",
+"B25"
+],
+[
+"Motivation Inputs",
+"B26"
+],
+[
+"Motivation Inputs",
+"B27"
+],
+[
+"Motivation Inputs",
+"B28"
+],
+[
+"Motivation Inputs",
+"B33"
+],
+[
+"Motivation Inputs",
+"B34"
+],
+[
+"Motivation Inputs",
+"B35"
+],
+[
+"Motivation Inputs",
+"B36"
+],
+[
+"Motivation Inputs",
+"B37"
+],
+[
+"Motivation Inputs",
+"B38"
+],
+[
+"Motivation Inputs",
+"B43"
+],
+[
+"Motivation Inputs",
+"B44"
+],
+[
+"Motivation Inputs",
+"B45"
+],
+[
+"Motivation Inputs",
+"B46"
+],
+[
+"Motivation Inputs",
+"B47"
+],
+[
+"Motivation Inputs",
+"B52"
+],
+[
+"Motivation Inputs",
+"B53"
+],
+[
+"Motivation Inputs",
+"B54"
+],
+[
+"Motivation Inputs",
+"B8"
+],
+[
+"Motivation Inputs",
+"B9"
+],
+[
+"Motivation Inputs",
+"D5"
+],
+[
+"Opportunity Inputs",
+"A71"
+],
+[
+"Opportunity Inputs",
+"A72"
+],
+[
+"Opportunity Inputs",
+"A73"
+],
+[
+"Opportunity Inputs",
+"A74"
+],
+[
+"Opportunity Inputs",
+"B11"
+],
+[
+"Opportunity Inputs",
+"B12"
+],
+[
+"Opportunity Inputs",
+"B13"
+],
+[
+"Opportunity Inputs",
+"B14"
+],
+[
+"Opportunity Inputs",
+"B15"
+],
+[
+"Opportunity Inputs",
+"B16"
+],
+[
+"Opportunity Inputs",
+"B17"
+],
+[
+"Opportunity Inputs",
+"B18"
+],
+[
+"Opportunity Inputs",
+"B19"
+],
+[
+"Opportunity Inputs",
+"B32"
+],
+[
+"Opportunity Inputs",
+"B33"
+],
+[
+"Opportunity Inputs",
+"B34"
+],
+[
+"Opportunity Inputs",
+"B35"
+],
+[
+"Opportunity Inputs",
+"B36"
+],
+[
+"Opportunity Inputs",
+"B47"
+],
+[
+"Opportunity Inputs",
+"B48"
+],
+[
+"Opportunity Inputs",
+"B49"
+],
+[
+"Opportunity Inputs",
+"B50"
+],
+[
+"Opportunity Inputs",
+"B51"
+],
+[
+"Opportunity Inputs",
+"B52"
+],
+[
+"Opportunity Inputs",
+"B62"
+],
+[
+"Opportunity Inputs",
+"B63"
+],
+[
+"Opportunity Inputs",
+"B64"
+],
+[
+"Opportunity Inputs",
+"B65"
+],
+[
+"Opportunity Inputs",
+"B71"
+],
+[
+"Opportunity Inputs",
+"B72"
+],
+[
+"Opportunity Inputs",
+"B73"
+],
+[
+"Opportunity Inputs",
+"B74"
+],
+[
+"Opportunity Inputs",
+"C71"
+],
+[
+"Opportunity Inputs",
+"C72"
+],
+[
+"Opportunity Inputs",
+"C73"
+],
+[
+"Opportunity Inputs",
+"C74"
+],
+[
+"Opportunity Inputs",
+"D26"
+],
+[
+"Opportunity Inputs",
+"D27"
+],
+[
+"Opportunity Inputs",
+"D28"
+],
+[
+"Opportunity Inputs",
+"D43"
+],
+[
+"Opportunity Inputs",
+"D5"
+],
+[
+"Opportunity Inputs",
+"D59"
+],
+[
+"Opportunity Inputs",
+"D6"
+],
+[
+"Opportunity Inputs",
+"D7"
+],
+[
+"Synergy Inputs",
+"B12"
+],
+[
+"Synergy Inputs",
+"B13"
+],
+[
+"Synergy Inputs",
+"B14"
+],
+[
+"Synergy Inputs",
+"B15"
+],
+[
+"Synergy Inputs",
+"B19"
+],
+[
+"Synergy Inputs",
+"B20"
+],
+[
+"Synergy Inputs",
+"B21"
+],
+[
+"Synergy Inputs",
+"B22"
+],
+[
+"Synergy Inputs",
+"B30"
+],
+[
+"Synergy Inputs",
+"B31"
+],
+[
+"Synergy Inputs",
+"B32"
+],
+[
+"Synergy Inputs",
+"B33"
+],
+[
+"Synergy Inputs",
+"B34"
+],
+[
+"Synergy Inputs",
+"B35"
+],
+[
+"Synergy Inputs",
+"D5"
+],
+[
+"Synergy Inputs",
+"D6"
+],
+[
+"Synergy Inputs",
+"D7"
+],
+[
+"Tier Assignment",
+"B10"
+],
+[
+"Tier Assignment",
+"B11"
+],
+[
+"Tier Assignment",
+"B12"
+],
+[
+"Tier Assignment",
+"B13"
+],
+[
+"Tier Assignment",
+"B14"
+],
+[
+"Tier Assignment",
+"B15"
+],
+[
+"Tier Assignment",
+"B16"
+],
+[
+"Tier Assignment",
+"B17"
+],
+[
+"Tier Assignment",
+"B18"
+],
+[
+"Tier Assignment",
+"B19"
+],
+[
+"Tier Assignment",
+"B20"
+],
+[
+"Tier Assignment",
+"B21"
+],
+[
+"Tier Assignment",
+"B22"
+],
+[
+"Tier Assignment",
+"B23"
+],
+[
+"Tier Assignment",
+"B24"
+],
+[
+"Tier Assignment",
+"B25"
+],
+[
+"Tier Assignment",
+"B5"
+],
+[
+"Tier Assignment",
+"B6"
+],
+[
+"Tier Assignment",
+"B7"
+],
+[
+"Tier Assignment",
+"B8"
+],
+[
+"Tier Assignment",
+"B9"
+],
+[
+"Tier Assignment",
+"C10"
+],
+[
+"Tier Assignment",
+"C11"
+],
+[
+"Tier Assignment",
+"C12"
+],
+[
+"Tier Assignment",
+"C13"
+],
+[
+"Tier Assignment",
+"C14"
+],
+[
+"Tier Assignment",
+"C15"
+],
+[
+"Tier Assignment",
+"C16"
+],
+[
+"Tier Assignment",
+"C17"
+],
+[
+"Tier Assignment",
+"C18"
+],
+[
+"Tier Assignment",
+"C19"
+],
+[
+"Tier Assignment",
+"C20"
+],
+[
+"Tier Assignment",
+"C21"
+],
+[
+"Tier Assignment",
+"C22"
+],
+[
+"Tier Assignment",
+"C23"
+],
+[
+"Tier Assignment",
+"C24"
+],
+[
+"Tier Assignment",
+"C25"
+],
+[
+"Tier Assignment",
+"C5"
+],
+[
+"Tier Assignment",
+"C6"
+],
+[
+"Tier Assignment",
+"C7"
+],
+[
+"Tier Assignment",
+"C8"
+],
+[
+"Tier Assignment",
+"C9"
+],
+[
+"Tier Assignment",
+"D10"
+],
+[
+"Tier Assignment",
+"D11"
+],
+[
+"Tier Assignment",
+"D12"
+],
+[
+"Tier Assignment",
+"D13"
+],
+[
+"Tier Assignment",
+"D14"
+],
+[
+"Tier Assignment",
+"D15"
+],
+[
+"Tier Assignment",
+"D16"
+],
+[
+"Tier Assignment",
+"D17"
+],
+[
+"Tier Assignment",
+"D18"
+],
+[
+"Tier Assignment",
+"D19"
+],
+[
+"Tier Assignment",
+"D20"
+],
+[
+"Tier Assignment",
+"D21"
+],
+[
+"Tier Assignment",
+"D22"
+],
+[
+"Tier Assignment",
+"D23"
+],
+[
+"Tier Assignment",
+"D24"
+],
+[
+"Tier Assignment",
+"D25"
+],
+[
+"Tier Assignment",
+"D5"
+],
+[
+"Tier Assignment",
+"D6"
+],
+[
+"Tier Assignment",
+"D7"
+],
+[
+"Tier Assignment",
+"D8"
+],
+[
+"Tier Assignment",
+"D9"
+],
+[
+"Tier Assignment",
+"F16"
+],
+[
+"Tier Assignment",
+"F17"
+],
+[
+"Tier Assignment",
+"F18"
+],
+[
+"Tier Assignment",
+"F19"
+],
+[
+"Tier Assignment",
+"F21"
+],
+[
+"Tier Assignment",
+"F22"
+],
+[
+"Tier Assignment",
+"F23"
+],
+[
+"Tier Assignment",
+"F25"
+],
+[
+"Tier Assignment",
+"F5"
+],
+[
+"Tier Assignment",
+"F7"
+],
+[
+"Tier Assignment",
+"F8"
+]
+]

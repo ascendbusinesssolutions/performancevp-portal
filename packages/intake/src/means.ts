@@ -1,8 +1,9 @@
 /**
  * 8 Type A Means, rows 5 to 75: the mean of each item over valid respondents (C), the response
  * rate per block from the block's first item (E) and the LOW flag below the all-member threshold
- * (F). Means are raw and un-flipped; the engine reverse-scores. Only deployed items are averaged,
- * so an item this cadence did not carry stays absent and the engine's AVERAGE skips it.
+ * (F). Means are raw and un-flipped; the engine reverse-scores. An item no valid respondent
+ * answered stays absent, so the engine's AVERAGE skips it; which items a cadence deployed is
+ * assemble.ts's concern, not the mirror's.
  */
 
 import { THRESHOLDS } from "./constants";
@@ -38,11 +39,10 @@ export interface BlockRate {
 export function blockRates(
   validRows: readonly SurveyRow[],
   headcount: number | undefined,
-  deployed: ReadonlySet<string>,
 ): BlockRate[] {
   return PART_A_BLOCKS.map((block) => {
     const first = block.items[0];
-    if (headcount === undefined || headcount === 0 || !deployed.has(first)) {
+    if (headcount === undefined || headcount === 0) {
       return { key: block.key, responseRate: undefined, flag: undefined };
     }
     let answered = 0;

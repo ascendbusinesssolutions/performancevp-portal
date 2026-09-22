@@ -11,7 +11,7 @@ import {
   O1C_ITEMS,
   O2I_ITEMS,
   type IntakeInput,
-  type LeadershipResponse,
+  type LeadershipRow,
   type Member,
   type MemberResponse,
   type TeamLeaderResponse,
@@ -107,9 +107,9 @@ export function inputFromDump(dump: Dump, options: ExtractOptions): IntakeInput 
     members.push(response);
   }
 
-  // Leadership survey: one row per respondent per decision type, regrouped by respondent.
+  // Leadership survey: one row per respondent per decision type, in workbook order.
   const L = SHEET.importLeadership;
-  const leadership = new Map<string, LeadershipResponse>();
+  const leadership: LeadershipRow[] = [];
   for (let n = 0; n < ROWS.leadership.count; n += 1) {
     const r = ROWS.leadership.first + n;
     const respondentId = str(dump, `${L}!A${r}`);
@@ -117,17 +117,15 @@ export function inputFromDump(dump: Dump, options: ExtractOptions): IntakeInput 
     if (respondentId === undefined || decisionName === undefined) continue;
     const decisionTypeId =
       decisionTypes.find((d) => d.name === decisionName)?.id ?? slug(decisionName);
-    const entry = leadership.get(respondentId) ?? { respondentId, decisions: [] };
-    const decision: LeadershipResponse["decisions"][number] = { decisionTypeId };
+    const rowEntry: LeadershipRow = { respondentId, decisionTypeId };
     const roles = ["recommend", "agree", "perform", "input", "decides"] as const;
     roles.forEach((role, k) => {
       const v = str(dump, `${L}!${String.fromCharCode(67 + k)}${r}`);
-      if (v !== undefined) decision[role] = v;
+      if (v !== undefined) rowEntry[role] = v;
     });
     const clarity = num(dump, `${L}!H${r}`);
-    if (clarity !== undefined) decision.clarity = clarity;
-    entry.decisions.push(decision);
-    leadership.set(respondentId, entry);
+    if (clarity !== undefined) rowEntry.clarity = clarity;
+    leadership.push(rowEntry);
   }
 
   // Team-leader survey.
@@ -200,7 +198,7 @@ export function inputFromDump(dump: Dump, options: ExtractOptions): IntakeInput 
       deployed: {
         partA: [...PART_A_ITEMS],
         partB: { items: [...O1C_ITEMS, ...O2I_ITEMS], processIds: processes.map((p) => p.id) },
-        leadershipTeam: leadership.size > 0,
+        leadershipTeam: leadership.length > 0,
         teamLeaders: teamLeaders.length > 0,
       },
     },
@@ -226,7 +224,7 @@ export function inputFromDump(dump: Dump, options: ExtractOptions): IntakeInput 
     responses: {
       members,
       teamLeaders,
-      leadershipTeam: [...leadership.values()],
+      leadershipTeam: leadership,
     },
   };
   return input;

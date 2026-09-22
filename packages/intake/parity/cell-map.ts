@@ -11,9 +11,16 @@
 import { C1_PROFICIENCY_THRESHOLD } from "../src/constants";
 import { headcounts, roleFamilyFte, teamFte, unitFte } from "../src/directory";
 import type { BlockRate } from "../src/means";
+import { RAPID_ROLES, type LtDecision, type LtResult, type LtRowHelper } from "../src/modules/lt";
 import type { RowScreen } from "../src/screening";
 import type { TeamCii, TeamO5 } from "../src/teams";
-import { CII_ITEMS, OI5_ITEMS, type IntakeInput, type MemberResponse } from "../src/types";
+import {
+  CII_ITEMS,
+  OI5_ITEMS,
+  type IntakeInput,
+  type LeadershipRow,
+  type MemberResponse,
+} from "../src/types";
 import { PART_A_ITEMS } from "../src/items";
 import { columnLetter, columnIndex } from "./layout";
 import type { SurveyWorkbookResult } from "../src/workbook";
@@ -171,20 +178,7 @@ export function inputCells(): InputCell[] {
   const roles = ["recommend", "agree", "perform", "input", "decides"] as const;
   for (let n = 0; n < ROWS.leadership.count; n += 1) {
     const r = ROWS.leadership.first + n;
-    const row = (
-      i: IntakeInput,
-    ):
-      | {
-          respondentId: string;
-          decisionTypeId: string;
-          recommend?: string;
-          agree?: string;
-          perform?: string;
-          input?: string;
-          decides?: string;
-          clarity?: number;
-        }
-      | undefined => leadershipRows(i)[n];
+    const row = (i: IntakeInput): LeadershipRow | undefined => leadershipRows(i)[n];
     cells.push(
       {
         cell: `${L}!A${r}`,
@@ -217,24 +211,8 @@ export function inputCells(): InputCell[] {
   return cells;
 }
 
-/** The leadership survey flattened to the workbook's one row per respondent per decision type. */
-export function leadershipRows(input: IntakeInput): Array<{
-  respondentId: string;
-  decisionTypeId: string;
-  recommend?: string;
-  agree?: string;
-  perform?: string;
-  input?: string;
-  decides?: string;
-  clarity?: number;
-}> {
-  const rows = [];
-  for (const respondent of input.responses?.leadershipTeam ?? []) {
-    for (const decision of respondent.decisions) {
-      rows.push({ respondentId: respondent.respondentId, ...decision });
-    }
-  }
-  return rows;
+export function leadershipRows(input: IntakeInput): LeadershipRow[] {
+  return input.responses?.leadershipTeam ?? [];
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -383,5 +361,103 @@ export function outputCells(): OutputCell[] {
       { cell: `${TA}!I${r}`, key: key("flag"), read: (ctx) => at(ctx)?.flag },
     );
   }
+
+  // 4 Import Leadership helpers I:N and 9 Type C Scoring: M-O1-LT, CASCADE, IA, PF.
+  const L = SHEET.importLeadership;
+  for (let n = 0; n < ROWS.leadership.count; n += 1) {
+    const r = ROWS.leadership.first + n;
+    const at = (ctx: Context): LtRowHelper | undefined => ctx.result.typeC.leadership.rows[n];
+    RAPID_ROLES.forEach((role, k) => {
+      cells.push({
+        cell: `${L}!${String.fromCharCode(73 + k)}${r}`,
+        key: `typeC.leadership.rows[${n}].counts.${role}`,
+        read: (ctx) => at(ctx)?.counts[role],
+      });
+    });
+    cells.push({
+      cell: `${L}!N${r}`,
+      key: `typeC.leadership.rows[${n}].newRespondent`,
+      read: (ctx) => at(ctx)?.newRespondent ?? 0,
+    });
+  }
+  const TC = SHEET.typeC;
+  for (let d = 0; d < ROWS.decisionTypes.count; d += 1) {
+    const r = 6 + d;
+    const at = (ctx: Context): LtDecision | undefined => ctx.result.typeC.leadership.decisions[d];
+    const key = (field: string): string => `typeC.leadership.decisions[${d}].${field}`;
+    cells.push(
+      { cell: `${TC}!A${r}`, key: key("name"), read: (ctx) => at(ctx)?.name },
+      { cell: `${TC}!B${r}`, key: key("n"), read: (ctx) => at(ctx)?.n },
+    );
+    RAPID_ROLES.forEach((role, k) => {
+      cells.push({
+        cell: `${TC}!${String.fromCharCode(67 + k)}${r}`,
+        key: key(`agreement.${role}`),
+        read: (ctx) => at(ctx)?.agreement[role],
+      });
+    });
+    cells.push(
+      { cell: `${TC}!H${r}`, key: key("mean"), read: (ctx) => at(ctx)?.mean },
+      { cell: `${TC}!B${21 + d}`, key: key("clarity"), read: (ctx) => at(ctx)?.clarity },
+    );
+  }
+  const lt = (ctx: Context): LtResult => ctx.result.typeC.leadership;
+  cells.push(
+    {
+      cell: `${TC}!B34`,
+      key: "typeC.leadership.aggregateAgreement",
+      read: (ctx) => lt(ctx).aggregateAgreement,
+    },
+    {
+      cell: `${TC}!B35`,
+      key: "typeC.leadership.aggregateClarity",
+      read: (ctx) => lt(ctx).aggregateClarity,
+    },
+    {
+      cell: `${TC}!B36`,
+      key: "typeC.leadership.responseRate",
+      read: (ctx) => lt(ctx).responseRate,
+    },
+    { cell: `${TC}!A37`, key: "typeC.leadership.rateFlag", read: (ctx) => lt(ctx).rateFlag },
+    { cell: `${TC}!B38`, key: "typeC.leadership.score", read: (ctx) => lt(ctx).score },
+    {
+      cell: `${TC}!B43`,
+      key: "typeC.cascade.score",
+      read: (ctx) => ctx.result.typeC.cascade.score,
+    },
+    {
+      cell: `${TC}!C43`,
+      key: "typeC.cascade.responseRate",
+      read: (ctx) => ctx.result.typeC.cascade.responseRate,
+    },
+    { cell: `${TC}!D43`, key: "typeC.cascade.flag", read: (ctx) => ctx.result.typeC.cascade.flag },
+    {
+      cell: `${TC}!B44`,
+      key: "typeC.informationAccess.score",
+      read: (ctx) => ctx.result.typeC.informationAccess.score,
+    },
+    {
+      cell: `${TC}!C44`,
+      key: "typeC.informationAccess.responseRate",
+      read: (ctx) => ctx.result.typeC.informationAccess.responseRate,
+    },
+    {
+      cell: `${TC}!D44`,
+      key: "typeC.informationAccess.flag",
+      read: (ctx) => ctx.result.typeC.informationAccess.flag,
+    },
+  );
+  for (let p = 0; p < ROWS.processes; p += 1) {
+    cells.push({
+      cell: `${TC}!B${45 + p}`,
+      key: `typeC.processFriction.processes[${p}].score`,
+      read: (ctx) => ctx.result.typeC.processFriction.processes[p]?.score,
+    });
+  }
+  cells.push({
+    cell: `${TC}!B48`,
+    key: "typeC.processFriction.mean",
+    read: (ctx) => ctx.result.typeC.processFriction.mean,
+  });
   return cells;
 }

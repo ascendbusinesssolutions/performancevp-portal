@@ -91,7 +91,11 @@
           "O2I-05",
           "O2I-06"
         ],
-        "processIds": ["process-1", "process-2", "process-3"]
+        "processIds": [
+          "process-1",
+          "process-2",
+          "process-3"
+        ]
       },
       "leadershipTeam": true,
       "teamLeaders": false
@@ -6093,465 +6097,483 @@
     "leadershipTeam": [
       {
         "respondentId": "LM-1",
-        "decisions": [
-          {
-            "decisionTypeId": "goodwill-claim-payment",
-            "recommend": "LM-1",
-            "agree": "LM-2",
-            "perform": "LM-3",
-            "input": "LM-4",
-            "decides": "LM-5",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "policy-excess-waiver",
-            "recommend": "LM-2",
-            "agree": "LM-3",
-            "perform": "LM-4",
-            "input": "LM-5",
-            "decides": "LM-6",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "escalate-complaint-to-afca",
-            "recommend": "LM-3",
-            "agree": "LM-4",
-            "perform": "LM-5",
-            "input": "LM-6",
-            "decides": "LM-1",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "approve-hardship-arrangement",
-            "recommend": "LM-4",
-            "agree": "LM-5",
-            "perform": "LM-6",
-            "input": "LM-1",
-            "decides": "LM-2",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "authorise-overtime",
-            "recommend": "LM-5",
-            "agree": "LM-6",
-            "perform": "LM-1",
-            "input": "LM-2",
-            "decides": "LM-3",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "premium-adjustment",
-            "recommend": "LM-6",
-            "agree": "LM-1",
-            "perform": "LM-2",
-            "input": "LM-3",
-            "decides": "LM-4",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "issue-member-refund",
-            "recommend": "LM-1",
-            "agree": "LM-2",
-            "perform": "LM-3",
-            "input": "LM-4",
-            "decides": "LM-5",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "process-exception-approval",
-            "recommend": "LM-2",
-            "agree": "LM-3",
-            "perform": "LM-4",
-            "input": "LM-5",
-            "decides": "LM-6",
-            "clarity": 4
-          }
-        ]
+        "decisionTypeId": "goodwill-claim-payment",
+        "recommend": "LM-1",
+        "agree": "LM-2",
+        "perform": "LM-3",
+        "input": "LM-4",
+        "decides": "LM-5",
+        "clarity": 4
       },
       {
         "respondentId": "LM-2",
-        "decisions": [
-          {
-            "decisionTypeId": "goodwill-claim-payment",
-            "recommend": "LM-1",
-            "agree": "LM-2",
-            "perform": "LM-3",
-            "input": "LM-4",
-            "decides": "LM-5",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "policy-excess-waiver",
-            "recommend": "LM-2",
-            "agree": "LM-3",
-            "perform": "LM-4",
-            "input": "LM-5",
-            "decides": "LM-6",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "escalate-complaint-to-afca",
-            "recommend": "LM-3",
-            "agree": "LM-4",
-            "perform": "LM-5",
-            "input": "LM-6",
-            "decides": "LM-1",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "approve-hardship-arrangement",
-            "recommend": "LM-4",
-            "agree": "LM-5",
-            "perform": "LM-6",
-            "input": "LM-1",
-            "decides": "LM-2",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "authorise-overtime",
-            "recommend": "LM-5",
-            "agree": "LM-6",
-            "perform": "LM-1",
-            "input": "LM-2",
-            "decides": "LM-3",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "premium-adjustment",
-            "recommend": "LM-6",
-            "agree": "LM-1",
-            "perform": "LM-2",
-            "input": "LM-3",
-            "decides": "LM-4",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "issue-member-refund",
-            "recommend": "LM-1",
-            "agree": "LM-2",
-            "perform": "LM-3",
-            "input": "LM-4",
-            "decides": "LM-5",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "process-exception-approval",
-            "recommend": "LM-2",
-            "agree": "LM-3",
-            "perform": "LM-4",
-            "input": "LM-5",
-            "decides": "LM-6",
-            "clarity": 3
-          }
-        ]
+        "decisionTypeId": "goodwill-claim-payment",
+        "recommend": "LM-1",
+        "agree": "LM-2",
+        "perform": "LM-3",
+        "input": "LM-4",
+        "decides": "LM-5",
+        "clarity": 3
       },
       {
         "respondentId": "LM-3",
-        "decisions": [
-          {
-            "decisionTypeId": "goodwill-claim-payment",
-            "recommend": "LM-1",
-            "agree": "LM-2",
-            "perform": "LM-3",
-            "input": "LM-4",
-            "decides": "LM-5",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "policy-excess-waiver",
-            "recommend": "LM-2",
-            "agree": "LM-3",
-            "perform": "LM-4",
-            "input": "LM-5",
-            "decides": "LM-6",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "escalate-complaint-to-afca",
-            "recommend": "LM-3",
-            "agree": "LM-4",
-            "perform": "LM-5",
-            "input": "LM-6",
-            "decides": "LM-1",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "approve-hardship-arrangement",
-            "recommend": "LM-4",
-            "agree": "LM-5",
-            "perform": "LM-6",
-            "input": "LM-1",
-            "decides": "LM-2",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "authorise-overtime",
-            "recommend": "LM-5",
-            "agree": "LM-6",
-            "perform": "LM-1",
-            "input": "LM-2",
-            "decides": "LM-3",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "premium-adjustment",
-            "recommend": "LM-6",
-            "agree": "LM-1",
-            "perform": "LM-2",
-            "input": "LM-3",
-            "decides": "LM-4",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "issue-member-refund",
-            "recommend": "LM-1",
-            "agree": "LM-2",
-            "perform": "LM-3",
-            "input": "LM-4",
-            "decides": "LM-5",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "process-exception-approval",
-            "recommend": "LM-2",
-            "agree": "LM-3",
-            "perform": "LM-4",
-            "input": "LM-5",
-            "decides": "LM-6",
-            "clarity": 4
-          }
-        ]
+        "decisionTypeId": "goodwill-claim-payment",
+        "recommend": "LM-1",
+        "agree": "LM-2",
+        "perform": "LM-3",
+        "input": "LM-4",
+        "decides": "LM-5",
+        "clarity": 4
       },
       {
         "respondentId": "LM-4",
-        "decisions": [
-          {
-            "decisionTypeId": "goodwill-claim-payment",
-            "recommend": "LM-1",
-            "agree": "LM-2",
-            "perform": "LM-3",
-            "input": "LM-5",
-            "decides": "LM-6",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "policy-excess-waiver",
-            "recommend": "LM-2",
-            "agree": "LM-3",
-            "perform": "LM-4",
-            "input": "LM-6",
-            "decides": "LM-1",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "escalate-complaint-to-afca",
-            "recommend": "LM-3",
-            "agree": "LM-4",
-            "perform": "LM-5",
-            "input": "LM-1",
-            "decides": "LM-2",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "approve-hardship-arrangement",
-            "recommend": "LM-4",
-            "agree": "LM-5",
-            "perform": "LM-6",
-            "input": "LM-2",
-            "decides": "LM-3",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "authorise-overtime",
-            "recommend": "LM-5",
-            "agree": "LM-6",
-            "perform": "LM-1",
-            "input": "LM-3",
-            "decides": "LM-4",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "premium-adjustment",
-            "recommend": "LM-6",
-            "agree": "LM-1",
-            "perform": "LM-2",
-            "input": "LM-4",
-            "decides": "LM-5",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "issue-member-refund",
-            "recommend": "LM-1",
-            "agree": "LM-2",
-            "perform": "LM-3",
-            "input": "LM-5",
-            "decides": "LM-6",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "process-exception-approval",
-            "recommend": "LM-2",
-            "agree": "LM-3",
-            "perform": "LM-4",
-            "input": "LM-6",
-            "decides": "LM-1",
-            "clarity": 3
-          }
-        ]
+        "decisionTypeId": "goodwill-claim-payment",
+        "recommend": "LM-1",
+        "agree": "LM-2",
+        "perform": "LM-3",
+        "input": "LM-5",
+        "decides": "LM-6",
+        "clarity": 3
       },
       {
         "respondentId": "LM-5",
-        "decisions": [
-          {
-            "decisionTypeId": "goodwill-claim-payment",
-            "recommend": "LM-2",
-            "agree": "LM-3",
-            "perform": "LM-4",
-            "input": "LM-5",
-            "decides": "LM-6",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "policy-excess-waiver",
-            "recommend": "LM-3",
-            "agree": "LM-4",
-            "perform": "LM-5",
-            "input": "LM-6",
-            "decides": "LM-1",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "escalate-complaint-to-afca",
-            "recommend": "LM-4",
-            "agree": "LM-5",
-            "perform": "LM-6",
-            "input": "LM-1",
-            "decides": "LM-2",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "approve-hardship-arrangement",
-            "recommend": "LM-5",
-            "agree": "LM-6",
-            "perform": "LM-1",
-            "input": "LM-2",
-            "decides": "LM-3",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "authorise-overtime",
-            "recommend": "LM-6",
-            "agree": "LM-1",
-            "perform": "LM-2",
-            "input": "LM-3",
-            "decides": "LM-4",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "premium-adjustment",
-            "recommend": "LM-1",
-            "agree": "LM-2",
-            "perform": "LM-3",
-            "input": "LM-4",
-            "decides": "LM-5",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "issue-member-refund",
-            "recommend": "LM-2",
-            "agree": "LM-3",
-            "perform": "LM-4",
-            "input": "LM-5",
-            "decides": "LM-6",
-            "clarity": 4
-          },
-          {
-            "decisionTypeId": "process-exception-approval",
-            "recommend": "LM-3",
-            "agree": "LM-4",
-            "perform": "LM-5",
-            "input": "LM-6",
-            "decides": "LM-1",
-            "clarity": 4
-          }
-        ]
+        "decisionTypeId": "goodwill-claim-payment",
+        "recommend": "LM-2",
+        "agree": "LM-3",
+        "perform": "LM-4",
+        "input": "LM-5",
+        "decides": "LM-6",
+        "clarity": 4
       },
       {
         "respondentId": "LM-6",
-        "decisions": [
-          {
-            "decisionTypeId": "goodwill-claim-payment",
-            "recommend": "LM-2",
-            "agree": "LM-3",
-            "perform": "LM-4",
-            "input": "LM-5",
-            "decides": "LM-6",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "policy-excess-waiver",
-            "recommend": "LM-3",
-            "agree": "LM-4",
-            "perform": "LM-5",
-            "input": "LM-6",
-            "decides": "LM-1",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "escalate-complaint-to-afca",
-            "recommend": "LM-4",
-            "agree": "LM-5",
-            "perform": "LM-6",
-            "input": "LM-1",
-            "decides": "LM-2",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "approve-hardship-arrangement",
-            "recommend": "LM-5",
-            "agree": "LM-6",
-            "perform": "LM-1",
-            "input": "LM-2",
-            "decides": "LM-3",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "authorise-overtime",
-            "recommend": "LM-6",
-            "agree": "LM-1",
-            "perform": "LM-2",
-            "input": "LM-3",
-            "decides": "LM-4",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "premium-adjustment",
-            "recommend": "LM-1",
-            "agree": "LM-2",
-            "perform": "LM-3",
-            "input": "LM-4",
-            "decides": "LM-5",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "issue-member-refund",
-            "recommend": "LM-2",
-            "agree": "LM-3",
-            "perform": "LM-4",
-            "input": "LM-5",
-            "decides": "LM-6",
-            "clarity": 3
-          },
-          {
-            "decisionTypeId": "process-exception-approval",
-            "recommend": "LM-3",
-            "agree": "LM-4",
-            "perform": "LM-5",
-            "input": "LM-6",
-            "decides": "LM-1",
-            "clarity": 3
-          }
-        ]
+        "decisionTypeId": "goodwill-claim-payment",
+        "recommend": "LM-2",
+        "agree": "LM-3",
+        "perform": "LM-4",
+        "input": "LM-5",
+        "decides": "LM-6",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-1",
+        "decisionTypeId": "policy-excess-waiver",
+        "recommend": "LM-2",
+        "agree": "LM-3",
+        "perform": "LM-4",
+        "input": "LM-5",
+        "decides": "LM-6",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-2",
+        "decisionTypeId": "policy-excess-waiver",
+        "recommend": "LM-2",
+        "agree": "LM-3",
+        "perform": "LM-4",
+        "input": "LM-5",
+        "decides": "LM-6",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-3",
+        "decisionTypeId": "policy-excess-waiver",
+        "recommend": "LM-2",
+        "agree": "LM-3",
+        "perform": "LM-4",
+        "input": "LM-5",
+        "decides": "LM-6",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-4",
+        "decisionTypeId": "policy-excess-waiver",
+        "recommend": "LM-2",
+        "agree": "LM-3",
+        "perform": "LM-4",
+        "input": "LM-6",
+        "decides": "LM-1",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-5",
+        "decisionTypeId": "policy-excess-waiver",
+        "recommend": "LM-3",
+        "agree": "LM-4",
+        "perform": "LM-5",
+        "input": "LM-6",
+        "decides": "LM-1",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-6",
+        "decisionTypeId": "policy-excess-waiver",
+        "recommend": "LM-3",
+        "agree": "LM-4",
+        "perform": "LM-5",
+        "input": "LM-6",
+        "decides": "LM-1",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-1",
+        "decisionTypeId": "escalate-complaint-to-afca",
+        "recommend": "LM-3",
+        "agree": "LM-4",
+        "perform": "LM-5",
+        "input": "LM-6",
+        "decides": "LM-1",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-2",
+        "decisionTypeId": "escalate-complaint-to-afca",
+        "recommend": "LM-3",
+        "agree": "LM-4",
+        "perform": "LM-5",
+        "input": "LM-6",
+        "decides": "LM-1",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-3",
+        "decisionTypeId": "escalate-complaint-to-afca",
+        "recommend": "LM-3",
+        "agree": "LM-4",
+        "perform": "LM-5",
+        "input": "LM-6",
+        "decides": "LM-1",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-4",
+        "decisionTypeId": "escalate-complaint-to-afca",
+        "recommend": "LM-3",
+        "agree": "LM-4",
+        "perform": "LM-5",
+        "input": "LM-1",
+        "decides": "LM-2",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-5",
+        "decisionTypeId": "escalate-complaint-to-afca",
+        "recommend": "LM-4",
+        "agree": "LM-5",
+        "perform": "LM-6",
+        "input": "LM-1",
+        "decides": "LM-2",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-6",
+        "decisionTypeId": "escalate-complaint-to-afca",
+        "recommend": "LM-4",
+        "agree": "LM-5",
+        "perform": "LM-6",
+        "input": "LM-1",
+        "decides": "LM-2",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-1",
+        "decisionTypeId": "approve-hardship-arrangement",
+        "recommend": "LM-4",
+        "agree": "LM-5",
+        "perform": "LM-6",
+        "input": "LM-1",
+        "decides": "LM-2",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-2",
+        "decisionTypeId": "approve-hardship-arrangement",
+        "recommend": "LM-4",
+        "agree": "LM-5",
+        "perform": "LM-6",
+        "input": "LM-1",
+        "decides": "LM-2",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-3",
+        "decisionTypeId": "approve-hardship-arrangement",
+        "recommend": "LM-4",
+        "agree": "LM-5",
+        "perform": "LM-6",
+        "input": "LM-1",
+        "decides": "LM-2",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-4",
+        "decisionTypeId": "approve-hardship-arrangement",
+        "recommend": "LM-4",
+        "agree": "LM-5",
+        "perform": "LM-6",
+        "input": "LM-2",
+        "decides": "LM-3",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-5",
+        "decisionTypeId": "approve-hardship-arrangement",
+        "recommend": "LM-5",
+        "agree": "LM-6",
+        "perform": "LM-1",
+        "input": "LM-2",
+        "decides": "LM-3",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-6",
+        "decisionTypeId": "approve-hardship-arrangement",
+        "recommend": "LM-5",
+        "agree": "LM-6",
+        "perform": "LM-1",
+        "input": "LM-2",
+        "decides": "LM-3",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-1",
+        "decisionTypeId": "authorise-overtime",
+        "recommend": "LM-5",
+        "agree": "LM-6",
+        "perform": "LM-1",
+        "input": "LM-2",
+        "decides": "LM-3",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-2",
+        "decisionTypeId": "authorise-overtime",
+        "recommend": "LM-5",
+        "agree": "LM-6",
+        "perform": "LM-1",
+        "input": "LM-2",
+        "decides": "LM-3",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-3",
+        "decisionTypeId": "authorise-overtime",
+        "recommend": "LM-5",
+        "agree": "LM-6",
+        "perform": "LM-1",
+        "input": "LM-2",
+        "decides": "LM-3",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-4",
+        "decisionTypeId": "authorise-overtime",
+        "recommend": "LM-5",
+        "agree": "LM-6",
+        "perform": "LM-1",
+        "input": "LM-3",
+        "decides": "LM-4",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-5",
+        "decisionTypeId": "authorise-overtime",
+        "recommend": "LM-6",
+        "agree": "LM-1",
+        "perform": "LM-2",
+        "input": "LM-3",
+        "decides": "LM-4",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-6",
+        "decisionTypeId": "authorise-overtime",
+        "recommend": "LM-6",
+        "agree": "LM-1",
+        "perform": "LM-2",
+        "input": "LM-3",
+        "decides": "LM-4",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-1",
+        "decisionTypeId": "premium-adjustment",
+        "recommend": "LM-6",
+        "agree": "LM-1",
+        "perform": "LM-2",
+        "input": "LM-3",
+        "decides": "LM-4",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-2",
+        "decisionTypeId": "premium-adjustment",
+        "recommend": "LM-6",
+        "agree": "LM-1",
+        "perform": "LM-2",
+        "input": "LM-3",
+        "decides": "LM-4",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-3",
+        "decisionTypeId": "premium-adjustment",
+        "recommend": "LM-6",
+        "agree": "LM-1",
+        "perform": "LM-2",
+        "input": "LM-3",
+        "decides": "LM-4",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-4",
+        "decisionTypeId": "premium-adjustment",
+        "recommend": "LM-6",
+        "agree": "LM-1",
+        "perform": "LM-2",
+        "input": "LM-4",
+        "decides": "LM-5",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-5",
+        "decisionTypeId": "premium-adjustment",
+        "recommend": "LM-1",
+        "agree": "LM-2",
+        "perform": "LM-3",
+        "input": "LM-4",
+        "decides": "LM-5",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-6",
+        "decisionTypeId": "premium-adjustment",
+        "recommend": "LM-1",
+        "agree": "LM-2",
+        "perform": "LM-3",
+        "input": "LM-4",
+        "decides": "LM-5",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-1",
+        "decisionTypeId": "issue-member-refund",
+        "recommend": "LM-1",
+        "agree": "LM-2",
+        "perform": "LM-3",
+        "input": "LM-4",
+        "decides": "LM-5",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-2",
+        "decisionTypeId": "issue-member-refund",
+        "recommend": "LM-1",
+        "agree": "LM-2",
+        "perform": "LM-3",
+        "input": "LM-4",
+        "decides": "LM-5",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-3",
+        "decisionTypeId": "issue-member-refund",
+        "recommend": "LM-1",
+        "agree": "LM-2",
+        "perform": "LM-3",
+        "input": "LM-4",
+        "decides": "LM-5",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-4",
+        "decisionTypeId": "issue-member-refund",
+        "recommend": "LM-1",
+        "agree": "LM-2",
+        "perform": "LM-3",
+        "input": "LM-5",
+        "decides": "LM-6",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-5",
+        "decisionTypeId": "issue-member-refund",
+        "recommend": "LM-2",
+        "agree": "LM-3",
+        "perform": "LM-4",
+        "input": "LM-5",
+        "decides": "LM-6",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-6",
+        "decisionTypeId": "issue-member-refund",
+        "recommend": "LM-2",
+        "agree": "LM-3",
+        "perform": "LM-4",
+        "input": "LM-5",
+        "decides": "LM-6",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-1",
+        "decisionTypeId": "process-exception-approval",
+        "recommend": "LM-2",
+        "agree": "LM-3",
+        "perform": "LM-4",
+        "input": "LM-5",
+        "decides": "LM-6",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-2",
+        "decisionTypeId": "process-exception-approval",
+        "recommend": "LM-2",
+        "agree": "LM-3",
+        "perform": "LM-4",
+        "input": "LM-5",
+        "decides": "LM-6",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-3",
+        "decisionTypeId": "process-exception-approval",
+        "recommend": "LM-2",
+        "agree": "LM-3",
+        "perform": "LM-4",
+        "input": "LM-5",
+        "decides": "LM-6",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-4",
+        "decisionTypeId": "process-exception-approval",
+        "recommend": "LM-2",
+        "agree": "LM-3",
+        "perform": "LM-4",
+        "input": "LM-6",
+        "decides": "LM-1",
+        "clarity": 3
+      },
+      {
+        "respondentId": "LM-5",
+        "decisionTypeId": "process-exception-approval",
+        "recommend": "LM-3",
+        "agree": "LM-4",
+        "perform": "LM-5",
+        "input": "LM-6",
+        "decides": "LM-1",
+        "clarity": 4
+      },
+      {
+        "respondentId": "LM-6",
+        "decisionTypeId": "process-exception-approval",
+        "recommend": "LM-3",
+        "agree": "LM-4",
+        "perform": "LM-5",
+        "input": "LM-6",
+        "decides": "LM-1",
+        "clarity": 3
       }
     ]
   }

@@ -7,6 +7,14 @@
 import { headcounts, type Headcounts } from "./directory";
 import { PART_A_ITEMS } from "./items";
 import { blockRates, itemMeans, type BlockRate, type ItemMeans } from "./means";
+import {
+  scoreCascade,
+  scoreInformationAccess,
+  scoreProcessFriction,
+  type PartBModule,
+  type ProcessFriction,
+} from "./modules/component";
+import { scoreLeadership, type LtResult } from "./modules/lt";
 import { screenResponses, type ScreenedRows } from "./screening";
 import { teamCii, teamO5, type TeamCii, type TeamO5 } from "./teams";
 import type { IntakeInput, MemberResponse, PartAItem, TeamLeaderResponse } from "./types";
@@ -25,6 +33,13 @@ export interface SurveyWorkbookResult {
     teamCii: TeamCii[];
     teamO5: TeamO5[];
   };
+  /** 9 Type C Scoring. */
+  typeC: {
+    leadership: LtResult;
+    cascade: PartBModule;
+    informationAccess: PartBModule;
+    processFriction: ProcessFriction;
+  };
 }
 
 export function runSurveyWorkbook(input: IntakeInput): SurveyWorkbookResult {
@@ -36,14 +51,23 @@ export function runSurveyWorkbook(input: IntakeInput): SurveyWorkbookResult {
     headcount: counts.teamLeaders,
   });
 
-  const deployedA = new Set<string>(input.campaign.deployed.partA ?? []);
-  const partAItems = PART_A_ITEMS.filter((item) => deployedA.has(item));
   const typeA = {
-    means: itemMeans(members.valid, partAItems),
-    blocks: blockRates(members.valid, counts.members, deployedA),
+    means: itemMeans(members.valid, PART_A_ITEMS),
+    blocks: blockRates(members.valid, counts.members),
     teamCii: teamCii(members.valid, input.unit.teams, input.snapshot),
     teamO5: teamO5(members.valid, input.unit.teams, input.snapshot),
   };
 
-  return { headcounts: counts, screening: { members, teamLeaders }, typeA };
+  const typeC = {
+    leadership: scoreLeadership(
+      input.responses?.leadershipTeam ?? [],
+      input.unit.decisionTypes,
+      counts.leadershipTeam,
+    ),
+    cascade: scoreCascade(members.valid, counts.members),
+    informationAccess: scoreInformationAccess(members.valid, counts.members),
+    processFriction: scoreProcessFriction(members.valid, input.unit.processes),
+  };
+
+  return { headcounts: counts, screening: { members, teamLeaders }, typeA, typeC };
 }

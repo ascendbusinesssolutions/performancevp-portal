@@ -125,25 +125,26 @@ export interface MemberResponse extends SurveyRow<PartAItem | PartBItem> {
 
 export type TeamLeaderResponse = SurveyRow<C5lItem>;
 
-/** One leadership-team respondent's answers, one entry per decision type (M-O1-LT). */
-export interface LeadershipResponse {
+/**
+ * One leadership-team answer row: one respondent on one decision type (M-O1-LT), as the
+ * workbook's Import Leadership holds it. Role answers are free labels; a blank is absent.
+ */
+export interface LeadershipRow {
   respondentId: string;
-  decisions: Array<{
-    decisionTypeId: string;
-    recommend?: string;
-    agree?: string;
-    perform?: string;
-    input?: string;
-    decides?: string;
-    /** 1 to 5. */
-    clarity?: number;
-  }>;
+  decisionTypeId: string;
+  recommend?: string;
+  agree?: string;
+  perform?: string;
+  input?: string;
+  decides?: string;
+  /** 1 to 5. */
+  clarity?: number;
 }
 
 export interface Responses {
   members?: MemberResponse[];
   teamLeaders?: TeamLeaderResponse[];
-  leadershipTeam?: LeadershipResponse[];
+  leadershipTeam?: LeadershipRow[];
 }
 
 // ---------------------------------------------------------------------------------------------

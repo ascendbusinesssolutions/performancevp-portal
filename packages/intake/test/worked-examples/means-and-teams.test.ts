@@ -28,8 +28,7 @@ describe("item means and block rates", () => {
 
   it("rates each block by valid respondents answering its first item over the headcount", () => {
     const rows = [row({ "CII-01": 4, "MI1-01": 3 }), row({ "MI1-01": 4 }), row({ "MI1-02": 4 })];
-    const deployed = new Set(["CII-01", "MI1-01", "MI1-02"]);
-    const rates = blockRates(rows, 5, deployed);
+    const rates = blockRates(rows, 5);
     expect(rates.find((b) => b.key === "C4")).toEqual({
       key: "C4",
       responseRate: 0.2,
@@ -40,22 +39,18 @@ describe("item means and block rates", () => {
       responseRate: 0.4,
       flag: "LOW",
     });
-    // A block whose first item was not deployed has no rate, as the workbook's blank first row.
-    expect(rates.find((b) => b.key === "M2")).toEqual({
-      key: "M2",
-      responseRate: undefined,
-      flag: undefined,
-    });
-    expect(blockRates(rows, undefined, deployed)[0]?.responseRate).toBeUndefined();
+    // A block nobody answered rates 0 and LOW, as the workbook does; without a headcount, no rate.
+    expect(rates.find((b) => b.key === "M2")).toEqual({ key: "M2", responseRate: 0, flag: "LOW" });
+    expect(blockRates(rows, undefined)[0]?.responseRate).toBeUndefined();
   });
 
   it("flags LOW strictly below 60%", () => {
     const rows = Array.from({ length: 6 }, () => row({ "CII-01": 3 }));
-    expect(blockRates(rows, 10, new Set(["CII-01"]))[0]).toMatchObject({
+    expect(blockRates(rows, 10)[0]).toMatchObject({
       responseRate: 0.6,
       flag: "",
     });
-    expect(blockRates(rows.slice(1), 10, new Set(["CII-01"]))[0]).toMatchObject({
+    expect(blockRates(rows.slice(1), 10)[0]).toMatchObject({
       responseRate: 0.5,
       flag: "LOW",
     });

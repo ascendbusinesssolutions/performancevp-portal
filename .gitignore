@@ -25,3 +25,6 @@ next-env.d.ts
 # os and editors
 .DS_Store
 ~$*.xlsx
+
+# Python bytecode from the parity tools
+__pycache__/

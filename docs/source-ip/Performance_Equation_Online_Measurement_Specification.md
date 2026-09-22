@@ -2,8 +2,8 @@
 ## Online Measurement Specification
 
 **Author:** Michael, PerformanceVP
-**Status:** Working draft v0.7, for review. Proposed new source document. All decisions raised in drafting were settled on 21 September 2026 and are recorded in Part 11.1. Later decisions supersede earlier ones where noted.
-**Last updated:** 21 September 2026
+**Status:** Working draft v0.8, for review. Proposed new source document. All decisions raised in drafting were settled on 21 September 2026 and are recorded in Part 11.1; three further decisions of 22 September 2026, raised by the intake package build, are recorded there too. Later decisions supersede earlier ones where noted.
+**Last updated:** 22 September 2026
 **Companion documents:** Performance Equation Strategy; Sub-Dimension × Cadence Master Reference; Measurement Reference Parts 1 and 2; Survey Blueprint; Tier 3 Module Library; Survey Processing and Scoring Workbook Spec; Diagnostic Workbook Spec; Intervention Design Library; PORTAL_BUILD_PLAN.md, CLAUDE.md and DECISIONS.md (all three revised on 21 September 2026 to implement this document).
 
 ---
@@ -259,7 +259,7 @@ Replaces audit-sample validation of manager ratings. Two parts.
 | C1 | More than 50% of all skill ratings in the unit are 4 or 5 | Deduct 7.5 points from unit C1 (the Module Library's audit-detected inflation adjustment of 0.3 on the scale, expressed in points) |
 | C2 | More than 50% of all knowledge ratings are 4 or 5 | Deduct 7.5 points from C2 |
 | C3 | Band 5 above 25% | Cap at 25%, reallocate the excess to Band 4 (Module Library 4.2, unchanged) |
-| C3 | Mean band above 3.5 | Deduct 5 points from C3 (the online mechanical form of the Module Library's 0.2 downward adjustment; see discrepancy 3) |
+| C3 | Mean band above 3.5 | Move 20% of each band's count down one band, Band 5 to Band 1, applied after the Band 5 cap. This lowers the mean band by 0.2 and is the Survey Processing Workbook's mechanical form of the Module Library's 0.2 downward adjustment, so the online route and the consultant-led route apply the same rule (decided 22 September 2026, replacing the 5-point deduction drafted earlier) |
 
 Every adjustment applied is recorded in the methodology footer. Scores floor at 0.
 
@@ -346,7 +346,7 @@ The module's inflation guard (Part 4.4) does not apply to route (a). These rules
 
 # Part 7 - Validity, anonymity and storage
 
-**Response validity.** Survey Blueprint 7.8 and Measurement Reference 8.5 apply unchanged, enforced automatically: straight-lining against reverse-scored items, completion time below the cohort's 5th percentile, literal patterning. Exclusions are reported as a percentage in the methodology footer.
+**Response validity.** Survey Blueprint 7.8 and Measurement Reference 8.5 apply, enforced automatically. For v1 the straight-lining and patterning checks take the form the Survey Processing Workbook implements (whole-row tests), because that workbook is the intake package's parity benchmark; the Blueprint's per-sub-dimension and alternation forms are a source-document question (Part 11.3, item 6). The speed check, which the workbook cannot apply because Google Forms records no duration, is defined here for the online route: a response is excluded where its completion time is below the 5th percentile (nearest-rank) of completion times among the responses received for that audience in that campaign, and the check runs only when at least 20 responses were received; the footer states whether it ran. Exclusions are reported as a percentage in the methodology footer.
 
 **Display thresholds.** A survey-derived score displays only when valid respondents reach the higher of the anonymity floor (5; 8 for M2, pay equity and fairness) and the Cadence Master 7.4 validity threshold for that cadence (60% response at baseline and annual; 8 valid respondents at half-yearly; 12 at pulse; 4 respondents and 70% per team for the CII). Units below the pulse threshold roll up to their parent for that pulse. Suppression is enforced where the data is stored, not in the interface.
 
@@ -391,7 +391,7 @@ The route produces the same three input types the Diagnostic Workbook uses, so `
 | Type B, structured counts | C1 (FTE, required skills, confirmed proficiencies per role family), C2 (domain rows), C3 (band counts after the cap) |
 | Type C, finished scores | M-O1-LT, M-O1-CASCADE, M-O2-IA, M-O3-PF, M-C5-TL, ADM-O1, ADM-O2 components, ADM-O4, S1 |
 
-A separate pure package converts responses into these inputs. It mirrors the Survey Processing and Scoring Workbook for every existing module, and that workbook is its parity benchmark (Northwind worked example). The rules new in this document have no workbook benchmark; the worked examples in Part 4 are their named fixtures. Inflation-guard point deductions are applied by the intake package to the finished sub-dimension inputs and recorded for the footer, so the engine itself stays a formula-for-formula mirror of the Diagnostic Workbook.
+A separate pure package converts responses into these inputs. It mirrors the Survey Processing and Scoring Workbook for every existing module, and that workbook is its parity benchmark (Northwind worked example). The rules new in this document have no workbook benchmark; the worked examples in Part 4 are their named fixtures. The inflation guard lands in two ways. The C3 rules (the Band 5 cap and the band transfer) act on counts and are applied by the intake package before the Type B input. The C1 and C2 point deductions cannot be applied to a Type B input, because the engine computes those scores from counts; they are applied by the engine through a per-sub-dimension adjustment cell (points, subtracted after the score, floored at 0) that is added to the Diagnostic Workbook first and then mirrored, in the same way as any other workbook change. The intake computes and records every deduction; until the adjustment cells exist, it records them as not applied and the footer says so. The same workbook change adds a per-row confidence cap on the Tier Assignment tab, which is how the formal-ratings route's cap at Medium (Part 6.4) reaches the engine.
 
 ---
 
@@ -428,6 +428,12 @@ A separate pure package converts responses into these inputs. It mirrors the Sur
 
 No decisions remain open in this document.
 
+**Decided 22 September 2026, from the intake package build**
+
+11. **C3 skew adjustment takes the workbook's form.** The Survey Processing Workbook already implements the Module Library's 0.2 adjustment as a transfer of 20% of each band's count down one band. The online route adopts it (Part 4.4), replacing the 5-point deduction, so both routes apply one rule and discrepancy 3 is closed.
+12. **Speed check defined** (Part 7): nearest-rank 5th percentile per audience per campaign, applied only with at least 20 received responses, reported either way.
+13. **Where the guard deductions and the confidence cap land** (Part 9): C1 and C2 point deductions through adjustment cells added to the Diagnostic Workbook and mirrored by the engine; the C3 confidence cap through a per-row cap on Tier Assignment; both workbook first. The intake records deductions as not applied until then.
+
 ## 11.2 Questions for pilot validation
 1. Two-part member baseline against a single sitting: completion and drop-off.
 2. How often the inflation guard fires on honest data, and whether 50% is the right trigger.
@@ -439,8 +445,11 @@ No decisions remain open in this document.
 ## 11.3 Discrepancies found at source (flagged, not resolved)
 1. **C5 scoring.** Measurement Reference 2.5 scores the M-C5-TL or LVI composite as (sum of scores / 120) × 100 on a 0 to 10 rubric. Module Library 5.1, corrected 24 June 2026, scores M-C5-TL as ((mean of 12 items) - 1) × 25 on 5-point scales. This document follows the Module Library for the async module. The Measurement Reference line appears to describe the interview fallback only and needs to say so.
 2. **O3 process count.** Measurement Reference 4.3 requires at least 3 processes audited. Module Library 2.3 pre-loads 2 to 3. This document uses 3.
-3. **C3 high-skew adjustment.** Module Library 4.2 applies "a 0.2 downward adjustment to all ratings" where the mean exceeds 3.5, but C3 is scored from band percentages and no mechanical form is given. The 5-point form in Part 4.4 is confirmed for the online route. The Module Library still needs a defined form for the consultant-led route.
+3. **C3 high-skew adjustment.** Module Library 4.2 applies "a 0.2 downward adjustment to all ratings" where the mean exceeds 3.5 without giving a mechanical form; the Survey Processing Workbook implements it as a transfer of 20% of each band's count down one band. Closed 22 September 2026: the online route adopts the workbook's form (Part 4.4, decision 11). The Module Library should state that form.
 4. **O4 capacity analysis.** Measurement Reference 4.4 gives no formula for the capacity analysis composite. Part 4.3a proposes one for online. Whether the consultant-led route should adopt the same bands is a separate decision.
+5. **C1 tenure moderator by route.** Measurement Reference 2.1 applies the tenure moderator to C1. The Diagnostic Workbook applies it only on the Tier 1/2 table route (Capability Inputs D11 to D15), not on the Tier 3 finished-score route that M-C1-MGR feeds in consultant-led work. Online, C1 from M-C1-MGR travels as Type B rows and receives the moderator, so the same module yields a moderated score online and an unmoderated one consultant-led. Flagged for the source pass and the next workbook maintenance pass.
+6. **Screening form.** Survey Blueprint 7.8 and Diagnostic Workbook Spec Part 4 describe straight-lining per sub-dimension and patterning including alternation; the Survey Processing Workbook tests the whole row and all-same values only. The Blueprint is the authority for validity exclusions; the online route follows the workbook for v1 (Part 7) pending resolution at source.
+7. **O5 team flag.** The Survey Processing Workbook flags a team only below 4 valid respondents; Measurement Reference 4.5 also requires 70% response. The online route applies both (Part 3.3).
 
 ---
 

@@ -11,7 +11,8 @@
  */
 
 import { SPEED_CHECK, STRAIGHT_LINING } from "./constants";
-import { average, isNumber, isReverse, type Cell } from "./items";
+import { average, ge, isNumber, le, type Cell } from "./excel";
+import { isReverse } from "./items";
 import type { MemberResponse, ScreeningSummary, SurveyItem, SurveyRow } from "./types";
 
 export interface RowScreen {
@@ -73,8 +74,8 @@ export function screenRow(row: SurveyRow, index: number): Omit<RowScreen, "speed
     count > 0 &&
     forwardMean !== undefined &&
     reverseMean !== undefined &&
-    ((forwardMean >= STRAIGHT_LINING.high && reverseMean >= STRAIGHT_LINING.high) ||
-      (forwardMean <= STRAIGHT_LINING.low && reverseMean <= STRAIGHT_LINING.low));
+    ((ge(forwardMean, STRAIGHT_LINING.high) && ge(reverseMean, STRAIGHT_LINING.high)) ||
+      (le(forwardMean, STRAIGHT_LINING.low) && le(reverseMean, STRAIGHT_LINING.low)));
   return {
     index,
     id: row.id,

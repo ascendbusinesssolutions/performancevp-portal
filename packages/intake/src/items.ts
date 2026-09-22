@@ -4,6 +4,7 @@
  */
 
 import { CONVERSION, REVERSE_BASE, REVERSE_SCORED_ITEMS } from "./constants";
+import { average, isNumber, type Cell } from "./excel";
 import {
   CII_ITEMS,
   MI1_ITEMS,
@@ -55,25 +56,6 @@ export const PART_A_BLOCKS = [
   { key: "S2", items: TSI2_ITEMS },
   { key: "S3", items: TSI3_ITEMS },
 ] as const;
-
-export type Cell = number | undefined;
-
-export function isNumber(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value);
-}
-
-/** AVERAGE over the numeric values, blank when there are none. */
-export function average(values: readonly Cell[]): Cell {
-  let total = 0;
-  let n = 0;
-  for (const v of values) {
-    if (isNumber(v)) {
-      total += v;
-      n += 1;
-    }
-  }
-  return n === 0 ? undefined : total / n;
-}
 
 export function isReverse(item: SurveyItem): boolean {
   return REVERSE_SCORED_ITEMS.has(item);

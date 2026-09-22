@@ -10,11 +10,22 @@
 
 import { C1_PROFICIENCY_THRESHOLD } from "../src/constants";
 import { headcounts, roleFamilyFte, teamFte, unitFte } from "../src/directory";
+import type { BlockRate } from "../src/means";
 import type { RowScreen } from "../src/screening";
-import type { IntakeInput, MemberResponse } from "../src/types";
+import type { TeamCii, TeamO5 } from "../src/teams";
+import { CII_ITEMS, OI5_ITEMS, type IntakeInput, type MemberResponse } from "../src/types";
+import { PART_A_ITEMS } from "../src/items";
+import { columnLetter, columnIndex } from "./layout";
 import type { SurveyWorkbookResult } from "../src/workbook";
 import type { CellValue } from "./compare";
-import { ROWS, SHEET, mainColumns } from "./layout";
+import {
+  ROWS,
+  SHEET,
+  TYPE_A_BLOCKS,
+  TYPE_A_FIRST_ROW,
+  TYPE_A_TEAM_ROWS,
+  mainColumns,
+} from "./layout";
 
 export interface InputCell {
   cell: string;
@@ -305,5 +316,72 @@ export function outputCells(): OutputCell[] {
       read: (ctx) => summary(ctx).headcountReconciliation,
     },
   );
+
+  // 8 Type A Means: item rows, block rates and flags, team rows.
+  const TA = SHEET.typeA;
+  PART_A_ITEMS.forEach((item, i) => {
+    const r = TYPE_A_FIRST_ROW + i;
+    cells.push({
+      cell: `${TA}!C${r}`,
+      key: `typeA.means.${item}`,
+      read: (ctx) => ctx.result.typeA.means[item],
+    });
+  });
+  TYPE_A_BLOCKS.forEach((block, b) => {
+    const at = (ctx: Context): BlockRate | undefined => ctx.result.typeA.blocks[b];
+    cells.push(
+      {
+        cell: `${TA}!E${block.first}`,
+        key: `typeA.blocks[${b}].responseRate`,
+        read: (ctx) => at(ctx)?.responseRate,
+      },
+      {
+        cell: `${TA}!F${block.first}`,
+        key: `typeA.blocks[${b}].flag`,
+        read: (ctx) => at(ctx)?.flag,
+      },
+    );
+  });
+  for (let t = 0; t < TYPE_A_TEAM_ROWS.cii.count; t += 1) {
+    const r = TYPE_A_TEAM_ROWS.cii.first + t;
+    const at = (ctx: Context): TeamCii | undefined => ctx.result.typeA.teamCii[t];
+    const key = (field: string): string => `typeA.teamCii[${t}].${field}`;
+    cells.push(
+      { cell: `${TA}!A${r}`, key: key("name"), read: (ctx) => at(ctx)?.name },
+      { cell: `${TA}!B${r}`, key: key("validCount"), read: (ctx) => at(ctx)?.validCount },
+      { cell: `${TA}!C${r}`, key: key("responseRate"), read: (ctx) => at(ctx)?.responseRate },
+    );
+    CII_ITEMS.forEach((item, i) => {
+      cells.push({
+        cell: `${TA}!${columnLetter(columnIndex("D") + i)}${r}`,
+        key: key(`means.${item}`),
+        read: (ctx) => at(ctx)?.means[item],
+      });
+    });
+    cells.push({ cell: `${TA}!S${r}`, key: key("flag"), read: (ctx) => at(ctx)?.flag });
+  }
+  for (let t = 0; t < TYPE_A_TEAM_ROWS.o5.count; t += 1) {
+    const r = TYPE_A_TEAM_ROWS.o5.first + t;
+    const at = (ctx: Context): TeamO5 | undefined => ctx.result.typeA.teamO5[t];
+    const key = (field: string): string => `typeA.teamO5[${t}].${field}`;
+    cells.push(
+      { cell: `${TA}!A${r}`, key: key("name"), read: (ctx) => at(ctx)?.name },
+      // The Setup FTE link: blank when the team has none.
+      { cell: `${TA}!B${r}`, key: key("fte"), read: (ctx) => blankIfZero(at(ctx)?.fte ?? 0) },
+      { cell: `${TA}!C${r}`, key: key("validCount"), read: (ctx) => at(ctx)?.validCount },
+      { cell: `${TA}!D${r}`, key: key("responseRate"), read: (ctx) => at(ctx)?.responseRate },
+    );
+    OI5_ITEMS.forEach((item, i) => {
+      cells.push({
+        cell: `${TA}!${columnLetter(columnIndex("E") + i)}${r}`,
+        key: key(`means.${item}`),
+        read: (ctx) => at(ctx)?.means[item],
+      });
+    });
+    cells.push(
+      { cell: `${TA}!H${r}`, key: key("score"), read: (ctx) => at(ctx)?.score },
+      { cell: `${TA}!I${r}`, key: key("flag"), read: (ctx) => at(ctx)?.flag },
+    );
+  }
   return cells;
 }

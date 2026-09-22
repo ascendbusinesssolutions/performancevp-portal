@@ -18,8 +18,8 @@ export * as constants from "./constants";
 export { DisabledArchetypeError } from "./composite";
 export type { Overrides } from "./evaluate";
 
-/** Recorded on every stored calculation run. Moves to 1.0.0 when the Milestone 1 exit criteria are met. */
-export const ENGINE_VERSION = "0.0.0";
+/** Recorded on every stored calculation run. 1.0.0: the Milestone 1 exit criteria met on 22 September 2026. */
+export const ENGINE_VERSION = "1.0.0";
 
 /** The whole workbook for one unit and one cycle. */
 export function calculateUnit(input: UnitMeasurementInput): UnitMeasurementResult {

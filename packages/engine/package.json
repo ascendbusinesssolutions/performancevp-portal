@@ -1,6 +1,6 @@
 {
   "name": "@performancevp/engine",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "license": "UNLICENSED",
   "description": "The Performance Equation calculation engine: a pure mirror of the Diagnostic Workbook",

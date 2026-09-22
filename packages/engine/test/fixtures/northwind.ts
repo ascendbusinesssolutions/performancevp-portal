@@ -1,0 +1,255 @@
+/**
+ * The Northwind Mutual worked example exactly as stored in the production Diagnostic Workbook's
+ * input cells (read from the sheets on 22 September 2026). Step 11 generates the same input from
+ * the workbook through the cell map and asserts that the two agree.
+ */
+import type { DecisionClass, DecisionInput, UnitMeasurementInput } from "../../src/types";
+
+const LATENCIES: Record<DecisionClass, number[]> = {
+  Operational: [1, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8, 10, 12, 14, 18],
+  Tactical: [5, 7, 9, 10, 11, 12, 14, 16, 18, 20, 22, 26, 30, 34, 40],
+  Strategic: [35, 50, 60, 80, 100, 130, 160, 200],
+};
+const PREFIX: Record<DecisionClass, string> = {
+  Operational: "OP",
+  Tactical: "TAC",
+  Strategic: "ST",
+};
+
+export const NORTHWIND_DECISIONS: DecisionInput[] = (
+  ["Operational", "Tactical", "Strategic"] as const
+).flatMap((decisionClass) =>
+  LATENCIES[decisionClass].map((latencyDays, i) => ({
+    id: `${PREFIX[decisionClass]}-${String(i + 1).padStart(2, "0")}`,
+    class: decisionClass,
+    latencyDays,
+  })),
+);
+
+export const NORTHWIND: UnitMeasurementInput = {
+  engagement: {
+    clientName: "Northwind Mutual",
+    unitName: "Member Services",
+    unitFte: 60,
+    sector: "K - Financial and Insurance Services",
+    subSector: "Health insurance",
+    sizeBand: "200–1,000 FTE",
+    unitType: "Customer-facing service",
+    archetype: "Default",
+    engagementDate: "2026-06-01",
+    leadAnalyst: "M. (PerformanceVP)",
+    diagnosticReference: "PVP-2026-NWM-MS",
+  },
+  routes: {
+    C1: {
+      tier: "Tier 1",
+      source: "Workday Skills Cloud + internal 360",
+      vintage: "2026-04-15",
+      notes: "Tech via T1, behavioural via T2 360",
+    },
+    C2: { tier: "Tier 1", source: "Sentrient + internal knowledge test", vintage: "2026-04-20" },
+    C3: {
+      tier: "Tier 1",
+      source: "Workday calibrated ratings",
+      vintage: "2026-03-30",
+      notes: "Documented calibration",
+    },
+    C4: {
+      tier: "Tier 3",
+      source: "CII (PerformanceVP)",
+      vintage: "2026-05-10",
+      notes: "Unit-level CII",
+    },
+    C5: { tier: "Tier 1", source: "LMS time-to-competence + adoption", vintage: "2026-05-01" },
+    M1: { tier: "Tier 1", source: "Culture Amp engagement composite", vintage: "2026-05-05" },
+    M2: { tier: "Tier 3", source: "MI-2 module", vintage: "2026-05-10" },
+    M3: { tier: "Tier 3", source: "MI-3 module", vintage: "2026-05-10" },
+    M4: { tier: "Tier 3", source: "MI-4 module", vintage: "2026-05-10" },
+    TW1: { tier: "Tier 3", source: "TW item", vintage: "2026-05-10" },
+    TW2: { tier: "Tier 3", source: "TW item", vintage: "2026-05-10" },
+    TW3: {
+      tier: "Tier 3",
+      source: "TW item",
+      vintage: "2026-05-10",
+      notes: "Fires critical finding in sample",
+    },
+    O1: {
+      tier: "Tier 3",
+      source: "OI-Clarity audit + survey",
+      vintage: "2026-05-10",
+      notes: "Structural + perception",
+    },
+    O2: {
+      tier: "Tier 3",
+      source: "OI-2 audit + survey",
+      vintage: "2026-05-10",
+      notes: "Structural + perception",
+    },
+    O3: {
+      tier: "Tier 3",
+      source: "OI-3 audit + survey",
+      vintage: "2026-05-10",
+      notes: "Structural + perception",
+    },
+    O4: { tier: "Tier 3", source: "OI-4 survey + capacity analysis", vintage: "2026-05-10" },
+    O5: {
+      tier: "Tier 3",
+      source: "OI-5 survey",
+      vintage: "2026-05-10",
+      notes: "Per-team, FTE-weighted",
+    },
+    S1: {
+      tier: "Tier 1",
+      source: "Reuses C1 skills data",
+      vintage: "2026-04-15",
+      notes: "Analytical protocol",
+    },
+    S2: {
+      tier: "Tier 1",
+      source: "Workplace Analytics + TSI-2",
+      vintage: "2026-05-10",
+      notes: "Telemetry + perception",
+    },
+    S3: { tier: "Tier 3", source: "TSI-3 survey", vintage: "2026-05-10" },
+    DLP: {
+      tier: "Tier 3",
+      source: "DLP (PerformanceVP)",
+      vintage: "2026-05-15",
+      notes: "Reported alongside O",
+    },
+  },
+  capability: {
+    c1: {
+      families: [
+        { name: "Customer Service Reps", fte: 50, skillsRequired: 10, confirmedProficiencies: 380 },
+        { name: "Team Leaders", fte: 10, skillsRequired: 12, confirmedProficiencies: 92 },
+      ],
+      medianTenureMonths: 22,
+    },
+    c2: {
+      domains: [
+        { name: "Product & service knowledge", criticality: 3, meanScore: 84, coverage: 0.92 },
+        { name: "Regulatory / compliance", criticality: 2, meanScore: 82, coverage: 0.88 },
+        { name: "Systems & procedures", criticality: 2, meanScore: 78, coverage: 0.9 },
+      ],
+    },
+    c3: { band5: 6, band4: 18, band3: 29, band2: 6, band1: 1 },
+    c4: {
+      items: {
+        "CII-01": 3.9,
+        "CII-02": 3.8,
+        "CII-03": 4,
+        "CII-04": 3.8,
+        "CII-05": 2.15,
+        "CII-06": 3.8,
+        "CII-07": 3.9,
+        "CII-08": 3.7,
+        "CII-09": 3.85,
+        "CII-10": 2.2,
+        "CII-11": 3.8,
+        "CII-12": 3.7,
+        "CII-13": 3.75,
+        "CII-14": 3.8,
+        "CII-15": 2.3,
+      },
+      responseRate: 0.78,
+    },
+    c5: { timeToCompetence: 80, adoption: 78 },
+  },
+  motivation: {
+    m1: {
+      platformComposite: 72,
+      items: {
+        "MI1-01": 3.9,
+        "MI1-02": 3.8,
+        "MI1-03": 4,
+        "MI1-04": 2.1,
+        "MI1-05": 3.85,
+        "MI1-06": 3.9,
+        "MI1-07": 3.8,
+        "MI1-08": 4,
+      },
+      responseRate: 0.78,
+    },
+    m2: {
+      items: { "MI2-01": 4, "MI2-02": 3.9, "MI2-03": 4.1, "MI2-04": 4, "MI2-05": 2 },
+      responseRate: 0.78,
+    },
+    m3: {
+      items: { "MI3-01": 3.7, "MI3-02": 3.6, "MI3-03": 3.5, "MI3-04": 2.3, "MI3-05": 3.9 },
+      responseRate: 0.76,
+    },
+    m4: {
+      items: { "MI4-01": 3.5, "MI4-02": 3.4, "MI4-03": 3.3, "MI4-04": 2.6 },
+      responseRate: 0.76,
+    },
+    tripWires: { TW1: 3.88, TW2: 4.12, TW3: 3.32 },
+  },
+  opportunity: {
+    o1: {
+      decisionRightsScore: 62,
+      roleArchitectureScore: 60,
+      cascadeScore: 65,
+      items: {
+        "OI1-01": 3.5,
+        "OI1-02": 3.4,
+        "OI1-03": 2.6,
+        "OI1-04": 3.4,
+        "OI1-05": 3.3,
+        "OI1-06": 2.6,
+        "OI1-07": 3.4,
+        "OI1-08": 3.45,
+      },
+      responseRate: 0.8,
+    },
+    o2: {
+      toolInventoryScore: 80,
+      informationAccessScore: 70,
+      integrationScore: 70,
+      items: { "OI2-01": 3.7, "OI2-02": 3.6, "OI2-03": 3.5, "OI2-04": 2.4 },
+      responseRate: 0.82,
+    },
+    o3: {
+      processFrictionScore: 60,
+      items: { "OI3-01": 3.1, "OI3-02": 3, "OI3-03": 2.9, "OI3-04": 3.1, "OI3-05": 3 },
+      responseRate: 0.83,
+    },
+    o4: {
+      capacityAnalysisScore: 55,
+      items: { "OI4-01": 2.7, "OI4-02": 2.5, "OI4-03": 3.4 },
+      responseRate: 0.8,
+    },
+    o5: {
+      teams: [
+        { name: "Manager A", fte: 15, score: 70 },
+        { name: "Manager B", fte: 15, score: 64 },
+        { name: "Manager C", fte: 15, score: 66 },
+        { name: "Manager D", fte: 15, score: 64 },
+      ],
+    },
+  },
+  synergy: {
+    s1: { coverageBreadth: 90, coverageDepth: 85, distribution: 80 },
+    s2: {
+      telemetry: {
+        meetingHoursPerIc: 18,
+        meetingHoursPerManager: 32,
+        fragmentedTimeRatio: 0.72,
+        afterHoursHours: 6,
+      },
+      items: { "TSI2-01": 2.8, "TSI2-02": 2.8, "TSI2-03": 3.2 },
+      responseRate: 0.82,
+    },
+    s3: {
+      items: { "TSI3-01": 3.8, "TSI3-02": 3.6, "TSI3-03": 3.4, "TSI3-04": 2.4, "TSI3-05": 2.2 },
+      responseRate: 0.8,
+    },
+  },
+  dlp: { decisions: NORTHWIND_DECISIONS },
+  behaviouralTriangulators: {
+    voluntaryTurnover: 68,
+    unplannedAbsence: 60,
+    enps: 68,
+    goalAchievement: 68,
+  },
+};

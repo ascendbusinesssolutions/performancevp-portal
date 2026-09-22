@@ -2,7 +2,7 @@
 
 This register records the settled decisions behind the portal build and the reasoning behind the consequential ones, so they are not reopened from scratch later. The build plan (`PORTAL_BUILD_PLAN.md`) holds the detail; the corrected source documents and the Diagnostic Workbook hold the calculation truth; `CLAUDE.md` holds the standing principles and guardrails. This file is the why and the what, not a substitute for those.
 
-**Last updated:** 21 September 2026 (the product change from an analyst-operated portal to a self-service online subscription; see Section 5)
+**Last updated:** 22 September 2026 (sales-led subscriptions, lapse and retention; see 5.5)
 **Owner of record:** Michael, PerformanceVP
 
 ---
@@ -83,7 +83,7 @@ Ranked by Priority, descending, with a deterministic row-fraction tiebreak, pres
 | Subdomain | `app.performancevp.com.au`. Marketing site provides the login entry point. | 10 Jun 2026 |
 | Supabase environments | Not production-only. Separate staging and production at minimum, ideally local as well. Migrations and RLS policy changes tested against staging, never production. | 10 Jun 2026 |
 | MFA | Mandatory for the Owner, support staff, account owners and administrators, because those roles can see identified ratings. Offered to executive and unit viewers. Managers sign in with a one-time email code. Supersedes the analyst-only rule of 10 Jun 2026. | 21 Sep 2026 |
-| Owner role | A distinct owner role defined in the schema now, held by one account. Least privilege: owner administers the system (analyst accounts, engagement assignment, settings) without automatic read access to client survey responses. Client-data access is granted per assignment as for analysts, with an explicit break-glass. No broader hierarchy in v1. | 10 Jun 2026 |
+| Owner role | A distinct owner role defined in the schema now, held by one account. Least privilege: the owner administers the system (support-staff accounts, organisations, reference-data deployments, audit review) without automatic read access to client survey responses or results. Access to a client's data follows the support-access rule in 5.4, with an explicit, audited break-glass. No broader hierarchy in v1. | 10 Jun 2026; wording aligned 21 Sep 2026 |
 | Repository layout | A dedicated portal repo, separate from the marketing site, with the calculation engine as its own internal package so it stays pure and independently testable, alongside the Supabase migrations and `docs/source-ip`. | 10 Jun 2026 |
 
 ### 2.5 Retention
@@ -91,7 +91,7 @@ Ranked by Priority, descending, with a deterministic row-fraction tiebreak, pres
 | Decision | Resolution | Date |
 |---|---|---|
 | Employee directory | Persistent for the life of the subscription, maintained in the portal or rebuilt from the Excel template. Deactivated records are purged 30 days after deactivation. Supersedes the 10 Jun 2026 rule that purged survey contact data within 30 days of campaign close, which cannot support recurring self-service campaigns. De-identified aggregated responses are still retained as product. | 21 Sep 2026 |
-| Organisation offboarding | Export then purge client data within the contractual 30 days post cessation. End-of-relationship path, distinct from the survey-contact purge above. The Privacy Notice defers retention to the engagement contract; no notice change required. Depends on the contract template specifying 30 days post cessation (see 4). | 10 Jun 2026 |
+| Organisation offboarding | Export then purge client data within the contractual 30 days post cessation. End-of-relationship path, distinct from the survey-contact purge above. The Privacy Notice defers retention to the engagement contract; no notice change required. Depends on the contract template specifying 30 days post cessation (see 4). Superseded 22 Sep 2026 by 5.5: data is retained until the Owner deletes the organisation. | 10 Jun 2026 |
 
 ---
 
@@ -109,10 +109,10 @@ Ranked by Priority, descending, with a deterministic row-fraction tiebreak, pres
 
 These are document or configuration tasks, not build tasks, but the build assumes them.
 
-1. **Engagement contract clause.** The offboarding design assumes engagement contracts specify 30 days post cessation for client-data retention. That clause must exist in the contract template before the first paying client signs.
+1. **Engagement contract clause.** Superseded 22 September 2026 by 5.5. Retention of suspended organisations is now a matter for the subscription terms (item 4).
 2. **Cadence Master validity thresholds.** Confirm the per-construct scoring-validity numbers so the anonymity-floor constants can be locked against them.
 3. **Resend verification.** Confirm the Resend domain is verified and a live send tested before surveys depend on the pipeline.
-4. **Subscription terms and privacy notice.** Before any client data enters the portal: terms that make the client responsible for its data with PerformanceVP as service provider, and that cover support-staff access, the data-contribution default and opt-out, and the handling of access requests; a privacy notice that reflects the persistent directory and retained ratings; and the respondent-facing statement that separates anonymous surveys from identified manager ratings.
+4. **Subscription terms and privacy notice.** Before any client data enters the portal: terms that make the client responsible for its data with PerformanceVP as service provider, and that cover support-staff access, the data-contribution default and opt-out, the handling of access requests, and the retention of suspended organisations until the Owner deletes them or until any maximum period the review sets; a privacy notice that reflects the persistent directory and retained ratings; and the respondent-facing statement that separates anonymous surveys from identified manager ratings.
 5. **IP ownership.** Written confirmation of which entity owns the Performance Equation IP, which any sale of the online product on its own would depend on.
 6. **Gap-flag guard.** Carry the gap-flag guard correction into the production Diagnostic Workbook before parity fixtures are generated in Milestone 1. Completed 21 September 2026: the five gap-flag formulas in the production Diagnostic Workbook (Opportunity Inputs D22, D39 and D55; Synergy Inputs D25; Behavioural Triangulators C11) now carry the nested guard from the B&D copy, with the prior version archived as `archive/PerformanceVP-Diagnostic-Workbook v4.xlsx`; the Workbook Spec documents the same guard, and its `docs/source-ip` copy was refreshed from the corrected root file.
 7. **Perception-only gap rule and blank-input rule.** Implement both in the production Diagnostic Workbook before parity fixtures are generated in Milestone 1. Completed 21 September 2026: 87 formula cells changed in one pass (1.1, 1.4), with the prior version archived as `archive/PerformanceVP-Diagnostic-Workbook v5.xlsx`; the Workbook Spec, the Survey Blueprint and the engine specification note were corrected, and the pass's branch-test and partial-entry results are kept as parity fixtures in `tools/workbook-maintenance/fixtures/`. The same 87-cell change was applied to the B&D engagement copy on the same day, with a dated backup beside it, its stale stored values cleared and a full recalculation set for its next opening in Excel.
@@ -146,13 +146,21 @@ These are document or configuration tasks, not build tasks, but the build assume
 | Earlier decision | Now |
 |---|---|
 | The analyst remains the gate: nothing scores or publishes without an analyst | Scoring runs automatically at campaign close behind the validity gates. A client administrator reviews and releases results. |
-| No self-service sign-up | Self-serve sign-up is built behind a flag, off until launch. |
+| No self-service sign-up | Sales-led provisioning by the Owner or support staff; no self-serve sign-up in v1, flag or otherwise (22 Sep 2026, superseding the flag decided 21 Sep 2026). |
 | Clients never see raw inputs | Administrators see the ratings managers entered. Raw anonymous survey responses remain unreadable by every role. |
 | Analyst access scoped by assignment | Designated support staff can access an organisation where its support-access switch is on (the default). Every access is logged and visible to the client. The Owner role and its break-glass are unchanged. |
 | Survey contact data purged within 30 days of campaign close | A persistent directory (2.5). |
 | Analyst MFA only | Every role that can see ratings (2.4). |
 | An intervention design module with analyst-authored versions and P-impact | Rule-based suggestions from the online pattern cards, a single-lever what-if simulator and light action tracking. Tailored design remains Intervention Design. |
 | DLP reported alongside O in the portal | Not part of the online product (Section 3). |
+
+### 5.5 Invoice-based subscriptions, lapse and retention
+
+**Resolution.** There is no online payment. Subscriptions are sales-led: an organisation signs an agreement and is invoiced outside the portal from the accounting system. On signature the Owner or support staff provisions the organisation, sets its employee band and subscription period, records the agreement date and invoice reference, and invites the account owner; onboarding follows. Stripe is not used. Renewal reminders go to the account owner and to PerformanceVP at 60 and 30 days before the period ends. On expiry the organisation enters a 30-day read-only grace period: released results stay viewable, no campaign can be launched, and no directory or context change is possible. After the grace period the organisation is suspended and client access is closed. Its data is retained until the Owner deletes the organisation, a manual, audited action that exports first and then purges. The legal review may set a maximum retention period for suspended organisations; until it does, retention is until deletion.
+
+**Reasoning.** A simpler build: no payment provider, no checkout, no webhooks and no card data in scope. Annual invoiced agreements are the standard form for B2B contracts of this kind, and invoicing stays in the accounting system where it already lives. Retaining history lets a returning client resume with its trends intact rather than start again, and a manual, audited deletion is a more defensible end to a relationship than an automatic purge on a timer.
+
+**Provenance.** Settled 22 September 2026. Supersedes the 10 June 2026 offboarding rule of export and purge within 30 days of cessation (2.5) and the 21 September 2026 decision to build self-serve sign-up behind a flag (5.4). Stripe Invoicing is deferred as a possible later addition. Recorded in `PORTAL_BUILD_PLAN.md` Section 11 and `CLAUDE.md` Sections 3, 4 and 6.
 
 ---
 

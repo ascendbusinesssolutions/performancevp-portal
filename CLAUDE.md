@@ -2,7 +2,7 @@
 
 This file gives Claude Code the context and operating instructions for building the **PerformanceVP online subscription portal**, the self-service software product that is PerformanceVP's third commercial offering. Read this in full before doing anything. Then read `PORTAL_BUILD_PLAN.md` (the approved plan of 21 September 2026), `docs/ENGINE_SPEC.md`, the two online specifications and the source IP documents in `docs/source-ip/`.
 
-**Revised 21 September 2026.** The earlier version of this file described an analyst-operated portal with read-only clients. That product is not being built. The reasons are recorded in `DECISIONS.md` Section 5.
+**Revised 21 September 2026.** The earlier version of this file described an analyst-operated portal with read-only clients. That product is not being built. The reasons are recorded in `DECISIONS.md` Section 5. Amended 22 September 2026: no online payment, and organisations are provisioned by PerformanceVP (`DECISIONS.md` 5.5).
 
 ---
 
@@ -16,7 +16,7 @@ PerformanceVP runs two product lines on one equation. The consultancy line (the 
 - **Client viewers** (executive and unit viewers) read released results, drilling from organisation, to business unit, to the four forces (Capability, Motivation, Opportunity, Synergy), down to individual sub-dimension scores per unit. They see the binding constraint, the full priority ranking, trip-wire flags, suggestions and trends across measurement cycles. They never see ratings and never see another organisation's data.
 - **Respondents.** Unit members, team leaders and leadership-team members answer anonymous tokenised surveys and are not portal users. Managers sign in with a one-time email code to rate their own direct reports; those ratings are identified and retained.
 
-Designated PerformanceVP support staff can access a client's account to assist, where the client has left support access on. Every such access is logged and visible to the client. There is no analyst workspace, no manual score entry and no analyst publish gate: scoring runs automatically when a campaign closes, and a client administrator reviews and releases the results.
+Organisations are provisioned by PerformanceVP (the Owner or support staff) on signature of an agreement; they do not self-register, and there is no online payment. Designated PerformanceVP support staff can access a client's account to assist, where the client has left support access on. Every such access is logged and visible to the client. There is no analyst workspace, no manual score entry and no analyst publish gate: scoring runs automatically when a campaign closes, and a client administrator reviews and releases the results.
 
 ## 2. How this relates to the wider Performance Equation IP
 
@@ -44,7 +44,7 @@ If any of these files are missing from `docs/source-ip/`, stop and ask Michael t
 - **Database, auth, storage.** Supabase (Postgres, Supabase Auth, Row Level Security, Storage for uploaded files).
 - **Styling.** Tailwind CSS with the brand tokens in section 8. Read `/mnt/skills/public/frontend-design/SKILL.md` conventions if available in the environment.
 - **Email.** Survey invitations and notifications go through Resend, consistent with the existing PerformanceVP email pipeline. Do not stand up a second email provider.
-- **Billing.** Stripe, for subscription billing only. It is the one new provider this product introduces.
+- **Billing.** None in the portal. Subscriptions are sales-led and invoiced from the accounting system; the portal holds the subscription record and enforces the grace, suspension and retention rules. No payment provider is introduced.
 - **Spreadsheets.** The employee directory template is generated and parsed server-side as `.xlsx`. Uploaded files are size-limited, stored privately with a hash, and never executed or rendered.
 - **DNS.** Managed at VentraIP. Adding the portal subdomain is a CNAME to Vercel. Existing MX and all TXT records (DKIM, SPF, DMARC, Google verification) on the apex and `www` must be left untouched. Treat any DNS change as a planning item, not an action to take.
 
@@ -60,6 +60,7 @@ Client data is sensitive. It includes anonymous employee survey responses, a per
 - **Identified ratings.** Manager ratings of named direct reports (skills, knowledge, talent bands), their evidence notes and uploaded formal performance ratings are identified and retained for traceability. They are readable only by the rating manager (own rows), administrators, the account owner and enabled support staff, never by executive or unit viewers. Every administrator or support view or export is audit-logged. When a directory record is purged, the employee link on that person's rating rows is removed and the rows are kept. There must be no query path from a directory record to an anonymous survey response.
 - **No personal or sensitive data in URLs or query strings.** Survey access uses single-use, tokenised links. Uploaded files live in Supabase Storage behind RLS, never in public buckets.
 - **Auditability.** Log directory uploads, campaign launches, calculation runs, results releases, rating views and exports, and support-staff access, with actor, timestamp and before-and-after state where applicable. No one, including PerformanceVP staff, can silently alter a client's historical scores: every released score traces to an immutable calculation run.
+- **Retention on lapse.** A suspended organisation's data is retained until the Owner deletes the organisation. Deletion is manual and audited, exports first and then purges. The legal review may set a maximum retention period; until it does, retention is until deletion.
 
 ## 5. The measurement model and calculation engine
 
@@ -95,7 +96,7 @@ The engine is the heart of the portal and the highest-risk component. Build it a
 - **Campaign engine.** Baseline, quarterly pulse, half-yearly, annual and event-triggered campaigns assembled from the reference tables. Five audiences: members (Part A and Part B, tokenised and anonymous), team leaders and the leadership team (tokenised modules), managers (signed-in rating forms, pre-filled from their previous ratings), and administrators (checklists). At close: validity rules, aggregation, thresholds, then intake, engine and recommendations run as one stored calculation run.
 - **Results and dashboards.** Organisation to unit to force to sub-dimension drill-down. Show the P index, the binding constraint (C/M/O only) with the full fourteen-row ranking, the Synergy lane, trip-wire flags (prominent and separate from P), gap findings and trends across cycles. An administrator reviews and releases each run; viewers see released runs only. RLS confines every view to the user's own organisation and role. A separate ratings area, for administrators only and access-logged, shows the ratings managers entered.
 - **Suggestions, what-if and action tracking.** Rule-based suggestions from the online pattern cards per the Online Recommendations Specification, a what-if simulator that calls the engine's `projectImpact` for one sub-dimension at a time, and a light record of the client's own actions with movement shown at later cycles.
-- **Plans and billing.** One entitlement field (`employee_band`) from the start; Stripe checkout and self-serve sign-up behind a flag until launch.
+- **Subscriptions and provisioning.** One entitlement field (`employee_band`) from the start. Provisioning by the Owner or support staff: band, subscription period, agreement date, invoice reference, and the account-owner invitation. Renewal reminders at 60 and 30 days; on expiry a 30-day read-only grace period, then suspension.
 
 ## 7. Domain rules that must never be violated
 
@@ -136,7 +137,7 @@ All user-facing copy and all documentation use executive prose. No em dashes. No
 - The book is a separate track and is not part of this build.
 - Do not take infrastructure actions (DNS changes, environment variable changes, deployments) as part of planning. Identify them as steps for Michael to perform or approve.
 - Do not invent sub-dimension names, weights, counts, or scoring rules. Source them from the documents in `docs/source-ip/`.
-- Do not introduce a second email provider, a second auth system, or a second hosting target. Stripe, for subscription billing, is the one approved new provider.
+- Do not introduce a second email provider, a second auth system, a second hosting target, or a payment provider. There is no online payment.
 - The consultancy line (the Diagnostic, Intervention Design, the workbooks and the Document Production Loop) is out of scope. The portal must not depend on any of it at runtime.
 
 ## 12. How to work in this repo

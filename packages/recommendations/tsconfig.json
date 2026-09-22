@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Language only: no DOM and no Node types, so fs, process, fetch and window fail to compile.
+    "lib": ["es2023"],
+    "types": [],
+    // A missing input is distinguishable from a present one (DECISIONS.md 1.4).
+    "exactOptionalPropertyTypes": true,
+    "rootDir": "src"
+  },
+  "include": ["src"]
+}

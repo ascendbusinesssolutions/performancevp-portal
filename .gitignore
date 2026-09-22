@@ -1,8 +1,27 @@
+# dependencies
 node_modules/
+
+# next.js
 .next/
+out/
+
+# vercel
 .vercel/
+
+# environment files: only the example is committed
 .env*
 !.env.example
+
+# supabase local stack
 supabase/.temp/
+supabase/.branches/
+
+# build and tool output
+coverage/
+*.tsbuildinfo
+.eslintcache
+next-env.d.ts
+
+# os and editors
 .DS_Store
 ~$*.xlsx

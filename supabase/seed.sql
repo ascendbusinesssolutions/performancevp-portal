@@ -1,0 +1,4 @@
+-- Local and staging seed. Empty at Milestone 0.
+-- Reference data is seeded by migration (PORTAL_BUILD_PLAN.md 2.4), not here. This file is for
+-- development fixtures only, such as the two seeded organisations the RLS matrix tests use
+-- from Milestone 3, and it never runs against production.

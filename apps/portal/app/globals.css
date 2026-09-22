@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+/*
+  Brand tokens. The one place colour and type are defined (CLAUDE.md Section 8).
+
+  Tailwind's default palette is removed with `--color-*: initial`, so the only colour
+  utilities that exist are the brand ones below. That is deliberate: an off-brand colour
+  cannot be typed by accident, and Tailwind's own unrelated "slate" scale cannot be
+  confused with Corporate Slate Blue.
+
+  The four forces (Capability, Motivation, Opportunity, Synergy) share Slate Blue and are
+  distinguished by position, label and shape, never by colour. Dashboard status bands
+  (Green, Amber, Red) are a Milestone 6 decision and are not defined here.
+
+  The tint scales, the accessible gold and the type families match the marketing site's
+  brand.css so the two properties read as one.
+*/
+@theme {
+  --color-*: initial;
+
+  --color-white: #ffffff;
+
+  /* Corporate Slate Blue: primary ink and structure */
+  --color-slate: #1f3a52;
+  --color-slate-05: #f4f5f6;
+  --color-slate-10: #e9ebee;
+  --color-slate-20: #d2d8dc;
+  --color-slate-40: #a5b0ba;
+  --color-slate-60: #798897;
+  --color-slate-80: #4c6175;
+  --color-slate-90: #355067;
+
+  /* Strategic Gold: accent, used sparingly. gold-deep meets WCAG AA for text on white. */
+  --color-gold: #b89e6e;
+  --color-gold-10: #f7f5f0;
+  --color-gold-20: #f0ebe2;
+  --color-gold-40: #e2d8c5;
+  --color-gold-60: #d4c5a8;
+  --color-gold-deep: #82693f;
+
+  /* Measurement Grey: secondary text and structure */
+  --color-grey: #5c6670;
+  --color-grey-10: #eff0f1;
+  --color-grey-20: #dee0e2;
+  --color-grey-40: #bec2c6;
+  --color-grey-60: #9da3a9;
+  --color-grey-80: #767e86;
+}
+
+/* Type families are provided by next/font in app/layout.tsx as CSS variables. */
+@theme inline {
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-spectral), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-white font-sans text-slate antialiased;
+  }
+}

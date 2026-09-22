@@ -450,18 +450,15 @@ export function outputCells(): OutputCell[] {
       { cell: `${TC}!A${r}`, key: key("name"), read: (ctx) => at(ctx)?.name },
       { cell: `${TC}!B${r}`, key: key("n"), read: (ctx) => at(ctx)?.n },
     );
-    // C:G and H hold the workbook's defective form (see modules/lt.ts), compared as such.
-    const wb = (ctx: Context): LtResult["workbookForm"]["decisions"][number] | undefined =>
-      ctx.result.typeC.leadership.workbookForm.decisions[d];
     RAPID_ROLES.forEach((role, k) => {
       cells.push({
         cell: `${TC}!${String.fromCharCode(67 + k)}${r}`,
-        key: key(`workbookAgreement.${role}`),
-        read: (ctx) => wb(ctx)?.agreement[role],
+        key: key(`agreement.${role}`),
+        read: (ctx) => at(ctx)?.agreement[role],
       });
     });
     cells.push(
-      { cell: `${TC}!H${r}`, key: key("workbookMean"), read: (ctx) => wb(ctx)?.mean },
+      { cell: `${TC}!H${r}`, key: key("mean"), read: (ctx) => at(ctx)?.mean },
       { cell: `${TC}!A${21 + d}`, key: key("clarityName"), read: (ctx) => at(ctx)?.name },
       { cell: `${TC}!B${21 + d}`, key: key("clarity"), read: (ctx) => at(ctx)?.clarity },
     );
@@ -470,8 +467,8 @@ export function outputCells(): OutputCell[] {
   cells.push(
     {
       cell: `${TC}!B34`,
-      key: "typeC.leadership.workbookForm.aggregateAgreement",
-      read: (ctx) => lt(ctx).workbookForm.aggregateAgreement,
+      key: "typeC.leadership.aggregateAgreement",
+      read: (ctx) => lt(ctx).aggregateAgreement,
     },
     {
       cell: `${TC}!B35`,
@@ -486,8 +483,8 @@ export function outputCells(): OutputCell[] {
     { cell: `${TC}!A37`, key: "typeC.leadership.rateFlag", read: (ctx) => lt(ctx).rateFlag },
     {
       cell: `${TC}!B38`,
-      key: "typeC.leadership.workbookForm.score",
-      read: (ctx) => lt(ctx).workbookForm.score,
+      key: "typeC.leadership.score",
+      read: (ctx) => lt(ctx).score,
     },
     {
       cell: `${TC}!B43`,
@@ -612,7 +609,7 @@ export function outputCells(): OutputCell[] {
       key: "output.c5",
       read: (ctx) => ctx.result.typeC.c5.score,
     },
-    { cell: `${OUT}!B57`, key: "output.lt", read: (ctx) => lt(ctx).workbookForm.score },
+    { cell: `${OUT}!B57`, key: "output.lt", read: (ctx) => lt(ctx).score },
     {
       cell: `${OUT}!B58`,
       key: "output.cascade",

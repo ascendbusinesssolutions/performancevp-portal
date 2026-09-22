@@ -7,14 +7,9 @@
  * the decision's agreement is the mean of the five roles; clarity is (mean clarity − 1) × 25.
  * Aggregate agreement and clarity are means across decision types with rows. The response rate
  * is distinct respondents over the leadership headcount. Score = 0.6 × agreement × 100 + 0.4 ×
- * clarity. The leadership survey is not screened (Module Library 8.5).
- *
- * The workbook's agreement cells (C6:G17) do not compute this. Their formula wraps the helper
- * range in N(), which Excel does not evaluate over an array, so every decision's agreement is
- * the first import row's helper count over that decision's n. The Northwind example masks it
- * because every decision there has the same answer pattern. The intake follows the Module
- * Library and the Workbook Spec; `workbookForm` reproduces the workbook's cells so the parity
- * harness can compare them, and the defect is on the parked list for the workbook pass.
+ * clarity. The leadership survey is not screened (Module Library 8.5). The workbook's agreement
+ * cells take MAXIFS over each decision type's own import rows since the correction of
+ * 22 September 2026; before it, an N() wrapper scored every decision from the first row.
  */
 
 import { LT_WEIGHTS, THRESHOLDS } from "../constants";
@@ -54,12 +49,6 @@ export interface LtResult {
   /** "LOW leadership response" below 75%, "ok" otherwise, blank without a rate. */
   rateFlag: string | undefined;
   score: Cell;
-  /** The workbook's defective agreement cells, for parity only: the first row's counts over each decision's n. */
-  workbookForm: {
-    decisions: Array<{ agreement: Record<RapidRole, Cell>; mean: Cell }>;
-    aggregateAgreement: Cell;
-    score: Cell;
-  };
 }
 
 export function scoreLeadership(
@@ -116,25 +105,6 @@ export function scoreLeadership(
 
   const aggregateAgreement = average(decisions.map((d) => d.mean));
   const aggregateClarity = average(decisions.map((d) => d.clarity));
-
-  const firstRow = helpers[0];
-  const workbookDecisions = decisions.map((d) => {
-    const agreement = {} as Record<RapidRole, Cell>;
-    for (const role of RAPID_ROLES) {
-      if (d.n === 0) agreement[role] = undefined;
-      else agreement[role] = (firstRow?.counts[role] ?? 0) / d.n;
-    }
-    return { agreement, mean: average(RAPID_ROLES.map((role) => agreement[role])) };
-  });
-  const workbookAggregate = average(workbookDecisions.map((d) => d.mean));
-  const workbookForm = {
-    decisions: workbookDecisions,
-    aggregateAgreement: workbookAggregate,
-    score:
-      workbookAggregate === undefined || aggregateClarity === undefined
-        ? undefined
-        : LT_WEIGHTS.agreement * (workbookAggregate * 100) + LT_WEIGHTS.clarity * aggregateClarity,
-  };
   const responseRate =
     headcount === undefined || headcount === 0 ? undefined : seen.size / headcount;
   const score =
@@ -155,6 +125,5 @@ export function scoreLeadership(
           ? "LOW leadership response"
           : "ok",
     score,
-    workbookForm,
   };
 }

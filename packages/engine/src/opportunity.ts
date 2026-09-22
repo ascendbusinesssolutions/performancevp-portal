@@ -1,9 +1,16 @@
 /**
- * Opportunity Inputs sheet: the perception layers and O5. Structural layers, the two-layer
- * combination and O4 follow in step 4.
+ * Opportunity Inputs sheet: O1 to O5. The perception layers, the structural layers, the two-layer
+ * combination with the gap rule, O4 and O5.
  */
 
-import { isNumber, sum, type Cell } from "./excel";
+import {
+  GAP_THRESHOLD,
+  O1_STRUCTURAL_WEIGHTS,
+  O2_STRUCTURAL_WEIGHTS,
+  O4_BLEND,
+  O_GAP_FLAG,
+} from "./constants";
+import { gt, isNumber, sum, type Cell } from "./excel";
 import { scoreItems } from "./survey";
 import {
   OI1_ITEMS,
@@ -11,11 +18,15 @@ import {
   OI3_ITEMS,
   OI4_ITEMS,
   type ItemMeans,
+  type O1Inputs,
+  type O2Inputs,
+  type O3Inputs,
   type Oi1Item,
   type Oi2Item,
   type Oi3Item,
   type Oi4Item,
   type TeamInput,
+  type TwoLayerResult,
 } from "./types";
 
 /** Opportunity Inputs D20. */
@@ -60,4 +71,66 @@ export function scoreO5(teams: readonly TeamInput[] | undefined): O5Result {
     if (isNumber(t.score) && t.score > 0 && isNumber(t.fte)) denominator += t.fte;
   if (denominator === 0) return { contributions, score: undefined };
   return { contributions, score: sum(contributions) / denominator };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Structural layers (Type C components), the two-layer combination and O4
+// ---------------------------------------------------------------------------------------------
+
+/** D8: 0.40 M-O1-LT + 0.30 role architecture + 0.30 M-O1-CASCADE; blank unless all three are numeric (Workbook Spec 1.8). */
+export function structuralO1(inputs: O1Inputs | undefined): Cell {
+  const {
+    decisionRightsScore: lt,
+    roleArchitectureScore: ra,
+    cascadeScore: cascade,
+  } = inputs ?? {};
+  if (!isNumber(lt) || !isNumber(ra) || !isNumber(cascade)) return undefined;
+  const w = O1_STRUCTURAL_WEIGHTS;
+  return w.decisionRights * lt + w.roleArchitecture * ra + w.cascade * cascade;
+}
+
+/** D29: 0.35 tool inventory + 0.40 M-O2-IA + 0.25 integration; blank unless all three are numeric. */
+export function structuralO2(inputs: O2Inputs | undefined): Cell {
+  const {
+    toolInventoryScore: tools,
+    informationAccessScore: ia,
+    integrationScore: integration,
+  } = inputs ?? {};
+  if (!isNumber(tools) || !isNumber(ia) || !isNumber(integration)) return undefined;
+  const w = O2_STRUCTURAL_WEIGHTS;
+  return w.toolInventory * tools + w.informationAccess * ia + w.integration * integration;
+}
+
+/** D44: M-O3-PF as given. */
+export function structuralO3(inputs: O3Inputs | undefined): Cell {
+  const score = inputs?.processFrictionScore;
+  return isNumber(score) ? score : undefined;
+}
+
+/**
+ * The two-layer combination for O1, O2 and O3 (D21:D23, D38:D40, D54:D56).
+ * gap = structural − perception (IFERROR, so blank when either layer is blank).
+ * |gap| above 15 fires the flag and the perception score feeds the composite; otherwise the score
+ * is the mean of the two layers. Measurement Reference 8.1; Workbook Spec 6.6; DECISIONS.md 1.1.
+ * The comparison applies Excel's 15-significant-digit rule.
+ */
+export function combineTwoLayer(structural: Cell, perception: Cell): TwoLayerResult {
+  if (!isNumber(structural) || !isNumber(perception)) {
+    return { structural, perception, gap: undefined, gapFlag: "", score: undefined };
+  }
+  const gap = structural - perception;
+  const fires = gt(Math.abs(gap), GAP_THRESHOLD);
+  return {
+    structural,
+    perception,
+    gap,
+    gapFlag: fires ? O_GAP_FLAG : "",
+    score: fires ? perception : (structural + perception) / 2,
+  };
+}
+
+/** D67: (capacity analysis + perception) / 2, both required; no gap rule. Measurement Reference 4.4. */
+export function scoreO4(capacityAnalysis: Cell, perception: Cell): Cell {
+  if (!isNumber(capacityAnalysis) || !isNumber(perception)) return undefined;
+  return (capacityAnalysis + perception) * O4_BLEND;
 }

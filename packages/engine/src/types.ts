@@ -368,8 +368,11 @@ export interface KnowledgeDomainResult {
 export interface TwoLayerResult {
   structural: number | undefined;
   perception: number | undefined;
+  /** structural − perception; blank when either layer is blank. */
   gap: number | undefined;
   gapFlag: string;
+  /** The sub-dimension score: the mean of the layers, or the perception score where the flag fires. */
+  score: number | undefined;
 }
 export interface TripWireResult {
   score: number | undefined;

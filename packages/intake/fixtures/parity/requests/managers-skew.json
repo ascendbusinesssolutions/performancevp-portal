@@ -1,0 +1,512 @@
+{
+ "name": "managers-skew",
+ "purpose": "M-C3-MGR with the skew rule firing (mean band 4.0 over 9 rated) and no Band 5 excess to cap.",
+ "input": {
+  "campaign": {
+   "cadence": "baseline",
+   "launchDate": "2026-08-03",
+   "closeDate": "2026-08-24",
+   "deployed": {
+    "managers": {
+     "c1": true,
+     "c2": false,
+     "c3": true
+    }
+   }
+  },
+  "unit": {
+   "name": "Fixture unit",
+   "teams": [],
+   "roleFamilies": [
+    {
+     "id": "f1",
+     "name": "Claims assessors",
+     "skills": [
+      {
+       "id": "f1-s1",
+       "name": "Skill 1",
+       "critical": true,
+       "kind": "technical"
+      },
+      {
+       "id": "f1-s2",
+       "name": "Skill 2",
+       "critical": true,
+       "kind": "technical"
+      },
+      {
+       "id": "f1-s3",
+       "name": "Skill 3",
+       "critical": false,
+       "kind": "behavioural"
+      },
+      {
+       "id": "f1-s4",
+       "name": "Skill 4",
+       "critical": false,
+       "kind": "technical"
+      },
+      {
+       "id": "f1-s5",
+       "name": "Skill 5",
+       "critical": false,
+       "kind": "technical"
+      },
+      {
+       "id": "f1-s6",
+       "name": "Skill 6",
+       "critical": false,
+       "kind": "behavioural"
+      }
+     ]
+    },
+    {
+     "id": "f2",
+     "name": "Member advisers",
+     "skills": [
+      {
+       "id": "f2-s1",
+       "name": "Skill 1",
+       "critical": true,
+       "kind": "technical"
+      },
+      {
+       "id": "f2-s2",
+       "name": "Skill 2",
+       "critical": true,
+       "kind": "technical"
+      },
+      {
+       "id": "f2-s3",
+       "name": "Skill 3",
+       "critical": false,
+       "kind": "behavioural"
+      },
+      {
+       "id": "f2-s4",
+       "name": "Skill 4",
+       "critical": false,
+       "kind": "technical"
+      }
+     ]
+    },
+    {
+     "id": "f3",
+     "name": "Team coordinators",
+     "skills": [
+      {
+       "id": "f3-s1",
+       "name": "Skill 1",
+       "critical": true,
+       "kind": "technical"
+      },
+      {
+       "id": "f3-s2",
+       "name": "Skill 2",
+       "critical": true,
+       "kind": "technical"
+      },
+      {
+       "id": "f3-s3",
+       "name": "Skill 3",
+       "critical": false,
+       "kind": "behavioural"
+      },
+      {
+       "id": "f3-s4",
+       "name": "Skill 4",
+       "critical": false,
+       "kind": "technical"
+      },
+      {
+       "id": "f3-s5",
+       "name": "Skill 5",
+       "critical": false,
+       "kind": "technical"
+      }
+     ],
+     "peopleLeader": true
+    }
+   ],
+   "knowledgeDomains": [],
+   "systems": [],
+   "processes": [
+    {
+     "id": "p1",
+     "name": "Process 1"
+    },
+    {
+     "id": "p2",
+     "name": "Process 2"
+    },
+    {
+     "id": "p3",
+     "name": "Process 3"
+    }
+   ],
+   "decisionTypes": []
+  },
+  "snapshot": {
+   "members": [
+    {
+     "employeeRef": "E01",
+     "roleFamilyId": "f1",
+     "fte": 1,
+     "managerRef": "M1"
+    },
+    {
+     "employeeRef": "E02",
+     "roleFamilyId": "f1",
+     "fte": 0.6,
+     "managerRef": "M1"
+    },
+    {
+     "employeeRef": "E03",
+     "roleFamilyId": "f1",
+     "fte": 1,
+     "managerRef": "M1"
+    },
+    {
+     "employeeRef": "E04",
+     "roleFamilyId": "f2",
+     "fte": 0.8,
+     "managerRef": "M2"
+    },
+    {
+     "employeeRef": "E05",
+     "roleFamilyId": "f2",
+     "fte": 1,
+     "managerRef": "M2"
+    },
+    {
+     "employeeRef": "E06",
+     "roleFamilyId": "f3",
+     "fte": 1,
+     "managerRef": "M3"
+    },
+    {
+     "employeeRef": "E07",
+     "roleFamilyId": "f3",
+     "fte": 0.5,
+     "managerRef": "M3"
+    },
+    {
+     "employeeRef": "E08",
+     "roleFamilyId": "f3",
+     "fte": 1,
+     "managerRef": "M3"
+    },
+    {
+     "employeeRef": "E09",
+     "roleFamilyId": "f2",
+     "fte": 1,
+     "managerRef": "M4"
+    },
+    {
+     "employeeRef": "E12",
+     "roleFamilyId": "f3",
+     "fte": 1,
+     "managerRef": "M5"
+    }
+   ]
+  },
+  "ratings": {
+   "skills": [
+    {
+     "managerRef": "M1",
+     "employeeRef": "E01",
+     "skillId": "f1-s1",
+     "rating": 3
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E01",
+     "skillId": "f1-s2",
+     "rating": 4
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E01",
+     "skillId": "f1-s3",
+     "rating": 4
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E01",
+     "skillId": "f1-s4",
+     "rating": 4
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E01",
+     "skillId": "f1-s5",
+     "rating": 2
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E01",
+     "skillId": "f1-s6",
+     "rating": 4
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E02",
+     "skillId": "f1-s1",
+     "rating": 3
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E02",
+     "skillId": "f1-s2",
+     "rating": 2
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E02",
+     "skillId": "f1-s3",
+     "rating": 2
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E02",
+     "skillId": "f1-s4",
+     "rating": 5
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E02",
+     "skillId": "f1-s5",
+     "rating": 5
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E02",
+     "skillId": "f1-s6",
+     "rating": 3
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E03",
+     "skillId": "f1-s1",
+     "rating": 3
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E03",
+     "skillId": "f1-s2",
+     "rating": 4
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E03",
+     "skillId": "f1-s3",
+     "rating": 4
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E03",
+     "skillId": "f1-s4",
+     "rating": 4
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E03",
+     "skillId": "f1-s5",
+     "rating": 4
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E03",
+     "skillId": "f1-s6",
+     "rating": 3
+    },
+    {
+     "managerRef": "M2",
+     "employeeRef": "E04",
+     "skillId": "f2-s1",
+     "rating": 3
+    },
+    {
+     "managerRef": "M2",
+     "employeeRef": "E04",
+     "skillId": "f2-s2",
+     "rating": 4
+    },
+    {
+     "managerRef": "M2",
+     "employeeRef": "E04",
+     "skillId": "f2-s3",
+     "rating": 3
+    },
+    {
+     "managerRef": "M2",
+     "employeeRef": "E04",
+     "skillId": "f2-s4",
+     "rating": 3
+    },
+    {
+     "managerRef": "M2",
+     "employeeRef": "E05",
+     "skillId": "f2-s1",
+     "rating": 2
+    },
+    {
+     "managerRef": "M2",
+     "employeeRef": "E05",
+     "skillId": "f2-s2",
+     "rating": 4
+    },
+    {
+     "managerRef": "M2",
+     "employeeRef": "E05",
+     "skillId": "f2-s3",
+     "rating": 4
+    },
+    {
+     "managerRef": "M2",
+     "employeeRef": "E05",
+     "skillId": "f2-s4",
+     "rating": 3
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E06",
+     "skillId": "f3-s1",
+     "rating": 3
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E06",
+     "skillId": "f3-s2",
+     "rating": 5
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E06",
+     "skillId": "f3-s3",
+     "rating": 2
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E06",
+     "skillId": "f3-s4",
+     "rating": 3
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E06",
+     "skillId": "f3-s5",
+     "rating": 3
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E07",
+     "skillId": "f3-s1",
+     "rating": 2
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E07",
+     "skillId": "f3-s2",
+     "rating": 2
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E07",
+     "skillId": "f3-s3",
+     "rating": 4
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E07",
+     "skillId": "f3-s4",
+     "rating": 4
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E07",
+     "skillId": "f3-s5",
+     "rating": 2
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E08",
+     "skillId": "f3-s1",
+     "rating": 4
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E08",
+     "skillId": "f3-s2",
+     "rating": 4
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E08",
+     "skillId": "f3-s3",
+     "rating": 3
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E08",
+     "skillId": "f3-s4",
+     "rating": 4
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E08",
+     "skillId": "f3-s5",
+     "rating": 3
+    }
+   ],
+   "talentBands": [
+    {
+     "managerRef": "M1",
+     "employeeRef": "E01",
+     "band": 4
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E02",
+     "band": 4
+    },
+    {
+     "managerRef": "M1",
+     "employeeRef": "E03",
+     "band": 4
+    },
+    {
+     "managerRef": "M2",
+     "employeeRef": "E04",
+     "band": 4
+    },
+    {
+     "managerRef": "M2",
+     "employeeRef": "E05",
+     "band": 5
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E06",
+     "band": 4
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E07",
+     "band": 3
+    },
+    {
+     "managerRef": "M3",
+     "employeeRef": "E08",
+     "band": 4
+    },
+    {
+     "managerRef": "M4",
+     "employeeRef": "E09",
+     "band": 4
+    }
+   ]
+  }
+ },
+ "workbook": "template"
+}

@@ -1,0 +1,147 @@
+{
+ "name": "team-leaders",
+ "purpose": "M-C5-TL over four leaders with a fifth row carrying an ID and no answers, and a sixth leader in the directory who did not respond.",
+ "input": {
+  "campaign": {
+   "cadence": "annual",
+   "launchDate": "2026-08-03",
+   "closeDate": "2026-08-24",
+   "deployed": {
+    "teamLeaders": true
+   }
+  },
+  "unit": {
+   "name": "Fixture unit",
+   "teams": [],
+   "roleFamilies": [],
+   "knowledgeDomains": [],
+   "systems": [],
+   "processes": [
+    {
+     "id": "p1",
+     "name": "Process 1"
+    },
+    {
+     "id": "p2",
+     "name": "Process 2"
+    },
+    {
+     "id": "p3",
+     "name": "Process 3"
+    }
+   ],
+   "decisionTypes": []
+  },
+  "snapshot": {
+   "members": [
+    {
+     "employeeRef": "L01",
+     "fte": 1,
+     "teamLeader": true
+    },
+    {
+     "employeeRef": "L02",
+     "fte": 1,
+     "teamLeader": true
+    },
+    {
+     "employeeRef": "L03",
+     "fte": 1,
+     "teamLeader": true
+    },
+    {
+     "employeeRef": "L04",
+     "fte": 1,
+     "teamLeader": true
+    },
+    {
+     "employeeRef": "L05",
+     "fte": 1,
+     "teamLeader": true
+    },
+    {
+     "employeeRef": "L06",
+     "fte": 1,
+     "teamLeader": true
+    }
+   ]
+  },
+  "responses": {
+   "teamLeaders": [
+    {
+     "id": "L1",
+     "items": {
+      "C5L-01": 4,
+      "C5L-02": 4,
+      "C5L-03": 4,
+      "C5L-04": 3,
+      "C5L-05": 5,
+      "C5L-06": 5,
+      "C5L-07": 3,
+      "C5L-08": 5,
+      "C5L-09": 3,
+      "C5L-10": 4,
+      "C5L-11": 5,
+      "C5L-12": 4
+     }
+    },
+    {
+     "id": "L2",
+     "items": {
+      "C5L-01": 3,
+      "C5L-02": 3,
+      "C5L-03": 3,
+      "C5L-04": 3,
+      "C5L-05": 3,
+      "C5L-06": 3,
+      "C5L-07": 4,
+      "C5L-08": 3,
+      "C5L-09": 2,
+      "C5L-10": 4,
+      "C5L-11": 4,
+      "C5L-12": 2
+     }
+    },
+    {
+     "id": "L3",
+     "items": {
+      "C5L-01": 3,
+      "C5L-02": 3,
+      "C5L-03": 4,
+      "C5L-04": 3,
+      "C5L-05": 3,
+      "C5L-06": 5,
+      "C5L-07": 5,
+      "C5L-08": 4,
+      "C5L-09": 5,
+      "C5L-10": 3,
+      "C5L-11": 3,
+      "C5L-12": 4
+     }
+    },
+    {
+     "id": "L4",
+     "items": {
+      "C5L-01": 1,
+      "C5L-02": 2,
+      "C5L-03": 3,
+      "C5L-04": 2,
+      "C5L-05": 2,
+      "C5L-06": 3,
+      "C5L-07": 3,
+      "C5L-08": 4,
+      "C5L-09": 3,
+      "C5L-10": 2,
+      "C5L-11": 3,
+      "C5L-12": 3
+     }
+    },
+    {
+     "id": "L5",
+     "items": {}
+    }
+   ]
+  }
+ },
+ "workbook": "template"
+}

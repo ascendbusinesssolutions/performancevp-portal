@@ -39,3 +39,20 @@ Then `pnpm --filter @performancevp/engine test` runs every fixture and prints th
 - `packages/engine/fixtures/northwind-input.json` is the Northwind Mutual worked example read from the workbook's stored input cells (`dump_values.py` on the production workbook, then `parity:extract-input`).
 
 Regenerate both, and every fixture, whenever the production workbook changes; the hash in each file says which workbook it came from.
+
+## The intake package's run (Survey Processing workbook)
+
+The same pipeline generates `packages/intake/fixtures/parity/` from `docs/benchmarks/Survey Processing and Scoring Workbook.xlsx` (the blank template); the Northwind request is the shipped worked example extracted through the intake's cell map and rebuilt on the template, so the DLP sample it carries is not reproduced.
+
+```
+STAGE=~/Library/Containers/com.microsoft.Excel/Data/pvp-parity-intake
+rm -rf "$STAGE" && mkdir -p "$STAGE/in" "$STAGE/out" "$STAGE/values"
+pnpm --filter @performancevp/intake parity:requests
+pnpm --filter @performancevp/intake parity:prepare "$STAGE"
+python3 tools/parity/build_copies.py "docs/benchmarks/Survey Processing and Scoring Workbook.xlsx" "$STAGE/edits" "$STAGE/in"
+tools/parity/excel_recalc.sh "$STAGE/in" "$STAGE/out"
+for f in "$STAGE"/out/*.xlsx; do n=$(basename "$f" .xlsx); python3 tools/parity/dump_values.py "$f" "$STAGE/values/$n.values.json"; done
+pnpm --filter @performancevp/intake parity:collect "$STAGE" "Microsoft Excel $(defaults read '/Applications/Microsoft Excel.app/Contents/Info.plist' CFBundleShortVersionString) (macOS)"
+```
+
+To refresh the Northwind intake input from the shipped copy: `python3 tools/parity/dump_values.py "docs/benchmarks/Survey Processing and Scoring Workbook - Northwind Mutual (Worked Example).xlsx" /tmp/nw.json` then `pnpm --filter @performancevp/intake parity:extract-input /tmp/nw.json packages/intake/fixtures/northwind-intake-input.json 2026-05-10 2026-05-31` (the campaign dates are not in the workbook).

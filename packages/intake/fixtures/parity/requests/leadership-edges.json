@@ -1,0 +1,155 @@
+{
+ "name": "leadership-edges",
+ "purpose": "M-O1-LT with a blank role answer, a tied modal answer (two answers at two each of four), a decision type nobody answered, a respondent answering one decision only, and 4 respondents of a leadership team of 6 (67%, LOW).",
+ "input": {
+  "campaign": {
+   "cadence": "annual",
+   "launchDate": "2026-08-03",
+   "closeDate": "2026-08-24",
+   "deployed": {
+    "leadershipTeam": true
+   }
+  },
+  "unit": {
+   "name": "Fixture unit",
+   "teams": [],
+   "roleFamilies": [],
+   "knowledgeDomains": [],
+   "systems": [],
+   "processes": [
+    {
+     "id": "p1",
+     "name": "Process 1"
+    },
+    {
+     "id": "p2",
+     "name": "Process 2"
+    },
+    {
+     "id": "p3",
+     "name": "Process 3"
+    }
+   ],
+   "decisionTypes": [
+    {
+     "id": "d1",
+     "name": "Approve refund"
+    },
+    {
+     "id": "d2",
+     "name": "Waive fee"
+    },
+    {
+     "id": "d3",
+     "name": "Escalate complaint"
+    }
+   ]
+  },
+  "snapshot": {
+   "members": [
+    {
+     "employeeRef": "L01",
+     "fte": 1,
+     "leadershipTeam": true
+    },
+    {
+     "employeeRef": "L02",
+     "fte": 1,
+     "leadershipTeam": true
+    },
+    {
+     "employeeRef": "L03",
+     "fte": 1,
+     "leadershipTeam": true
+    },
+    {
+     "employeeRef": "L04",
+     "fte": 1,
+     "leadershipTeam": true
+    },
+    {
+     "employeeRef": "L05",
+     "fte": 1,
+     "leadershipTeam": true
+    },
+    {
+     "employeeRef": "L06",
+     "fte": 1,
+     "leadershipTeam": true
+    }
+   ]
+  },
+  "responses": {
+   "leadershipTeam": [
+    {
+     "respondentId": "L1",
+     "decisionTypeId": "d1",
+     "recommend": "A",
+     "agree": "B",
+     "perform": "C",
+     "input": "D",
+     "decides": "E",
+     "clarity": 4
+    },
+    {
+     "respondentId": "L2",
+     "decisionTypeId": "d1",
+     "recommend": "A",
+     "agree": "B",
+     "perform": "C",
+     "input": "D",
+     "decides": "F",
+     "clarity": 5
+    },
+    {
+     "respondentId": "L3",
+     "decisionTypeId": "d1",
+     "recommend": "A",
+     "agree": "X",
+     "perform": "Y",
+     "input": "D",
+     "decides": "F",
+     "clarity": 3
+    },
+    {
+     "respondentId": "L4",
+     "decisionTypeId": "d1",
+     "recommend": "B",
+     "agree": "X",
+     "perform": "Y",
+     "input": "Z",
+     "decides": "E",
+     "clarity": 2
+    },
+    {
+     "respondentId": "L1",
+     "decisionTypeId": "d2",
+     "recommend": "A",
+     "agree": "A",
+     "perform": "A",
+     "decides": "A",
+     "clarity": 3
+    },
+    {
+     "respondentId": "L2",
+     "decisionTypeId": "d2",
+     "recommend": "A",
+     "agree": "A",
+     "input": "A",
+     "decides": "B"
+    },
+    {
+     "respondentId": "L3",
+     "decisionTypeId": "d2",
+     "recommend": "B",
+     "agree": "A",
+     "perform": "A",
+     "input": "A",
+     "decides": "A",
+     "clarity": 4
+    }
+   ]
+  }
+ },
+ "workbook": "template"
+}

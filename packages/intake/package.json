@@ -1,9 +1,9 @@
 {
   "name": "@performancevp/intake",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "license": "UNLICENSED",
-  "description": "Turns validated aggregates, ratings and checklists into engine inputs: a pure mirror of the Survey Processing and Scoring Workbook plus the online-only rules",
+  "description": "The intake package: turns raw survey rows, ratings, checklists and formal ratings into engine inputs; a pure mirror of the Survey Processing and Scoring Workbook plus the online-only rules",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
@@ -11,13 +11,19 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json"
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json",
+    "parity:collect": "tsx parity/collect.ts",
+    "parity:extract-input": "tsx parity/extract-input.ts",
+    "parity:prepare": "tsx parity/prepare.ts",
+    "parity:requests": "tsx parity/requests.ts"
   },
   "dependencies": {
     "@performancevp/engine": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "24.13.6",
+    "fast-check": "4.10.2",
+    "tsx": "4.23.15",
     "typescript": "6.0.3",
     "vitest": "5.0.1"
   }

@@ -12,3 +12,4 @@ archive/
 *.md
 # Generated parity fixtures and workbook extracts (packages/engine/fixtures) are data, not code.
 packages/engine/fixtures/
+packages/intake/fixtures/

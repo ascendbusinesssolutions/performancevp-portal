@@ -1,6 +1,6 @@
 {
   "name": "@performancevp/engine",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "license": "UNLICENSED",
   "description": "The Performance Equation calculation engine: a pure mirror of the Diagnostic Workbook",
@@ -11,10 +11,16 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json"
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json",
+    "parity:requests": "tsx parity/requests.ts",
+    "parity:prepare": "tsx parity/prepare.ts",
+    "parity:collect": "tsx parity/collect.ts",
+    "parity:extract-input": "tsx parity/extract-input.ts"
   },
   "devDependencies": {
     "@types/node": "24.13.6",
+    "fast-check": "4.10.2",
+    "tsx": "4.23.15",
     "typescript": "6.0.3",
     "vitest": "5.0.1"
   }

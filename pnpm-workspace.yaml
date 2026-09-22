@@ -3,9 +3,10 @@ packages:
   - packages/*
 
 # Install scripts run only for packages listed here. The Supabase CLI downloads its binary
-# on install and is the one approved build. sharp and unrs-resolver ship prebuilt binaries
-# and need no script.
+# on install and is the one approved build. sharp, unrs-resolver and esbuild (used by tsx for
+# the engine's parity scripts) ship prebuilt binaries and need no script.
 allowBuilds:
   supabase: true
   sharp: false
   unrs-resolver: false
+  esbuild: false

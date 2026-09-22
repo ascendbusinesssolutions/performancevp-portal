@@ -1,0 +1,553 @@
+{
+  "name": "p-above-typical",
+  "purpose": "Every survey item at 5 and every Type C score at 100 puts P above 80; the typical-range check warns.",
+  "input": {
+    "engagement": {
+      "archetype": "Default",
+      "clientName": "Northwind Mutual",
+      "unitName": "Member Services",
+      "unitFte": 60,
+      "sector": "K - Financial and Insurance Services",
+      "subSector": "Health insurance",
+      "sizeBand": "200–1,000 FTE",
+      "unitType": "Customer-facing service",
+      "engagementDate": "2026-06-01",
+      "leadAnalyst": "M. (PerformanceVP)",
+      "diagnosticReference": "PVP-2026-NWM-MS"
+    },
+    "routes": {
+      "C1": {
+        "tier": "Tier 1",
+        "source": "Workday Skills Cloud + internal 360",
+        "vintage": "2026-04-15",
+        "notes": "Tech via T1, behavioural via T2 360"
+      },
+      "C2": {
+        "tier": "Tier 1",
+        "source": "Sentrient + internal knowledge test",
+        "vintage": "2026-04-20"
+      },
+      "C3": {
+        "tier": "Tier 1",
+        "source": "Workday calibrated ratings",
+        "vintage": "2026-03-30",
+        "notes": "Documented calibration"
+      },
+      "C4": {
+        "tier": "Tier 3",
+        "source": "CII (PerformanceVP)",
+        "vintage": "2026-05-10",
+        "notes": "Unit-level CII"
+      },
+      "C5": {
+        "tier": "Tier 1",
+        "source": "LMS time-to-competence + adoption",
+        "vintage": "2026-05-01"
+      },
+      "M1": {
+        "tier": "Tier 1",
+        "source": "Culture Amp engagement composite",
+        "vintage": "2026-05-05"
+      },
+      "M2": {
+        "tier": "Tier 3",
+        "source": "MI-2 module",
+        "vintage": "2026-05-10"
+      },
+      "M3": {
+        "tier": "Tier 3",
+        "source": "MI-3 module",
+        "vintage": "2026-05-10"
+      },
+      "M4": {
+        "tier": "Tier 3",
+        "source": "MI-4 module",
+        "vintage": "2026-05-10"
+      },
+      "TW1": {
+        "tier": "Tier 3",
+        "source": "TW item",
+        "vintage": "2026-05-10"
+      },
+      "TW2": {
+        "tier": "Tier 3",
+        "source": "TW item",
+        "vintage": "2026-05-10"
+      },
+      "TW3": {
+        "tier": "Tier 3",
+        "source": "TW item",
+        "vintage": "2026-05-10",
+        "notes": "Fires critical finding in sample"
+      },
+      "O1": {
+        "tier": "Tier 3",
+        "source": "OI-Clarity audit + survey",
+        "vintage": "2026-05-10",
+        "notes": "Structural + perception"
+      },
+      "O2": {
+        "tier": "Tier 3",
+        "source": "OI-2 audit + survey",
+        "vintage": "2026-05-10",
+        "notes": "Structural + perception"
+      },
+      "O3": {
+        "tier": "Tier 3",
+        "source": "OI-3 audit + survey",
+        "vintage": "2026-05-10",
+        "notes": "Structural + perception"
+      },
+      "O4": {
+        "tier": "Tier 3",
+        "source": "OI-4 survey + capacity analysis",
+        "vintage": "2026-05-10"
+      },
+      "O5": {
+        "tier": "Tier 3",
+        "source": "OI-5 survey",
+        "vintage": "2026-05-10",
+        "notes": "Per-team, FTE-weighted"
+      },
+      "S1": {
+        "tier": "Tier 1",
+        "source": "Reuses C1 skills data",
+        "vintage": "2026-04-15",
+        "notes": "Analytical protocol"
+      },
+      "S2": {
+        "tier": "Tier 1",
+        "source": "Workplace Analytics + TSI-2",
+        "vintage": "2026-05-10",
+        "notes": "Telemetry + perception"
+      },
+      "S3": {
+        "tier": "Tier 3",
+        "source": "TSI-3 survey",
+        "vintage": "2026-05-10"
+      },
+      "DLP": {
+        "tier": "Tier 3",
+        "source": "DLP (PerformanceVP)",
+        "vintage": "2026-05-15",
+        "notes": "Reported alongside O"
+      }
+    },
+    "capability": {
+      "c1": {
+        "families": [
+          {
+            "name": "All",
+            "fte": 60,
+            "skillsRequired": 10,
+            "confirmedProficiencies": 600
+          }
+        ],
+        "medianTenureMonths": 40
+      },
+      "c2": {
+        "domains": [
+          {
+            "name": "All",
+            "criticality": 3,
+            "meanScore": 100,
+            "coverage": 1
+          }
+        ]
+      },
+      "c3": {
+        "band5": 60
+      },
+      "c4": {
+        "items": {
+          "CII-01": 5,
+          "CII-02": 5,
+          "CII-03": 5,
+          "CII-04": 5,
+          "CII-05": 1,
+          "CII-06": 5,
+          "CII-07": 5,
+          "CII-08": 5,
+          "CII-09": 5,
+          "CII-10": 1,
+          "CII-11": 5,
+          "CII-12": 5,
+          "CII-13": 5,
+          "CII-14": 5,
+          "CII-15": 1
+        },
+        "responseRate": 0.78
+      },
+      "c5": {
+        "timeToCompetence": 100,
+        "adoption": 100,
+        "cycleImprovement": 100
+      }
+    },
+    "motivation": {
+      "m1": {
+        "platformComposite": 100,
+        "items": {
+          "MI1-01": 3.9,
+          "MI1-02": 3.8,
+          "MI1-03": 4,
+          "MI1-04": 2.1,
+          "MI1-05": 3.85,
+          "MI1-06": 3.9,
+          "MI1-07": 3.8,
+          "MI1-08": 4
+        },
+        "responseRate": 0.78
+      },
+      "m2": {
+        "items": {
+          "MI2-01": 5,
+          "MI2-02": 5,
+          "MI2-03": 5,
+          "MI2-04": 5,
+          "MI2-05": 1
+        },
+        "responseRate": 0.78
+      },
+      "m3": {
+        "items": {
+          "MI3-01": 5,
+          "MI3-02": 5,
+          "MI3-03": 5,
+          "MI3-04": 1,
+          "MI3-05": 5
+        },
+        "responseRate": 0.76
+      },
+      "m4": {
+        "items": {
+          "MI4-01": 5,
+          "MI4-02": 5,
+          "MI4-03": 5,
+          "MI4-04": 1
+        },
+        "responseRate": 0.76
+      },
+      "tripWires": {
+        "TW1": 3.88,
+        "TW2": 4.12,
+        "TW3": 3.32
+      }
+    },
+    "opportunity": {
+      "o1": {
+        "decisionRightsScore": 100,
+        "roleArchitectureScore": 100,
+        "cascadeScore": 100,
+        "items": {
+          "OI1-01": 5,
+          "OI1-02": 5,
+          "OI1-03": 1,
+          "OI1-04": 5,
+          "OI1-05": 5,
+          "OI1-06": 1,
+          "OI1-07": 5,
+          "OI1-08": 5
+        },
+        "responseRate": 0.8
+      },
+      "o2": {
+        "toolInventoryScore": 100,
+        "informationAccessScore": 100,
+        "integrationScore": 100,
+        "items": {
+          "OI2-01": 5,
+          "OI2-02": 5,
+          "OI2-03": 5,
+          "OI2-04": 1
+        },
+        "responseRate": 0.82
+      },
+      "o3": {
+        "processFrictionScore": 100,
+        "items": {
+          "OI3-01": 5,
+          "OI3-02": 5,
+          "OI3-03": 5,
+          "OI3-04": 5,
+          "OI3-05": 1
+        },
+        "responseRate": 0.83
+      },
+      "o4": {
+        "capacityAnalysisScore": 100,
+        "items": {
+          "OI4-01": 5,
+          "OI4-02": 5,
+          "OI4-03": 1
+        },
+        "responseRate": 0.8
+      },
+      "o5": {
+        "teams": [
+          {
+            "name": "All",
+            "fte": 60,
+            "score": 100
+          }
+        ]
+      }
+    },
+    "synergy": {
+      "s1": {
+        "coverageBreadth": 90,
+        "coverageDepth": 85,
+        "distribution": 80
+      },
+      "s2": {
+        "telemetry": {
+          "meetingHoursPerIc": 18,
+          "meetingHoursPerManager": 32,
+          "fragmentedTimeRatio": 0.72,
+          "afterHoursHours": 6
+        },
+        "items": {
+          "TSI2-01": 2.8,
+          "TSI2-02": 2.8,
+          "TSI2-03": 3.2
+        },
+        "responseRate": 0.82
+      },
+      "s3": {
+        "items": {
+          "TSI3-01": 3.8,
+          "TSI3-02": 3.6,
+          "TSI3-03": 3.4,
+          "TSI3-04": 2.4,
+          "TSI3-05": 2.2
+        },
+        "responseRate": 0.8
+      }
+    },
+    "dlp": {
+      "decisions": [
+        {
+          "id": "OP-01",
+          "class": "Operational",
+          "latencyDays": 1
+        },
+        {
+          "id": "OP-02",
+          "class": "Operational",
+          "latencyDays": 1
+        },
+        {
+          "id": "OP-03",
+          "class": "Operational",
+          "latencyDays": 2
+        },
+        {
+          "id": "OP-04",
+          "class": "Operational",
+          "latencyDays": 2
+        },
+        {
+          "id": "OP-05",
+          "class": "Operational",
+          "latencyDays": 2
+        },
+        {
+          "id": "OP-06",
+          "class": "Operational",
+          "latencyDays": 3
+        },
+        {
+          "id": "OP-07",
+          "class": "Operational",
+          "latencyDays": 3
+        },
+        {
+          "id": "OP-08",
+          "class": "Operational",
+          "latencyDays": 3
+        },
+        {
+          "id": "OP-09",
+          "class": "Operational",
+          "latencyDays": 4
+        },
+        {
+          "id": "OP-10",
+          "class": "Operational",
+          "latencyDays": 5
+        },
+        {
+          "id": "OP-11",
+          "class": "Operational",
+          "latencyDays": 5
+        },
+        {
+          "id": "OP-12",
+          "class": "Operational",
+          "latencyDays": 6
+        },
+        {
+          "id": "OP-13",
+          "class": "Operational",
+          "latencyDays": 6
+        },
+        {
+          "id": "OP-14",
+          "class": "Operational",
+          "latencyDays": 7
+        },
+        {
+          "id": "OP-15",
+          "class": "Operational",
+          "latencyDays": 7
+        },
+        {
+          "id": "OP-16",
+          "class": "Operational",
+          "latencyDays": 8
+        },
+        {
+          "id": "OP-17",
+          "class": "Operational",
+          "latencyDays": 10
+        },
+        {
+          "id": "OP-18",
+          "class": "Operational",
+          "latencyDays": 12
+        },
+        {
+          "id": "OP-19",
+          "class": "Operational",
+          "latencyDays": 14
+        },
+        {
+          "id": "OP-20",
+          "class": "Operational",
+          "latencyDays": 18
+        },
+        {
+          "id": "TAC-01",
+          "class": "Tactical",
+          "latencyDays": 5
+        },
+        {
+          "id": "TAC-02",
+          "class": "Tactical",
+          "latencyDays": 7
+        },
+        {
+          "id": "TAC-03",
+          "class": "Tactical",
+          "latencyDays": 9
+        },
+        {
+          "id": "TAC-04",
+          "class": "Tactical",
+          "latencyDays": 10
+        },
+        {
+          "id": "TAC-05",
+          "class": "Tactical",
+          "latencyDays": 11
+        },
+        {
+          "id": "TAC-06",
+          "class": "Tactical",
+          "latencyDays": 12
+        },
+        {
+          "id": "TAC-07",
+          "class": "Tactical",
+          "latencyDays": 14
+        },
+        {
+          "id": "TAC-08",
+          "class": "Tactical",
+          "latencyDays": 16
+        },
+        {
+          "id": "TAC-09",
+          "class": "Tactical",
+          "latencyDays": 18
+        },
+        {
+          "id": "TAC-10",
+          "class": "Tactical",
+          "latencyDays": 20
+        },
+        {
+          "id": "TAC-11",
+          "class": "Tactical",
+          "latencyDays": 22
+        },
+        {
+          "id": "TAC-12",
+          "class": "Tactical",
+          "latencyDays": 26
+        },
+        {
+          "id": "TAC-13",
+          "class": "Tactical",
+          "latencyDays": 30
+        },
+        {
+          "id": "TAC-14",
+          "class": "Tactical",
+          "latencyDays": 34
+        },
+        {
+          "id": "TAC-15",
+          "class": "Tactical",
+          "latencyDays": 40
+        },
+        {
+          "id": "ST-01",
+          "class": "Strategic",
+          "latencyDays": 35
+        },
+        {
+          "id": "ST-02",
+          "class": "Strategic",
+          "latencyDays": 50
+        },
+        {
+          "id": "ST-03",
+          "class": "Strategic",
+          "latencyDays": 60
+        },
+        {
+          "id": "ST-04",
+          "class": "Strategic",
+          "latencyDays": 80
+        },
+        {
+          "id": "ST-05",
+          "class": "Strategic",
+          "latencyDays": 100
+        },
+        {
+          "id": "ST-06",
+          "class": "Strategic",
+          "latencyDays": 130
+        },
+        {
+          "id": "ST-07",
+          "class": "Strategic",
+          "latencyDays": 160
+        },
+        {
+          "id": "ST-08",
+          "class": "Strategic",
+          "latencyDays": 200
+        }
+      ]
+    },
+    "behaviouralTriangulators": {
+      "voluntaryTurnover": 68,
+      "unplannedAbsence": 60,
+      "enps": 68,
+      "goalAchievement": 68
+    }
+  }
+}

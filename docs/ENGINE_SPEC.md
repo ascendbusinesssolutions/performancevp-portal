@@ -2,7 +2,7 @@
 
 **Status:** Preserved verbatim from Section 5 of the first portal build plan (June 2026), which was archived on 21 September 2026 at `archive/PORTAL_BUILD_PLAN_v1.md`. The engine is unchanged by the move to the self-service product, and this text remains its specification. `PORTAL_BUILD_PLAN.md` Section 5 records the three notes that apply to the online product.
 
-**Reading note.** Section numbers cited inside the text (for example Section 13, Section 8, Section 2) refer to the archived first plan. The intervention module the text mentions has been replaced by the recommendations package, which calls `projectImpact` in the same way. The online product supplies no DLP decision sample and no behavioural triangulators, so those outputs are empty there. The production workbook did not implement the perception-only gap rule for O1, O2 and O3, or the rule that an empty input never scores as zero, until 21 September 2026, and now implements both (DECISIONS 1.1 and 1.4).
+**Reading note.** Section numbers cited inside the text (for example Section 13, Section 8, Section 2) refer to the archived first plan. The intervention module the text mentions has been replaced by the recommendations package, which calls `projectImpact` in the same way. The online product supplies no DLP decision sample and no behavioural triangulators, so those outputs are empty there. The production workbook did not implement the perception-only gap rule for O1, O2 and O3, or the rule that an empty input never scores as zero, until 21 September 2026, and now implements both (DECISIONS 1.1 and 1.4). `assemblePulseView` has no workbook formula and no parity benchmark; it is deferred to Milestone 6 with the pulse trajectory layer (22 September 2026).
 
 ---
 

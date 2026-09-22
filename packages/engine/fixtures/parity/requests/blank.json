@@ -1,0 +1,9 @@
+{
+  "name": "blank",
+  "purpose": "The blank template: every input cleared except the archetype.",
+  "input": {
+    "engagement": {
+      "archetype": "Default"
+    }
+  }
+}

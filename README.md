@@ -90,6 +90,21 @@ One route, `GET /api/jobs/daily`, runs every scheduled job. Vercel Cron calls it
 
 The first four enrol TOTP at their first sign-in. Local email, including sign-in codes and invitation links, appears in Mailpit at http://127.0.0.1:55324.
 
+## The staging database
+
+Staging is the Supabase project `xmvpinejfzvmofjsxbdh` in Sydney. Migrations reach it through the link, with `pnpm exec supabase link --project-ref xmvpinejfzvmofjsxbdh` and then `pnpm exec supabase db push`. The pgTAP suite reaches it through the session pooler instead:
+
+```
+export SESSION_POOLER='postgresql://postgres.xmvpinejfzvmofjsxbdh:<password, URL-encoded>@<session pooler host>:5432/postgres'
+pnpm exec supabase test db --db-url "$SESSION_POOLER"
+```
+
+The reason is the network, not the suite. `supabase test db` runs its test runner in a container. The direct database host, `db.<ref>.supabase.co`, is IPv6-only, and the Colima containers on this machine cannot resolve it, so `--linked` fails. The session pooler is reachable over IPv4 and works. Its URI is under Connect, Session pooler, in the Supabase dashboard, and its user is `postgres.<ref>`, not `postgres`. Each test file rolls back, so a run leaves nothing on staging. The suite passed there with 21 files and 334 assertions on 23 September 2026.
+
+`SESSION_POOLER` is the documented path for every remote database command: use `--db-url "$SESSION_POOLER"` wherever a command would otherwise use `--linked`. `db push` works through the link today. If it ever fails the same way, run `pnpm exec supabase db push --db-url "$SESSION_POOLER"`.
+
+The URI carries the database password. It is set in the shell for the session only, and never written to a file in the repository or committed. URL-encode the password (`@` as `%40`, `:` as `%3A`, `/` as `%2F`, `#` as `%23`, `%` as `%25`), and keep the whole URI in single quotes so zsh does not expand `$` or `!` inside it. An `export` typed at the prompt is kept in the shell history; start the line with a space when `HIST_IGNORE_SPACE` is set, or remove the entry afterwards.
+
 ## Version pins and why
 
 Each pin below is deliberate and is revisited when its blocker clears, not before.

@@ -192,8 +192,20 @@ export function passLine(orgId: string, check: Check): ReactNode {
   const pass = check.pass;
   if (check.level === "skipped") return readinessCopy["formalRatings.skipped"];
   switch (pass.key) {
-    case "units":
-      return fill(readinessCopy["units.pass"], { n: pass.n });
+    case "units": {
+      const line = fill(readinessCopy["units.pass"], { n: pass.n });
+      if (pass.grouping.length === 0) return line;
+      const grouping =
+        pass.grouping.length === 1
+          ? fill(readinessCopy["units.groupingOne"], { unit: pass.grouping[0]!.name })
+          : fill(readinessCopy["units.groupingMany"], {
+              list: listOf(
+                pass.grouping.map((u) => u.name),
+                { and: commonCopy["list.and"], more: (n) => fill(commonCopy["list.more"], { n }) },
+              ),
+            });
+      return `${line} ${grouping}`;
+    }
     case "unitForEveryone":
       return fill(readinessCopy["unitForEveryone.pass"], { n: pass.n });
     case "managers":

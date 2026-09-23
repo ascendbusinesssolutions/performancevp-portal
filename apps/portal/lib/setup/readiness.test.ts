@@ -138,6 +138,70 @@ describe("evaluateReadiness", () => {
     expect(evaluateReadiness(input).ready).toBe(false);
   });
 
+  it("exempts a grouping unit holding the head of the organisation and the executive (D1; 6.2)", () => {
+    const input = baseline();
+    // The head moves up into TOP with two executives: TOP has 3 of its own and units below it.
+    // The executives hold no role family, and one holds a family with no skills: neither counts,
+    // because the staff of a grouping unit are not surveyed or rated.
+    input.people = [
+      ...input.people.map((p) => (p.id === "h" ? { ...p, unit_id: "TOP" } : p)),
+      person("e1", "TOP", "h", { role_family_id: null }),
+      person("e2", "TOP", "h", { role_family_id: "EXEC" }),
+    ];
+    input.families = [...input.families, { id: "EXEC", name: "Executives", status: "active" }];
+    input.units = input.units.map((u) =>
+      u.id === "U1" ? { ...u, unit_leader_employee_id: "a1" } : u,
+    );
+    const result = evaluateReadiness(input);
+    expect(result.blockers).toBe(0);
+    expect(result.ready).toBe(true);
+    expect(result.measured.map((u) => u.id)).toEqual(["U1", "U2"]);
+    expect(check(input, "units").pass).toEqual({
+      key: "units",
+      n: 2,
+      grouping: [{ id: "TOP", name: "Unit TOP" }],
+    });
+    expect(check(input, "roleFamilies").findings).toEqual([]);
+    expect(check(input, "context").findings).toEqual([]);
+    // Still the head of the organisation, and still the manager of the people below.
+    expect(check(input, "managers").pass).toEqual({
+      key: "managers",
+      n: 23,
+      head: { id: "h", name: "Person h" },
+    });
+  });
+
+  it("treats every level of grouping alike, and still blocks a unit of 9 below one (D1)", () => {
+    const input = baseline();
+    input.units = [unit("TOP", null), unit("MID", "TOP"), unit("U1", "MID"), unit("U2", "MID")];
+    input.people = [...input.people.filter((p) => p.id !== "u2m0"), person("m1", "MID", "h")];
+    const units = check(input, "units");
+    expect(units.findings).toEqual([
+      { kind: "unitSize", unit: { id: "U2", name: "Unit U2" }, n: 9 },
+    ]);
+    expect(units.pass).toEqual({
+      key: "units",
+      n: 2,
+      grouping: [
+        { id: "MID", name: "Unit MID" },
+        { id: "TOP", name: "Unit TOP" },
+      ],
+    });
+  });
+
+  it("measures a unit with units below it once it has 10 or more of its own", () => {
+    const input = baseline();
+    input.people = [
+      ...input.people,
+      ...Array.from({ length: 10 }, (_, i) => person(`t${i}`, "TOP", "h")),
+    ];
+    const result = evaluateReadiness(input);
+    expect(result.measured.map((u) => u.id)).toEqual(["TOP", "U1", "U2"]);
+    expect(check(input, "units").pass).toEqual({ key: "units", n: 3, grouping: [] });
+    // Measured, so its context is now required.
+    expect(check(input, "context").findings.map((f) => "unit" in f && f.unit.id)).toEqual(["TOP"]);
+  });
+
   it("allows one head of the organisation without a manager, and no one else (D2)", () => {
     const input = baseline();
     input.people = input.people.map((p) =>

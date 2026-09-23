@@ -43,6 +43,8 @@ export const readinessCopy = {
 
   // Pass lines.
   "units.pass": "All {n} units.",
+  "units.groupingOne": "{unit} groups the units below it and is not measured.",
+  "units.groupingMany": "{list} group the units below them and are not measured.",
   "managers.pass": "{n} of {n}.",
   "managers.passHead": "{n} of {n}, with {head} at the head of the organisation.",
   "unitForEveryone.pass": "{n} of {n}.",

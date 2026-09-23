@@ -1,7 +1,9 @@
+import { constants } from "@performancevp/intake";
+
 /**
- * The unit structure as the setup screens show it: a tree in reading order, and who could lead each
- * unit. Pure, so it is unit-tested; the database enforces the same rules (no unit below itself, a
- * leader who is an active member of the unit).
+ * The unit structure as the setup screens show it: a tree in reading order, which units are
+ * measured, and who could lead each unit. Pure, so it is unit-tested; the database enforces the
+ * same rules (no unit below itself, a leader who is an active member of the unit).
  */
 
 /** Unit types (Measurement Reference Part 2, 7.1); the type chooses the decision-type starter list. */
@@ -93,6 +95,33 @@ export function descendantIds(units: readonly UnitRow[], unitId: string): Set<st
 /** Whether a unit has active units below it. */
 export function hasChildren(units: readonly UnitRow[], unitId: string): boolean {
   return units.some((u) => u.status === "active" && u.parent_unit_id === unitId);
+}
+
+/**
+ * A grouping unit (Online Measurement Specification 6.2): a unit with active units below it and
+ * fewer than 10 staff of its own, typically the head of the organisation and a small executive
+ * group. It is not measured and does not block the first campaign. Its own staff are not surveyed
+ * as members of any unit, though they still manage the people below them.
+ */
+export function isGroupingUnit(
+  units: readonly UnitRow[],
+  unitId: string,
+  ownStaff: number,
+): boolean {
+  return ownStaff < constants.SETUP.minUnitStaff && hasChildren(units, unitId);
+}
+
+/**
+ * Whether a campaign measures a unit: it has people of its own and is not a grouping unit. A unit
+ * of 1 to 9 with nothing below it counts, so its context is set up while the readiness check
+ * blocks on its size.
+ */
+export function isMeasuredUnit(
+  units: readonly UnitRow[],
+  unitId: string,
+  ownStaff: number,
+): boolean {
+  return ownStaff > 0 && !isGroupingUnit(units, unitId, ownStaff);
 }
 
 /**

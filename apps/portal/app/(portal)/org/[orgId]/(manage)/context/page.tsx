@@ -24,7 +24,7 @@ import {
   type FamilyProblem,
   incompleteParts,
 } from "@/lib/setup/frameworks";
-import { unitTree } from "@/lib/setup/units";
+import { isMeasuredUnit, unitTree } from "@/lib/setup/units";
 import { createClient } from "@/lib/supabase/server";
 
 const SETUP = constants.SETUP;
@@ -47,7 +47,8 @@ function problemText(problem: FamilyProblem): string {
 /**
  * Setup step 3: unit context (PORTAL_BUILD_PLAN.md 7; Online Measurement Specification 3.1, 3.3,
  * 4.3 and 4.5). The role families with whether each is ready, the template library to start from,
- * and every unit with people in it, with its context counts against the setup rules.
+ * and every unit a campaign measures (grouping units are not), with its context counts against
+ * the setup rules.
  */
 export default async function ContextPage({ params }: PageProps<"/org/[orgId]/context">) {
   const { orgId } = await params;
@@ -66,7 +67,9 @@ export default async function ContextPage({ params }: PageProps<"/org/[orgId]/co
     .sort((a, b) => a.name.localeCompare(b.name, "en-AU"));
   const peopleIn = (familyId: string) => people.filter((p) => p.role_family_id === familyId).length;
   const counts = headcountByUnit(people);
-  const staffed = unitTree(units).filter((e) => (counts.get(e.unit.id) ?? 0) > 0);
+  const measured = unitTree(units).filter((e) =>
+    isMeasuredUnit(units, e.unit.id, counts.get(e.unit.id) ?? 0),
+  );
   const roleFamilyTemplates = templates.filter((t) => t.kind === "role_family");
 
   return (
@@ -184,7 +187,7 @@ export default async function ContextPage({ params }: PageProps<"/org/[orgId]/co
           systems: fill(contextCopy["range"], SETUP.primarySystemsPerUnit),
         })}
       >
-        {staffed.length === 0 ? (
+        {measured.length === 0 ? (
           <p className="text-sm text-grey">{contextCopy["units.none"]}</p>
         ) : (
           <Table testId="unit-context">
@@ -198,7 +201,7 @@ export default async function ContextPage({ params }: PageProps<"/org/[orgId]/co
               <Th />
             </Head>
             <tbody>
-              {staffed.map(({ unit }) => {
+              {measured.map(({ unit }) => {
                 const c = contextCounts(unit.id, context);
                 const complete = incompleteParts(c).length === 0;
                 return (

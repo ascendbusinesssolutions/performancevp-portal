@@ -61,7 +61,7 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
     {
       slots: { domains: "3 to 6", decisions: "8 to 12", processes: 3, systems: "3 to 8" },
       expected:
-        "For every unit with people in it: 3 to 6 knowledge domains, 8 to 12 decision types, 3 critical processes and 3 to 8 primary systems.",
+        "For every unit that is measured: 3 to 6 knowledge domains, 8 to 12 decision types, 3 critical processes and 3 to 8 primary systems.",
     },
   ],
   "context.unit.meta": [
@@ -123,6 +123,18 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
     { slots: { b: 2, w: 1, p: 9 }, expected: "Blockers 2 \u00b7 Warnings 1 \u00b7 Passed 9" },
   ],
   "readiness.units.pass": [{ slots: { n: 4 }, expected: "All 4 units." }],
+  "readiness.units.groupingOne": [
+    {
+      slots: { unit: "Executive" },
+      expected: "Executive groups the units below it and is not measured.",
+    },
+  ],
+  "readiness.units.groupingMany": [
+    {
+      slots: { list: "Executive and Corporate" },
+      expected: "Executive and Corporate group the units below them and are not measured.",
+    },
+  ],
   "readiness.managers.pass": [{ slots: { n: 120 }, expected: "120 of 120." }],
   "readiness.managers.passHead": [
     {

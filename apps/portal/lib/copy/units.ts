@@ -7,7 +7,7 @@ export const unitsCopy = {
   "page.title": "Units",
   "page.meta": "{units} units, {people} people",
   "page.intro":
-    "Each unit is measured on its own and needs 10 or more people. Add units here, or let a directory upload create them from its unit codes, then arrange them into a hierarchy.",
+    "Each unit is measured on its own and needs 10 or more people of its own. A unit with units below it and fewer than 10 of its own, such as the head of the organisation and the executive, groups them and is not measured. Add units here, or let a directory upload create them from its unit codes, then arrange them into a hierarchy.",
 
   "col.code": "Code",
   "col.unit": "Unit",
@@ -16,6 +16,7 @@ export const unitsCopy = {
   "col.leader": "Unit leader",
   "row.edit": "Edit",
   "row.noStaff": "No one yet",
+  "row.grouping": "Not measured: groups the units below",
 
   "leader.proposed": "Proposed: {name}",
   "leader.none": "No one to propose",

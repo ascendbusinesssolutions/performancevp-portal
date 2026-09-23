@@ -72,7 +72,7 @@ export const contextCopy = {
   // Per unit.
   "units.title": "Each unit's context",
   "units.intro":
-    "For every unit with people in it: {domains} knowledge domains, {decisions} decision types, {processes} critical processes and {systems} primary systems.",
+    "For every unit that is measured: {domains} knowledge domains, {decisions} decision types, {processes} critical processes and {systems} primary systems.",
   "units.col.unit": "Unit",
   "units.col.domains": "Knowledge domains",
   "units.col.decisions": "Decision types",
@@ -82,7 +82,7 @@ export const contextCopy = {
   "units.open": "Open",
   "units.status.complete": "Complete",
   "units.status.incomplete": "Incomplete",
-  "units.none": "No units with people in them yet. Upload the directory first.",
+  "units.none": "No units to measure yet. Upload the directory first.",
 
   "unit.meta": "{people} people. Unit type: {type}.",
   "unit.prompts": "Questions that help",

@@ -11,7 +11,7 @@ import {
 } from "./frameworks";
 import type { FormalRatingRow, SnapshotPerson } from "./snapshot";
 import { unitSnapshot } from "./snapshot";
-import { hasChildren, leaderState, type UnitRow } from "./units";
+import { isGroupingUnit, isMeasuredUnit, leaderState, type UnitRow } from "./units";
 
 /**
  * The readiness check (PORTAL_BUILD_PLAN.md 7; PORTAL_COPY_SPEC.md S2; Milestone 4 plan, Section 7,
@@ -85,7 +85,7 @@ export type CheckKey =
 export type Level = "passed" | "warning" | "blocker" | "skipped";
 
 export type PassDetail =
-  | { key: "units"; n: number }
+  | { key: "units"; n: number; grouping: Ref[] }
   | { key: "unitForEveryone"; n: number }
   | { key: "managers"; n: number; head: Ref | null }
   | { key: "workEmails"; n: number }
@@ -108,7 +108,7 @@ export interface Readiness {
   passed: number;
   /** Every check passed, was skipped or only warns: a first campaign may launch. */
   ready: boolean;
-  /** Units a campaign would measure: active units with people in them. */
+  /** Units a campaign would measure: active units with people of their own, less grouping units. */
   measured: Ref[];
 }
 
@@ -127,28 +127,31 @@ export function evaluateReadiness(input: ReadinessInput): Readiness {
   const staffOf = new Map<string, ReadinessPerson[]>();
   for (const p of input.people) staffOf.set(p.unit_id, [...(staffOf.get(p.unit_id) ?? []), p]);
   const unitRef = (u: UnitRow): Ref => ({ id: u.id, name: u.name });
-  const measuredUnits = active
-    .filter((u) => (staffOf.get(u.id) ?? []).length > 0)
-    .sort((a, b) => a.name.localeCompare(b.name, "en-AU"));
+  const ownStaff = (u: UnitRow) => (staffOf.get(u.id) ?? []).length;
+  const sorted = [...active].sort((a, b) => a.name.localeCompare(b.name, "en-AU"));
+  const grouping = sorted.filter((u) => isGroupingUnit(input.units, u.id, ownStaff(u)));
+  const measuredUnits = sorted.filter((u) => isMeasuredUnit(input.units, u.id, ownStaff(u)));
+  // The staff of measured units: the people a campaign surveys and managers rate. The staff of a
+  // grouping unit are neither, though they still manage the people below them.
+  const members = measuredUnits.flatMap((u) => staffOf.get(u.id) ?? []);
   const checks: Check[] = [];
 
-  // Units of 10 (D1): a unit's own staff count. A grouping unit (units below it, no staff of its
-  // own) is not measured; a unit with 1 to 9 people, or an empty unit with nothing below it, blocks.
+  // Units of 10 (D1; Online Measurement Specification 6.2): a unit's own staff count. A grouping
+  // unit (units below it, fewer than 10 of its own) is not measured and does not block; a unit of
+  // 1 to 9 people with nothing below it, or an empty one, blocks.
   {
-    const findings: Finding[] = [...active]
-      .sort((a, b) => a.name.localeCompare(b.name, "en-AU"))
-      .flatMap((u): Finding[] => {
-        const n = (staffOf.get(u.id) ?? []).length;
-        const grouping = n === 0 && hasChildren(input.units, u.id);
-        return !grouping && n < SETUP.minUnitStaff
-          ? [{ kind: "unitSize", unit: unitRef(u), n }]
-          : [];
-      });
+    const findings: Finding[] = sorted
+      .filter((u) => !isGroupingUnit(input.units, u.id, ownStaff(u)))
+      .flatMap((u): Finding[] =>
+        ownStaff(u) < SETUP.minUnitStaff
+          ? [{ kind: "unitSize", unit: unitRef(u), n: ownStaff(u) }]
+          : [],
+      );
     checks.push({
       key: "units",
       level: findings.length > 0 || measuredUnits.length === 0 ? "blocker" : "passed",
       findings,
-      pass: { key: "units", n: measuredUnits.length },
+      pass: { key: "units", n: measuredUnits.length, grouping: grouping.map(unitRef) },
     });
   }
 
@@ -221,7 +224,7 @@ export function evaluateReadiness(input: ReadinessInput): Readiness {
       const n = (staffOf.get(u.id) ?? []).filter((p) => !p.role_family_id).length;
       if (n > 0) findings.push({ kind: "noRoleFamily", unit: unitRef(u), n });
     }
-    const inUse = new Set(input.people.map((p) => p.role_family_id).filter(Boolean) as string[]);
+    const inUse = new Set(members.map((p) => p.role_family_id).filter(Boolean) as string[]);
     const families = input.families
       .filter((f) => inUse.has(f.id))
       .sort((a, b) => a.name.localeCompare(b.name, "en-AU"));

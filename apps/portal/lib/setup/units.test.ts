@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   descendantIds,
   hasChildren,
+  isGroupingUnit,
+  isMeasuredUnit,
   leaderCandidates,
   leaderState,
   type PersonRef,
@@ -89,5 +91,27 @@ describe("the unit leader", () => {
   it("keeps a designation over the rule", () => {
     const state = leaderState(unit("v", null, { unit_leader_employee_id: "b" }), people);
     expect(state).toEqual({ kind: "designated", person: people[5] });
+  });
+});
+
+describe("isGroupingUnit and isMeasuredUnit (Online Measurement Specification 6.2)", () => {
+  const units = [unit("top", null), unit("a", "top"), unit("b", null)];
+  it("groups a unit with units below it and fewer than 10 of its own", () => {
+    expect(isGroupingUnit(units, "top", 0)).toBe(true);
+    expect(isGroupingUnit(units, "top", 9)).toBe(true);
+    expect(isGroupingUnit(units, "top", 10)).toBe(false);
+    expect(isMeasuredUnit(units, "top", 3)).toBe(false);
+    expect(isMeasuredUnit(units, "top", 10)).toBe(true);
+  });
+
+  it("never groups a unit with nothing below it: it is measured once it has anyone", () => {
+    expect(isGroupingUnit(units, "b", 4)).toBe(false);
+    expect(isMeasuredUnit(units, "b", 4)).toBe(true);
+    expect(isMeasuredUnit(units, "b", 0)).toBe(false);
+  });
+
+  it("ignores retired units below", () => {
+    const retired = [unit("top", null), unit("a", "top", { status: "retired" })];
+    expect(isGroupingUnit(retired, "top", 3)).toBe(false);
   });
 });

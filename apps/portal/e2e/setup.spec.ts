@@ -25,7 +25,7 @@ interface PersonSpec {
   ref: string;
   first: string;
   last: string;
-  unit: "OPS" | "CLM" | "SAL";
+  unit: "GRP" | "OPS" | "CLM" | "SAL";
   manager: string | null;
   family: "People leaders" | "Claims officers" | "Sales";
   teamLeader?: boolean;
@@ -34,7 +34,12 @@ interface PersonSpec {
   rating?: string;
 }
 
-const UNIT_NAMES = { OPS: "Operations", CLM: "Claims", SAL: "Sales" } as const;
+const UNIT_NAMES = {
+  GRP: "Harbour Freight",
+  OPS: "Operations",
+  CLM: "Claims",
+  SAL: "Sales",
+} as const;
 const FIRST = [
   "Ava",
   "Ben",
@@ -52,11 +57,13 @@ const FIRST = [
 
 function people(): PersonSpec[] {
   const list: PersonSpec[] = [
+    // The head of the organisation sits in the grouping unit above the three measured units
+    // (Online Measurement Specification 6.2): not measured, and still everyone's manager above.
     {
       ref: "H001",
       first: "Olivia",
       last: "Head",
-      unit: "OPS",
+      unit: "GRP",
       manager: null,
       family: "People leaders",
       leadership: true,
@@ -405,7 +412,7 @@ test("a new organisation reaches a passing readiness check through the screens a
   await shot(page, info, "03-hub-returned");
 
   // Step 1 again: the units under the grouping unit, their types and leaders.
-  await setUpUnit(page, "Operations", "operations", "Olivia Head");
+  await setUpUnit(page, "Operations", "operations", "Omar Lead");
   await setUpUnit(page, "Claims", "professional_services", "Chloe Lead");
   await setUpUnit(page, "Sales", "sales", "Sam Lead");
 
@@ -472,6 +479,9 @@ test("a new organisation reaches a passing readiness check through the screens a
   // The check passes.
   await go(page, "Readiness");
   await expect(page.getByTestId("readiness-passed")).toBeVisible();
+  await expect(page.getByTestId("check-units")).toContainText(
+    "All 3 units. Harbour Freight groups the units below it and is not measured.",
+  );
   await expect(page.getByTestId("readiness-summary")).toHaveText(
     "Blockers 0 · Warnings 1 · Passed 11",
   );

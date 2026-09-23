@@ -13,6 +13,7 @@ import { headcountByUnit, loadActivePeople, loadUnits } from "@/lib/setup/data";
 import {
   asUnitType,
   hasChildren,
+  isGroupingUnit,
   leaderState,
   personName,
   UNIT_TYPES,
@@ -92,17 +93,21 @@ export default async function UnitsPage({ params }: PageProps<"/org/[orgId]/unit
                       {counts.get(unit.id) ?? 0}
                     </Td>
                     <Td muted>
-                      {leader.kind === "designated"
-                        ? leader.person
-                          ? personName(leader.person)
-                          : unitsCopy["leader.unknown"]
-                        : leader.kind === "proposed"
-                          ? fill(unitsCopy["leader.proposed"], { name: personName(leader.person) })
-                          : leader.kind === "ambiguous"
-                            ? fill(unitsCopy["leader.ambiguous"], { n: leader.candidates.length })
-                            : (counts.get(unit.id) ?? 0) === 0
-                              ? unitsCopy["row.noStaff"]
-                              : unitsCopy["leader.none"]}
+                      {isGroupingUnit(units, unit.id, counts.get(unit.id) ?? 0)
+                        ? unitsCopy["row.grouping"]
+                        : leader.kind === "designated"
+                          ? leader.person
+                            ? personName(leader.person)
+                            : unitsCopy["leader.unknown"]
+                          : leader.kind === "proposed"
+                            ? fill(unitsCopy["leader.proposed"], {
+                                name: personName(leader.person),
+                              })
+                            : leader.kind === "ambiguous"
+                              ? fill(unitsCopy["leader.ambiguous"], { n: leader.candidates.length })
+                              : (counts.get(unit.id) ?? 0) === 0
+                                ? unitsCopy["row.noStaff"]
+                                : unitsCopy["leader.none"]}
                     </Td>
                     <Td align="right">
                       <Link

@@ -18,7 +18,7 @@ import {
   loadUnits,
 } from "@/lib/setup/data";
 import { unitSnapshot } from "@/lib/setup/snapshot";
-import { unitTree } from "@/lib/setup/units";
+import { isMeasuredUnit, unitTree } from "@/lib/setup/units";
 import { createClient } from "@/lib/supabase/server";
 
 import { saveMapping, skipMapping } from "./actions";
@@ -54,7 +54,9 @@ export default async function FormalRatingsPage({
   );
   const bandOf = new Map((map?.entries ?? []).map((e) => [e.label, e.band]));
   const counts = headcountByUnit(people);
-  const staffed = unitTree(units).filter((e) => (counts.get(e.unit.id) ?? 0) > 0);
+  const measured = unitTree(units).filter((e) =>
+    isMeasuredUnit(units, e.unit.id, counts.get(e.unit.id) ?? 0),
+  );
   const decision =
     map === null
       ? ratingsMapCopy["decision.none"]
@@ -197,7 +199,7 @@ export default async function FormalRatingsPage({
                   <Th>{ratingsMapCopy["units.col.route"]}</Th>
                 </Head>
                 <tbody>
-                  {staffed.map(({ unit }) => {
+                  {measured.map(({ unit }) => {
                     const result = evaluateFormalRatings(
                       { scaleMap: map.entries, calibrated: map.calibrated === true },
                       unitSnapshot(unit.id, people, held),

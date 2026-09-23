@@ -68,7 +68,7 @@ All tenant-owned tables carry `organisation_id`. Reference tables are seeded by 
 | Table | Notes |
 |---|---|
 | `organisations` | Adds `data_contribution_opt_out` (default false) and sector metadata (ANZSIC division and class, size band). The employee band and the subscription state live on `subscriptions` (2.8). There is no support-access switch (3.2). |
-| `business_units` | Adds a stable `unit_code` and `unit_leader_employee_id` (an active member of the unit, or nobody). Hierarchy by `parent_unit_id`. Minimum 10 of its own staff to be measurable; a unit with units below it and no staff of its own is not measured. |
+| `business_units` | Adds a stable `unit_code` and `unit_leader_employee_id` (an active member of the unit, or nobody). Hierarchy by `parent_unit_id`. Minimum 10 of its own staff to be measurable; a unit with units below it and fewer than 10 of its own is a grouping unit and is not measured (Online Measurement Specification 6.2). |
 | `unit_lineage` | Predecessor and successor links for merges and splits, with the effective date. Renames need no lineage row. |
 | `teams` | Team within a unit, for CII team-level scoring. |
 | `profiles` | One row per authenticated user. Flags: `is_owner`, `is_support_staff`. |

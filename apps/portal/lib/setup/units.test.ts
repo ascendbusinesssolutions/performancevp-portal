@@ -6,7 +6,6 @@ import {
   eligibleLeaders,
   hasChildren,
   isGroupingUnit,
-  isMeasuredUnit,
   leaderCandidates,
   leaderState,
   type PersonRef,
@@ -96,20 +95,16 @@ describe("the unit leader", () => {
   });
 });
 
-describe("isGroupingUnit and isMeasuredUnit (Online Measurement Specification 6.2)", () => {
+describe("isGroupingUnit (Online Measurement Specification 6.2)", () => {
   const units = [unit("top", null), unit("a", "top"), unit("b", null)];
   it("groups a unit with units below it and fewer than 10 of its own", () => {
     expect(isGroupingUnit(units, "top", 0)).toBe(true);
     expect(isGroupingUnit(units, "top", 9)).toBe(true);
     expect(isGroupingUnit(units, "top", 10)).toBe(false);
-    expect(isMeasuredUnit(units, "top", 3)).toBe(false);
-    expect(isMeasuredUnit(units, "top", 10)).toBe(true);
   });
 
-  it("never groups a unit with nothing below it: it is measured once it has anyone", () => {
+  it("never groups a unit with nothing below it", () => {
     expect(isGroupingUnit(units, "b", 4)).toBe(false);
-    expect(isMeasuredUnit(units, "b", 4)).toBe(true);
-    expect(isMeasuredUnit(units, "b", 0)).toBe(false);
   });
 
   it("ignores retired units below", () => {

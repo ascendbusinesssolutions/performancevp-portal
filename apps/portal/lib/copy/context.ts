@@ -82,9 +82,15 @@ export const contextCopy = {
   "units.open": "Open",
   "units.status.complete": "Complete",
   "units.status.incomplete": "Incomplete",
-  "units.none": "No units to measure yet. Upload the directory first.",
+  "units.none":
+    "No unit has 10 or more yet. Upload the directory, and combine units under 10 on the units screen.",
 
   "unit.meta": "{people} people. Unit type: {type}.",
+  "unit.metaCombined": "{people} in {list}.",
+  "unit.start.title": "Start from a unit's context",
+  "unit.start.intro":
+    "Context is defined once for the combination. Copy the knowledge domains, decision types, processes and systems of one of its units, then adjust them. The unit keeps its own.",
+  "unit.start.from": "Start from the context of {unit}",
   "unit.prompts": "Questions that help",
   "unit.remove": "Remove",
   "unit.add": "Add",

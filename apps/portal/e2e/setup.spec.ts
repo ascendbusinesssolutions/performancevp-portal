@@ -420,7 +420,8 @@ test("a new organisation reaches a passing readiness check through the screens a
   await fillFamilyFromTemplate(page, "Claims officers", "customer_service", "De-escalation");
   await fillFamilyFromTemplate(page, "People leaders", "people_leaders");
   await fillFamilyFromTemplate(page, "Sales", "sales");
-  for (const unit of ["Operations", "Claims", "Sales"]) await completeUnitContext(page, unit);
+  // Context is asked of measured units: Sales, at 9, has its context once it has 10.
+  for (const unit of ["Operations", "Claims"]) await completeUnitContext(page, unit);
 
   // Step 4: the formal ratings Claims carries, mapped and declared calibrated.
   await go(page, "Formal ratings");
@@ -431,7 +432,7 @@ test("a new organisation reaches a passing readiness check through the screens a
   await page.getByRole("button", { name: "Save the mapping" }).click();
   await expect(page.getByTestId("mapping-decision")).toHaveText("Mapped, and declared calibrated.");
   await expect(page.getByTestId("route-CLM")).toContainText("Formal ratings");
-  await expect(page.getByTestId("route-SAL")).toContainText("Managers' ratings");
+  await expect(page.getByTestId("route-OPS")).toContainText("Managers' ratings");
 
   // Step 5: the readiness check names the three faults in the file, and offers Sales the units it
   // could be measured with. Harbour Freight, holding the head, waits for the grouping choice.
@@ -483,6 +484,7 @@ test("a new organisation reaches a passing readiness check through the screens a
   await page.getByLabel("Manager's employee ID").fill("H027");
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByText("Saved.").first()).toBeVisible();
+  await completeUnitContext(page, "Sales");
 
   // The check passes.
   await go(page, "Readiness");

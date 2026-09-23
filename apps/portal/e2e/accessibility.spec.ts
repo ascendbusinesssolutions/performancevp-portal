@@ -56,6 +56,10 @@ test("every setup screen passes an axe scan", async ({ page }) => {
     `select id from public.role_families where organisation_id = $1 and name = 'Analyst'`,
     [orgId],
   );
+  const [opsMeasured] = await sql<{ id: string }>(
+    `select id from public.measurement_units where single_unit_id = $1`,
+    [ops!.id],
+  );
   const [person] = await sql<{ id: string }>(
     `select id from public.employees where organisation_id = $1 and employee_ref = 'L004'`,
     [orgId],
@@ -71,7 +75,7 @@ test("every setup screen passes an axe scan", async ({ page }) => {
     ["unit context", `/org/${orgId}/context`],
     ["role family", `/org/${orgId}/context/role-families/${family!.id}`],
     ["template", `/org/${orgId}/context/role-families/new?template=sales`],
-    ["context of a unit", `/org/${orgId}/context/units/${ops!.id}`],
+    ["context of a unit", `/org/${orgId}/context/units/${opsMeasured!.id}`],
     ["formal ratings", `/org/${orgId}/formal-ratings`],
     ["readiness", `/org/${orgId}/readiness`],
   ];

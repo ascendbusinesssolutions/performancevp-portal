@@ -11,14 +11,14 @@ import { fill } from "@/lib/copy/template";
 import { sydneyToday } from "@/lib/dates";
 import { requireOrgManager } from "@/lib/org/context";
 import {
-  headcountByUnit,
   loadActivePeople,
   loadFormalRatingsForCheck,
+  loadMeasurementUnits,
   loadScaleMap,
   loadUnits,
 } from "@/lib/setup/data";
-import { unitSnapshot } from "@/lib/setup/snapshot";
-import { isMeasuredUnit, unitTree } from "@/lib/setup/units";
+import { measurementModel } from "@/lib/setup/measurement";
+import { measurementSnapshot } from "@/lib/setup/snapshot";
 import { createClient } from "@/lib/supabase/server";
 
 import { saveMapping, skipMapping } from "./actions";
@@ -29,8 +29,8 @@ const BANDS = [5, 4, 3, 2, 1] as const;
  * Setup step 4, optional: the formal ratings mapping (Online Measurement Specification 6.4). The
  * labels found in the directory with how many people hold each and how many are dated within 12
  * months, mapped onto the five talent bands, with the calibration declaration; or the step
- * skipped. Each unit's route is previewed with the intake package's own evaluateFormalRatings on
- * the live directory. The ratings are read through the logged function (as a check); only counts
+ * skipped. Each measurement unit's route is previewed with the intake package's own
+ * evaluateFormalRatings on the live directory, over 80% of the measurement unit's FTE. The ratings are read through the logged function (as a check); only counts
  * reach the page.
  */
 export default async function FormalRatingsPage({
@@ -39,11 +39,12 @@ export default async function FormalRatingsPage({
   const { orgId } = await params;
   const org = await requireOrgManager(orgId);
   const supabase = await createClient();
-  const [ratings, map, people, units] = await Promise.all([
+  const [ratings, map, people, units, measurement] = await Promise.all([
     loadFormalRatingsForCheck(supabase, orgId),
     loadScaleMap(supabase, orgId),
     loadActivePeople(supabase, orgId),
     loadUnits(supabase, orgId),
+    loadMeasurementUnits(supabase, orgId),
   ]);
   const today = sydneyToday();
   const activeIds = new Set(people.map((p) => p.id));
@@ -53,9 +54,8 @@ export default async function FormalRatingsPage({
     a.localeCompare(b, "en-AU"),
   );
   const bandOf = new Map((map?.entries ?? []).map((e) => [e.label, e.band]));
-  const counts = headcountByUnit(people);
-  const measured = unitTree(units).filter((e) =>
-    isMeasuredUnit(units, e.unit.id, counts.get(e.unit.id) ?? 0),
+  const measured = measurementModel({ units, people, ...measurement }).views.filter(
+    (v) => v.state === "measured",
   );
   const decision =
     map === null
@@ -192,41 +192,50 @@ export default async function FormalRatingsPage({
               title={ratingsMapCopy["units.title"]}
               intro={ratingsMapCopy["units.intro"]}
             >
-              <Table testId="unit-routes">
-                <Head>
-                  <Th>{ratingsMapCopy["units.col.unit"]}</Th>
-                  <Th align="right">{ratingsMapCopy["units.col.coverage"]}</Th>
-                  <Th>{ratingsMapCopy["units.col.route"]}</Th>
-                </Head>
-                <tbody>
-                  {measured.map(({ unit }) => {
-                    const result = evaluateFormalRatings(
-                      { scaleMap: map.entries, calibrated: map.calibrated === true },
-                      unitSnapshot(unit.id, people, held),
-                      today,
-                    );
-                    return (
-                      <Row key={unit.id} testId={`route-${unit.unit_code}`}>
-                        <Td>{unit.name}</Td>
-                        <Td figure align="right">
-                          {fill(ratingsMapCopy["units.coverage"], {
-                            pct: Math.floor((result?.coverage ?? 0) * 100),
-                          })}
-                        </Td>
-                        <Td>
-                          {result?.qualifies
-                            ? `${ratingsMapCopy["units.route.formal"]}, ${
-                                result.treatment === "as-declared"
-                                  ? ratingsMapCopy["units.treatment.asDeclared"]
-                                  : ratingsMapCopy["units.treatment.capped"]
-                              }`
-                            : ratingsMapCopy["units.route.managers"]}
-                        </Td>
-                      </Row>
-                    );
-                  })}
-                </tbody>
-              </Table>
+              {measured.length === 0 ? (
+                <p className="text-sm text-grey">{ratingsMapCopy["units.none"]}</p>
+              ) : (
+                <Table testId="unit-routes">
+                  <Head>
+                    <Th>{ratingsMapCopy["units.col.unit"]}</Th>
+                    <Th align="right">{ratingsMapCopy["units.col.coverage"]}</Th>
+                    <Th>{ratingsMapCopy["units.col.route"]}</Th>
+                  </Head>
+                  <tbody>
+                    {measured.map((view) => {
+                      const result = evaluateFormalRatings(
+                        { scaleMap: map.entries, calibrated: map.calibrated === true },
+                        measurementSnapshot(
+                          view.units.map((u) => u.id),
+                          view.combined,
+                          people,
+                          held,
+                        ),
+                        today,
+                      );
+                      return (
+                        <Row key={view.row.id} testId={`route-${view.row.code}`}>
+                          <Td>{view.row.name}</Td>
+                          <Td figure align="right">
+                            {fill(ratingsMapCopy["units.coverage"], {
+                              pct: Math.floor((result?.coverage ?? 0) * 100),
+                            })}
+                          </Td>
+                          <Td>
+                            {result?.qualifies
+                              ? `${ratingsMapCopy["units.route.formal"]}, ${
+                                  result.treatment === "as-declared"
+                                    ? ratingsMapCopy["units.treatment.asDeclared"]
+                                    : ratingsMapCopy["units.treatment.capped"]
+                                }`
+                              : ratingsMapCopy["units.route.managers"]}
+                          </Td>
+                        </Row>
+                      );
+                    })}
+                  </tbody>
+                </Table>
+              )}
             </Section>
           ) : null}
         </>

@@ -31,7 +31,11 @@ function statusLine(step: Step, state: SetupState): string {
   switch (step.key) {
     case "organisation": {
       const count = state.units.filter((u) => u.status === "active").length;
-      return count > 0 ? fill(setupCopy["status.units"], { count }) : setupCopy["status.noUnits"];
+      if (count === 0) return setupCopy["status.noUnits"];
+      if (state.unitsToSettle === 1) return fill(setupCopy["status.unitsToSettleOne"], { count });
+      return state.unitsToSettle > 1
+        ? fill(setupCopy["status.unitsToSettle"], { count, n: state.unitsToSettle })
+        : fill(setupCopy["status.units"], { count });
     }
     case "directory":
       if (state.people.length === 0) return setupCopy["status.noPeople"];

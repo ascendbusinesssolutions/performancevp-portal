@@ -45,6 +45,8 @@ export interface SetupState {
   lastUpload: { id: string; uploaded_at: string } | null;
   contextDone: number;
   contextRemaining: string[];
+  /** Units under 10 still to combine, grow or retire, and combinations to choose again. */
+  unitsToSettle: number;
   formal: { held: number; current: number; decision: "mapped" | "skipped" | null };
 }
 
@@ -94,8 +96,12 @@ export const loadSetupState = cache(async (orgId: string): Promise<SetupState> =
   const activeIds = new Set(people.map((p) => p.id));
   const held = formalRatings.filter((r) => activeIds.has(r.employee_id));
 
+  // "Organisation and units" stays open while a unit is still under 10 and uncombined, so the hub
+  // leads to the units screen, where it is settled (Milestone 4b).
+  const unitsToSettle = readiness.checks.find((c) => c.key === "units")?.findings.length ?? 0;
+  const hasUnits = units.some((u) => u.status === "active");
   const done: Record<Exclude<StepKey, "campaign">, boolean> = {
-    organisation: units.some((u) => u.status === "active"),
+    organisation: hasUnits && unitsToSettle === 0,
     directory: people.length > 0,
     context: measuredUnits.length > 0 && complete.length === measuredUnits.length && familiesReady,
     formalRatings: formalCheck?.level === "skipped" || formalCheck?.level === "passed",
@@ -110,7 +116,10 @@ export const loadSetupState = cache(async (orgId: string): Promise<SetupState> =
   ];
   const next = order.find((k) => !done[k]);
   const hrefs: Record<StepKey, string> = {
-    organisation: `/org/${orgId}/setup/organisation`,
+    organisation:
+      hasUnits && unitsToSettle > 0
+        ? `/org/${orgId}/units#measurement`
+        : `/org/${orgId}/setup/organisation`,
     directory: `/org/${orgId}/directory`,
     context: `/org/${orgId}/context`,
     formalRatings: `/org/${orgId}/formal-ratings`,
@@ -140,6 +149,7 @@ export const loadSetupState = cache(async (orgId: string): Promise<SetupState> =
     people,
     lastUpload: applied ? { id: applied.id, uploaded_at: applied.uploaded_at } : null,
     contextDone: complete.length,
+    unitsToSettle,
     contextRemaining: measuredUnits
       .filter((u) => !complete.some((c) => c.id === u.id))
       .map((u) => u.name),

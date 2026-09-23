@@ -7,7 +7,6 @@ import type { FormState } from "@/lib/auth/form-state";
 import { contextCopy, type ContextCopyKey } from "@/lib/copy/context";
 import { setupCopy } from "@/lib/copy/setup";
 import { requireOrgManager } from "@/lib/org/context";
-import { singleMeasurementUnitId } from "@/lib/setup/data";
 import { type DbError, errorKey, type ErrorRule } from "@/lib/setup/db-errors";
 import { createClient } from "@/lib/supabase/server";
 
@@ -55,13 +54,11 @@ async function addNamed(
   supabase: Client,
   table: NamedTable,
   orgId: string,
-  unitId: string,
+  measurementUnitId: string,
   name: string,
   onInsert: Record<string, unknown> = {},
   onUpdate: Record<string, unknown> = {},
 ): Promise<DbError | null> {
-  const measurementUnitId = await singleMeasurementUnitId(supabase, orgId, unitId);
-  if (!measurementUnitId) return { code: "42501" };
   const { data: existing } = await supabase
     .from(table)
     .select("id, name, status")
@@ -315,7 +312,7 @@ export async function addDomain(_previous: FormState, formData: FormData): Promi
     supabase,
     "knowledge_domains",
     orgId,
-    text(formData, "unitId"),
+    text(formData, "measurementUnitId"),
     text(formData, "name"),
     level,
     level,
@@ -355,10 +352,8 @@ export async function addUnitItem(_previous: FormState, formData: FormData): Pro
   await requireOrgManager(orgId);
   const table = TABLES[text(formData, "kind")];
   if (!table || table === "knowledge_domains") return { error: setupCopy["error.generic"] };
-  const unitId = text(formData, "unitId");
+  const measurementUnitId = text(formData, "measurementUnitId");
   const supabase = await createClient();
-  const measurementUnitId = await singleMeasurementUnitId(supabase, orgId, unitId);
-  if (!measurementUnitId) return { error: setupCopy["error.generic"] };
   if (table === "critical_processes") {
     const { count } = await supabase
       .from("critical_processes")
@@ -368,7 +363,7 @@ export async function addUnitItem(_previous: FormState, formData: FormData): Pro
       .eq("status", "active");
     if ((count ?? 0) >= 3) return { error: contextCopy["error.processesFull"] };
   }
-  const error = await addNamed(supabase, table, orgId, unitId, text(formData, "name"));
+  const error = await addNamed(supabase, table, orgId, measurementUnitId, text(formData, "name"));
   return error ? failure(error) : done(orgId);
 }
 
@@ -392,7 +387,7 @@ export async function saveDecisionSelection(
 ): Promise<FormState> {
   const orgId = text(formData, "organisationId");
   await requireOrgManager(orgId);
-  const unitId = text(formData, "unitId");
+  const measurementUnitId = text(formData, "measurementUnitId");
   const offered = formData.getAll("offered").filter((v): v is string => typeof v === "string");
   const chosen = new Set(
     formData
@@ -401,8 +396,6 @@ export async function saveDecisionSelection(
       .map((v) => v.toLowerCase()),
   );
   const supabase = await createClient();
-  const measurementUnitId = await singleMeasurementUnitId(supabase, orgId, unitId);
-  if (!measurementUnitId) return { error: setupCopy["error.generic"] };
   const { data: existing } = await supabase
     .from("decision_types")
     .select("id, name, status")
@@ -413,7 +406,7 @@ export async function saveDecisionSelection(
     const row = byName.get(name.toLowerCase());
     if (chosen.has(name.toLowerCase())) {
       if (row?.status === "active") continue;
-      const error = await addNamed(supabase, "decision_types", orgId, unitId, name, {
+      const error = await addNamed(supabase, "decision_types", orgId, measurementUnitId, name, {
         from_starter_list: true,
       });
       if (error) return failure(error);
@@ -421,6 +414,54 @@ export async function saveDecisionSelection(
       const error = await retireRow(supabase, "decision_types", orgId, row.id);
       if (error) return failure(error);
     }
+  }
+  return done(orgId);
+}
+
+/**
+ * Starts a combined measurement unit's context from one of its units' own (Milestone 4b plan,
+ * Section 4): that unit's active domains, decision types, processes and systems are copied into the
+ * combination, which is offered only while it has none of its own. The unit keeps its context, and
+ * has it again if the combination is undone.
+ */
+export async function startContextFrom(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const orgId = text(formData, "organisationId");
+  await requireOrgManager(orgId);
+  const target = text(formData, "measurementUnitId");
+  const source = text(formData, "fromMeasurementUnitId");
+  const supabase = await createClient();
+  const read = (table: NamedTable, columns: string) =>
+    supabase
+      .from(table)
+      .select(columns)
+      .eq("organisation_id", orgId)
+      .eq("measurement_unit_id", source)
+      .eq("status", "active");
+  const [domains, decisions, processes, systems] = await Promise.all([
+    read("knowledge_domains", "name, criticality"),
+    read("decision_types", "name, from_starter_list"),
+    read("critical_processes", "name"),
+    read("primary_systems", "name"),
+  ]);
+  const copies: Array<[NamedTable, readonly object[]]> = [
+    ["knowledge_domains", (domains.data ?? []) as object[]],
+    ["decision_types", (decisions.data ?? []) as object[]],
+    ["critical_processes", (processes.data ?? []) as object[]],
+    ["primary_systems", (systems.data ?? []) as object[]],
+  ];
+  for (const [table, rows] of copies) {
+    if (rows.length === 0) continue;
+    const { error } = await supabase.from(table).insert(
+      rows.map((row) => ({
+        ...row,
+        organisation_id: orgId,
+        measurement_unit_id: target,
+      })) as never,
+    );
+    if (error) return failure(error);
   }
   return done(orgId);
 }

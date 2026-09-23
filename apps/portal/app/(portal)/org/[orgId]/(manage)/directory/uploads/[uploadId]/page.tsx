@@ -10,6 +10,7 @@ import { fill, listOf } from "@/lib/copy/template";
 import { sydneyToday } from "@/lib/dates";
 import { requireOrgManager } from "@/lib/org/context";
 import { previewCoverage, type UnitRatingSums } from "@/lib/setup/coverage";
+import { loadMeasurementUnits } from "@/lib/setup/data";
 import { isGroupingUnit } from "@/lib/setup/units";
 import { createClient } from "@/lib/supabase/server";
 
@@ -127,12 +128,13 @@ export default async function UploadPreviewPage({
     );
   }
 
-  const [{ data, error }, { data: units }] = await Promise.all([
+  const [{ data, error }, { data: units }, measurement] = await Promise.all([
     supabase.rpc("directory_upload_preview", { p_upload_id: uploadId }),
     supabase
       .from("business_units")
       .select("id, unit_code, name, parent_unit_id, status")
       .eq("organisation_id", orgId),
+    loadMeasurementUnits(supabase, orgId),
   ]);
   if (error || !data) redirect(`/org/${orgId}/directory`);
   const preview = data as unknown as Preview;
@@ -147,17 +149,34 @@ export default async function UploadPreviewPage({
   const peopleInCode = new Map(
     preview.formal_rating_coverage.map((u) => [u.unit_code.toLowerCase(), u.people]),
   );
-  // An upload creates units at the top level and moves no unit, so the hierarchy after it is the
-  // one now; only the headcounts change.
-  const grouping = new Set(
-    (units ?? [])
-      .filter((u) =>
-        isGroupingUnit(units ?? [], u.id, peopleInCode.get(u.unit_code.toLowerCase()) ?? 0),
-      )
-      .map((u) => u.unit_code.toLowerCase()),
-  );
-  const coverage = previewCoverage(preview.formal_rating_coverage, sydneyToday(), grouping);
-  const below = coverage.units.filter((u) => !u.qualifies).map((u) => unitLabel(u.unit_code));
+  // Coverage is judged per measurement unit (Online Measurement Specification 6.2). An upload
+  // creates units at the top level and moves no unit, so the hierarchy and the combinations after
+  // it are the ones now; only the headcounts change, and they decide which units are grouping units.
+  const unitByCode = new Map((units ?? []).map((u) => [u.unit_code.toLowerCase(), u]));
+  const combinationOf = new Map<string, { id: string; name: string }>();
+  for (const m of measurement.members) {
+    const row = measurement.measurementUnits.find((mu) => mu.id === m.measurement_unit_id);
+    if (row?.kind === "combined" && row.status === "active") {
+      combinationOf.set(m.business_unit_id, { id: row.id, name: row.name });
+    }
+  }
+  const labelOf = new Map<string, string>();
+  const measuredAs = (code: string): string | null => {
+    const unit = unitByCode.get(code.toLowerCase());
+    const combination = unit ? combinationOf.get(unit.id) : undefined;
+    if (combination) {
+      labelOf.set(combination.id, combination.name);
+      return combination.id;
+    }
+    if (unit && isGroupingUnit(units ?? [], unit.id, peopleInCode.get(code.toLowerCase()) ?? 0)) {
+      return null;
+    }
+    labelOf.set(code, unitLabel(code));
+    return code;
+  };
+  const coverage = previewCoverage(preview.formal_rating_coverage, sydneyToday(), measuredAs);
+  const coverageLabel = (key: string) => labelOf.get(key) ?? key;
+  const below = coverage.units.filter((u) => !u.qualifies).map((u) => coverageLabel(u.key));
 
   return (
     <main>
@@ -235,7 +254,7 @@ export default async function UploadPreviewPage({
                 list: coverage.units
                   .map((u) =>
                     fill(directoryCopy["preview.ratings.unitShare"], {
-                      unit: unitLabel(u.unit_code),
+                      unit: coverageLabel(u.key),
                       pct: Math.floor((u.share ?? 0) * 100),
                     }),
                   )

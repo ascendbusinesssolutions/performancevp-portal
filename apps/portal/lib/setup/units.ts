@@ -150,19 +150,6 @@ export function isGroupingUnit(
 }
 
 /**
- * Whether a campaign measures a unit: it has people of its own and is not a grouping unit. A unit
- * of 1 to 9 with nothing below it counts, so its context is set up while the readiness check
- * blocks on its size.
- */
-export function isMeasuredUnit(
-  units: readonly UnitLink[],
-  unitId: string,
-  ownStaff: number,
-): boolean {
-  return ownStaff > 0 && !isGroupingUnit(units, unitId, ownStaff);
-}
-
-/**
  * The people who could lead a unit by the default rule (decided 23 September 2026): active members
  * of the unit whose manager sits outside the unit, or who have no manager.
  */

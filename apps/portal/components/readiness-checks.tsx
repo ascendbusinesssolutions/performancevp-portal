@@ -104,8 +104,9 @@ const LIST_WORDS = {
 };
 
 /**
- * Where a measurement unit's findings are fixed. A single's are fixed on its unit's own screens; a
- * combination's on the measurement units section of the units screen, or its context (Milestone 4b).
+ * Where a measurement unit's findings are fixed: its context by measurement unit; the rest on its
+ * unit's own screens for a single, and on the units screen's measurement section for a combination
+ * (Milestone 4b).
  */
 const where = {
   directory: (base: string, unit: UnitRef, missing?: string) =>
@@ -117,7 +118,7 @@ const where = {
         : `?unit=${unit.unitIds[0]}${missing ? `&missing=${missing}` : ""}`
     }`,
   context: (base: string, unit: UnitRef, anchor = "") =>
-    unit.combined ? `${base}/context` : `${base}/context/units/${unit.unitIds[0]}${anchor}`,
+    `${base}/context/units/${unit.id}${anchor}`,
   leader: (base: string, unit: UnitRef) =>
     unit.combined ? `${base}/units#measurement` : `${base}/units/${unit.unitIds[0]}#leader`,
   measurement: (base: string) => `${base}/units#measurement`,

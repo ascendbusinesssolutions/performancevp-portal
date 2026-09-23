@@ -1,7 +1,7 @@
 import { constants } from "@performancevp/intake";
 
 import {
-  hasChildren,
+  isGroupingUnit,
   type LeaderState,
   leaderState,
   type PersonRef,
@@ -109,7 +109,7 @@ export function measurementModel<U extends UnitRow>(input: {
     let state: MeasurementState;
     if (combined) {
       state = staff >= MIN_STAFF ? "measured" : "short";
-    } else if (hasChildren(input.units, units[0]!.id) && staff < MIN_STAFF) {
+    } else if (isGroupingUnit(input.units, units[0]!.id, staff)) {
       state = row.grouping_kept_at ? "groupingKept" : "grouping";
     } else {
       state = staff >= MIN_STAFF ? "measured" : staff === 0 ? "empty" : "short";

@@ -31,9 +31,9 @@ describe("previewCoverage", () => {
     expect(result.withRating).toBe(13);
     expect(result.current).toBe(11);
     expect(result.units).toEqual([
-      { unit_code: "CLM", share: 0.8, qualifies: true },
-      { unit_code: "SAL", share: 0.8, qualifies: true },
-      { unit_code: "OPS", share: 0, qualifies: false },
+      { key: "CLM", share: 0.8, qualifies: true },
+      { key: "SAL", share: 0.8, qualifies: true },
+      { key: "OPS", share: 0, qualifies: false },
     ]);
   });
 
@@ -49,10 +49,22 @@ describe("previewCoverage", () => {
         },
       ],
       today,
-      new Set(["grp"]),
+      (code) => (code === "GRP" ? null : code),
     );
     expect(result.total).toBe(12);
-    expect(result.units).toEqual([{ unit_code: "OPS", share: 0.9, qualifies: true }]);
+    expect(result.units).toEqual([{ key: "OPS", share: 0.9, qualifies: true }]);
+  });
+
+  it("judges a combination's units together, over the combination's FTE", () => {
+    const result = previewCoverage(
+      [
+        { unit_code: "A", people: 6, fte: 6, dates: [{ date: "2026-06-30", people: 6, fte: 6 }] },
+        { unit_code: "B", people: 4, fte: 4, dates: [] },
+      ],
+      today,
+      () => "combined-ab",
+    );
+    expect(result.units).toEqual([{ key: "combined-ab", share: 0.6, qualifies: false }]);
   });
 
   it("applies the intake's 12-month rule: the same day a year earlier counts, the day before does not", () => {
@@ -70,6 +82,6 @@ describe("previewCoverage", () => {
   it("leaves a unit with no FTE without a share", () => {
     expect(
       previewCoverage([{ unit_code: "Z", people: 0, fte: 0, dates: [] }], today).units,
-    ).toEqual([{ unit_code: "Z", share: undefined, qualifies: false }]);
+    ).toEqual([{ key: "Z", share: undefined, qualifies: false }]);
   });
 });

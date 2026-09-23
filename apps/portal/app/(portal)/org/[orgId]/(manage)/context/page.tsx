@@ -10,7 +10,6 @@ import { setupCopy } from "@/lib/copy/setup";
 import { fill } from "@/lib/copy/template";
 import { requireOrgManager } from "@/lib/org/context";
 import {
-  headcountByUnit,
   loadActivePeople,
   loadRoleFamilies,
   loadSkills,
@@ -25,7 +24,7 @@ import {
   type FamilyProblem,
   incompleteParts,
 } from "@/lib/setup/frameworks";
-import { isMeasuredUnit, unitTree } from "@/lib/setup/units";
+import { measurementModel } from "@/lib/setup/measurement";
 import { createClient } from "@/lib/supabase/server";
 
 const SETUP = constants.SETUP;
@@ -48,8 +47,8 @@ function problemText(problem: FamilyProblem): string {
 /**
  * Setup step 3: unit context (PORTAL_BUILD_PLAN.md 7; Online Measurement Specification 3.1, 3.3,
  * 4.3 and 4.5). The role families with whether each is ready, the template library to start from,
- * and every unit a campaign measures (grouping units are not), with its context counts against
- * the setup rules.
+ * and every measurement unit a campaign measures (10 or more, on its own or combined), with its
+ * context counts against the setup rules.
  */
 export default async function ContextPage({ params }: PageProps<"/org/[orgId]/context">) {
   const { orgId } = await params;
@@ -64,18 +63,12 @@ export default async function ContextPage({ params }: PageProps<"/org/[orgId]/co
     loadTemplates(supabase),
     loadMeasurementUnits(supabase, orgId),
   ]);
-  // Each unit's own measurement unit, until this screen lists measurement units (Milestone 4b,
-  // step 4).
-  const singleOf = new Map(
-    measurement.measurementUnits.map((mu) => [mu.single_unit_id ?? "", mu.id]),
-  );
   const active = families
     .filter((f) => f.status === "active")
     .sort((a, b) => a.name.localeCompare(b.name, "en-AU"));
   const peopleIn = (familyId: string) => people.filter((p) => p.role_family_id === familyId).length;
-  const counts = headcountByUnit(people);
-  const measured = unitTree(units).filter((e) =>
-    isMeasuredUnit(units, e.unit.id, counts.get(e.unit.id) ?? 0),
+  const measured = measurementModel({ units, people, ...measurement }).views.filter(
+    (v) => v.state === "measured",
   );
   const roleFamilyTemplates = templates.filter((t) => t.kind === "role_family");
 
@@ -208,12 +201,12 @@ export default async function ContextPage({ params }: PageProps<"/org/[orgId]/co
               <Th />
             </Head>
             <tbody>
-              {measured.map(({ unit }) => {
-                const c = contextCounts(singleOf.get(unit.id) ?? "", context);
+              {measured.map(({ row }) => {
+                const c = contextCounts(row.id, context);
                 const complete = incompleteParts(c).length === 0;
                 return (
-                  <Row key={unit.id} testId={`context-${unit.unit_code}`}>
-                    <Td>{unit.name}</Td>
+                  <Row key={row.id} testId={`context-${row.code}`}>
+                    <Td>{row.name}</Td>
                     <Td figure align="right">
                       {c.domains}
                     </Td>
@@ -237,8 +230,8 @@ export default async function ContextPage({ params }: PageProps<"/org/[orgId]/co
                     <Td align="right">
                       <Link
                         className="text-sm text-slate underline underline-offset-4 hover:text-gold-deep"
-                        href={`/org/${orgId}/context/units/${unit.id}`}
-                        aria-label={`${contextCopy["units.open"]} ${unit.name}`}
+                        href={`/org/${orgId}/context/units/${row.id}`}
+                        aria-label={`${contextCopy["units.open"]} ${row.name}`}
                       >
                         {contextCopy["units.open"]}
                       </Link>

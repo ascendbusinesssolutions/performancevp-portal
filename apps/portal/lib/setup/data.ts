@@ -214,24 +214,6 @@ export async function loadMeasurementUnits(
   return { measurementUnits, members };
 }
 
-/**
- * A unit's single measurement unit, where its context is written until the context screens are
- * keyed on measurement units (Milestone 4b, step 4).
- */
-export async function singleMeasurementUnitId(
-  supabase: Client,
-  orgId: string,
-  unitId: string,
-): Promise<string | null> {
-  const { data } = await supabase
-    .from("measurement_units")
-    .select("id")
-    .eq("organisation_id", orgId)
-    .eq("single_unit_id", unitId)
-    .maybeSingle();
-  return data?.id ?? null;
-}
-
 export interface Template {
   code: string;
   kind: string;

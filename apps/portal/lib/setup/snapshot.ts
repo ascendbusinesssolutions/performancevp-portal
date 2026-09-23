@@ -1,8 +1,8 @@
 import type { Snapshot } from "@performancevp/intake";
 
 /**
- * The live directory in the intake package's own shape: one unit's, or one measurement unit's,
- * members as they would be frozen if a campaign launched now. The readiness check and the formal-ratings screen run the intake's
+ * The live directory in the intake package's own shape: one measurement unit's members as they
+ * would be frozen if a campaign launched now. The readiness check and the formal-ratings screen run the intake's
  * functions over it, so what they preview is what the campaign close will compute. Milestone 5's
  * launch builds the real snapshot the same way.
  */
@@ -23,19 +23,6 @@ export interface FormalRatingRow {
   employee_id: string;
   rating_label: string;
   rating_date: string;
-}
-
-export function unitSnapshot(
-  unitId: string,
-  people: readonly SnapshotPerson[],
-  ratings: readonly FormalRatingRow[] = [],
-): Snapshot {
-  return snapshotOf(
-    people.filter((p) => p.unit_id === unitId),
-    people,
-    ratings,
-    (p) => p.team_id,
-  );
 }
 
 /**

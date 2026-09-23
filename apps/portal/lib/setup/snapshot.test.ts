@@ -1,7 +1,7 @@
 import { evaluateFormalRatings } from "@performancevp/intake";
 import { describe, expect, it } from "vitest";
 
-import { measurementSnapshot, type SnapshotPerson, unitSnapshot } from "./snapshot";
+import { measurementSnapshot, type SnapshotPerson } from "./snapshot";
 
 function person(id: string, unit: string, extra: Partial<SnapshotPerson> = {}): SnapshotPerson {
   return {
@@ -19,7 +19,7 @@ function person(id: string, unit: string, extra: Partial<SnapshotPerson> = {}): 
   };
 }
 
-describe("unitSnapshot", () => {
+describe("measurementSnapshot of a single unit", () => {
   const people = [
     person("head", "r"),
     person("lead", "u", { manager_employee_id: "head", is_leadership_team: true, team_id: "t1" }),
@@ -28,7 +28,7 @@ describe("unitSnapshot", () => {
 
   it("holds the unit's members in the intake's shape, managers by employee ID", () => {
     expect(
-      unitSnapshot("u", people, [
+      measurementSnapshot(["u"], false, people, [
         { employee_id: "m1", rating_label: "Meets", rating_date: "2026-03-31" },
       ]),
     ).toEqual({
@@ -46,7 +46,7 @@ describe("unitSnapshot", () => {
   });
 
   it("feeds the intake's formal-ratings rule directly", () => {
-    const snapshot = unitSnapshot("u", people, [
+    const snapshot = measurementSnapshot(["u"], false, people, [
       { employee_id: "lead", rating_label: "Exceeds", rating_date: "2026-03-31" },
       { employee_id: "m1", rating_label: "Meets", rating_date: "2026-03-31" },
     ]);

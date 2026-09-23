@@ -7,21 +7,22 @@ import { CheckboxField, SelectField } from "@/components/fields";
 import { Glyph } from "@/components/glyph";
 import { homeCrumb, PageHeader, Section } from "@/components/page";
 import { CONTROL_CLASS, Field } from "@/components/ui";
+import { commonCopy, peopleCount } from "@/lib/copy/common";
 import { contextCopy } from "@/lib/copy/context";
-import { fill } from "@/lib/copy/template";
+import { fill, listOf } from "@/lib/copy/template";
 import { unitsCopy } from "@/lib/copy/units";
 import { requireOrgManager } from "@/lib/org/context";
 import {
-  headcountByUnit,
   loadActivePeople,
+  loadMeasurementUnits,
   loadTemplates,
   loadUnitContext,
   loadUnits,
-  singleMeasurementUnitId,
   type Template,
 } from "@/lib/setup/data";
 import { contextCounts, lacksCriticalDomain, type NamedRow } from "@/lib/setup/frameworks";
-import { asUnitType } from "@/lib/setup/units";
+import { measurementModel } from "@/lib/setup/measurement";
+import { asUnitType, type UnitType } from "@/lib/setup/units";
 import { createClient } from "@/lib/supabase/server";
 
 import {
@@ -30,6 +31,7 @@ import {
   retireUnitItem,
   saveDecisionSelection,
   setDomainCriticality,
+  startContextFrom,
 } from "../../actions";
 
 const SETUP = constants.SETUP;
@@ -98,28 +100,29 @@ function Part({
 }
 
 /**
- * One unit's context (Online Measurement Specification 3.1, 3.3, 4.1 and 4.3): its knowledge
- * domains with their criticality, its decision types from the starter list for its type and its
- * own, its three critical processes and its primary systems, each against the setup rule.
+ * One measurement unit's context (Online Measurement Specification 3.1, 3.3, 4.1, 4.3 and 6.2):
+ * its knowledge domains with their criticality, its decision types from the starter list for each
+ * of its units' types and its own, its three critical processes and its primary systems, each
+ * against the setup rule. Context is defined once for a combined measurement unit, which can start
+ * from one of its units' own.
  */
 export default async function UnitContextPage({
   params,
-}: PageProps<"/org/[orgId]/context/units/[unitId]">) {
-  const { orgId, unitId } = await params;
+}: PageProps<"/org/[orgId]/context/units/[measurementUnitId]">) {
+  const { orgId, measurementUnitId } = await params;
   const org = await requireOrgManager(orgId);
   const supabase = await createClient();
-  const [units, people, context, templates, measurementUnitId] = await Promise.all([
+  const [units, people, context, templates, measurement] = await Promise.all([
     loadUnits(supabase, orgId),
     loadActivePeople(supabase, orgId),
     loadUnitContext(supabase, orgId),
     loadTemplates(supabase),
-    singleMeasurementUnitId(supabase, orgId, unitId),
+    loadMeasurementUnits(supabase, orgId),
   ]);
-  const unit = units.find((u) => u.id === unitId && u.status === "active");
-  if (!unit || !measurementUnitId) redirect(`/org/${orgId}/context`);
+  const model = measurementModel({ units, people, ...measurement });
+  const view = model.views.find((v) => v.row.id === measurementUnitId);
+  if (!view) redirect(`/org/${orgId}/context`);
 
-  // The unit's own measurement unit, until the context screens are keyed on measurement units
-  // (Milestone 4b, step 4).
   const counts = contextCounts(measurementUnitId, context);
   const mine = <R extends NamedRow>(rows: readonly R[]) =>
     rows
@@ -129,18 +132,42 @@ export default async function UnitContextPage({
   const decisions = mine(context.decisions);
   const processes = mine(context.processes);
   const systems = mine(context.systems);
-  const unitType = asUnitType(unit.unit_type);
-  const starter = templates.find((t) => t.kind === "decision_types" && t.unit_type === unitType);
-  const starterNames = new Set((starter?.items ?? []).map((i) => i.name.toLowerCase()));
+  // The starter list of each unit type among the units it holds.
+  const types = [
+    ...new Set(view.units.map((u) => asUnitType(u.unit_type)).filter((t): t is UnitType => !!t)),
+  ];
+  const starters = types.flatMap((type) => {
+    const template = templates.find((t) => t.kind === "decision_types" && t.unit_type === type);
+    return template ? [{ type, template }] : [];
+  });
+  const starterNames = new Set(
+    starters.flatMap((s) => s.template.items.map((i) => i.name.toLowerCase())),
+  );
   const activeNames = new Set(decisions.map((d) => d.name.toLowerCase()));
   const own = decisions.filter((d) => !starterNames.has(d.name.toLowerCase()));
   const prompt = (kind: string) => templates.find((t) => t.kind === kind);
   const hidden = (
     <>
       <input type="hidden" name="organisationId" value={orgId} />
-      <input type="hidden" name="unitId" value={unitId} />
+      <input type="hidden" name="measurementUnitId" value={measurementUnitId} />
     </>
   );
+  // A new combination may start from a unit's own context, while it has none of its own.
+  const hasContext = (id: string) =>
+    [context.domains, context.decisions, context.processes, context.systems].some((rows) =>
+      rows.some((r) => r.measurement_unit_id === id && r.status === "active"),
+    );
+  const sources =
+    view.combined && !hasContext(measurementUnitId)
+      ? view.units.flatMap((u) => {
+          const single = measurement.measurementUnits.find((mu) => mu.single_unit_id === u.id);
+          return single && hasContext(single.id) ? [{ unit: u, single: single.id }] : [];
+        })
+      : [];
+  const listWords = {
+    and: commonCopy["list.and"],
+    more: (n: number) => fill(commonCopy["list.more"], { n }),
+  };
 
   const removeButton = (kind: string, rowId: string, name: string) =>
     org.writable ? (
@@ -188,7 +215,8 @@ export default async function UnitContextPage({
       </ActionForm>
     ) : null;
 
-  const typeLabel = unitType ? unitsCopy[`type.${unitType}`] : unitsCopy["type.none"];
+  const typeLabel = (type: UnitType | null) =>
+    type ? unitsCopy[`type.${type}`] : unitsCopy["type.none"];
 
   return (
     <main>
@@ -198,12 +226,44 @@ export default async function UnitContextPage({
           { label: org.name },
           { label: contextCopy["page.title"], href: `/org/${orgId}/context` },
         ]}
-        title={unit.name}
-        meta={fill(contextCopy["unit.meta"], {
-          people: headcountByUnit(people).get(unitId) ?? 0,
-          type: typeLabel,
-        })}
+        title={view.row.name}
+        meta={
+          view.combined
+            ? fill(contextCopy["unit.metaCombined"], {
+                people: peopleCount(view.staff),
+                list: listOf(
+                  view.units.map((u) => u.name),
+                  listWords,
+                ),
+              })
+            : fill(contextCopy["unit.meta"], {
+                people: view.staff,
+                type: typeLabel(asUnitType(view.units[0]!.unit_type)),
+              })
+        }
       />
+
+      {org.writable && sources.length > 0 ? (
+        <Section
+          id="start"
+          title={contextCopy["unit.start.title"]}
+          intro={contextCopy["unit.start.intro"]}
+        >
+          <div className="flex flex-wrap gap-4">
+            {sources.map(({ unit, single }) => (
+              <ActionForm
+                key={unit.id}
+                action={startContextFrom}
+                submitLabel={fill(contextCopy["unit.start.from"], { unit: unit.name })}
+                variant="secondary"
+              >
+                {hidden}
+                <input type="hidden" name="fromMeasurementUnitId" value={single} />
+              </ActionForm>
+            ))}
+          </div>
+        </Section>
+      ) : null}
 
       <Part
         id="domains"
@@ -295,33 +355,36 @@ export default async function UnitContextPage({
           counts.decisions <= SETUP.decisionTypesPerUnit.max
         }
       >
-        {starter ? (
-          <ActionForm
-            action={saveDecisionSelection}
-            submitLabel={contextCopy["decisions.saveSelection"]}
-            className="max-w-xl"
-          >
-            {hidden}
-            <fieldset>
-              <legend className="text-sm text-grey">
-                {fill(contextCopy["decisions.starter"], { type: typeLabel })}
-              </legend>
-              <div className="mt-2" data-testid="starter-list">
-                {starter.items.map((item) => (
-                  <div key={item.position}>
-                    <input type="hidden" name="offered" value={item.name} />
-                    <CheckboxField
-                      label={item.name}
-                      name="chosen"
-                      value={item.name}
-                      defaultChecked={activeNames.has(item.name.toLowerCase())}
-                      disabled={!org.writable}
-                    />
-                  </div>
-                ))}
-              </div>
-            </fieldset>
-          </ActionForm>
+        {starters.length > 0 ? (
+          starters.map(({ type, template }) => (
+            <ActionForm
+              key={type}
+              action={saveDecisionSelection}
+              submitLabel={contextCopy["decisions.saveSelection"]}
+              className="mb-6 max-w-xl"
+            >
+              {hidden}
+              <fieldset>
+                <legend className="text-sm text-grey">
+                  {fill(contextCopy["decisions.starter"], { type: typeLabel(type) })}
+                </legend>
+                <div className="mt-2" data-testid="starter-list">
+                  {template.items.map((item) => (
+                    <div key={item.position}>
+                      <input type="hidden" name="offered" value={item.name} />
+                      <CheckboxField
+                        label={item.name}
+                        name="chosen"
+                        value={item.name}
+                        defaultChecked={activeNames.has(item.name.toLowerCase())}
+                        disabled={!org.writable}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </fieldset>
+            </ActionForm>
+          ))
         ) : (
           <p className="text-sm text-grey">{contextCopy["decisions.starterNone"]}</p>
         )}

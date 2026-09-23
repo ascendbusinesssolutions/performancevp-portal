@@ -14,6 +14,24 @@ export interface CopyFixture {
 export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
   "common.list.more": [{ slots: { n: 3 }, expected: "3 more" }],
   "common.people.many": [{ slots: { n: 7 }, expected: "7 people" }],
+  "setup.status.unitsToSettle": [
+    {
+      slots: { count: 3, n: 2 },
+      expected: "3 units. 2 need a choice of how they are measured.",
+    },
+  ],
+  "setup.status.unitsToSettleOne": [
+    { slots: { count: 4 }, expected: "4 units. 1 needs a choice of how it is measured." },
+  ],
+  "context.unit.metaCombined": [
+    {
+      slots: { people: "14 people", list: "Claims and Service" },
+      expected: "14 people in Claims and Service.",
+    },
+  ],
+  "context.unit.start.from": [
+    { slots: { unit: "Claims" }, expected: "Start from the context of Claims" },
+  ],
   "units.leader.option.above": [
     { slots: { name: "Ruth Root", unit: "Head Office" }, expected: "Ruth Root, Head Office" },
   ],

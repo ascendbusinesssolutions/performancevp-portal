@@ -65,6 +65,7 @@ export const ratingsMapCopy = {
 
   "units.title": "What this means for each unit",
   "units.intro": "Judged today; at a campaign the dates are judged against its launch.",
+  "units.none": "No unit has 10 or more yet, on its own or combined, so there is no route to show.",
   "units.col.unit": "Unit",
   "units.col.coverage": "Current, mapped ratings",
   "units.col.route": "Talent density from",

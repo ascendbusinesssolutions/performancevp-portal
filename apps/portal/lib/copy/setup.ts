@@ -56,6 +56,8 @@ export const setupCopy = {
   // S1 status lines.
   "status.units": "{count} units",
   "status.noUnits": "No units yet.",
+  "status.unitsToSettle": "{count} units. {n} need a choice of how they are measured.",
+  "status.unitsToSettleOne": "{count} units. 1 needs a choice of how it is measured.",
   "status.people": "{n} people, uploaded {date}",
   "status.peopleNoUpload": "{n} people",
   "status.noPeople": "No one yet.",

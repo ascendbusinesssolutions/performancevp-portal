@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package: [engine, intake, recommendations]
+        package: [engine, intake, recommendations, portal]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup-workspace
@@ -53,3 +53,32 @@ jobs:
       - run: pnpm build
         env:
           APP_ENV: staging
+
+  # The sign-in paths, the consoles and the directory, in a browser against the local stack built
+  # from the migrations and the dev seed. The keys are the Supabase CLI's fixed local keys, read
+  # from the running stack; nothing here is a stored secret.
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_ENV: local
+      APP_BASE_URL: http://localhost:3000
+      CRON_SECRET: ci-local-cron-secret
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-workspace
+      - run: pnpm exec supabase start -x studio,postgres-meta,imgproxy
+      - name: Point the portal at the local stack
+        run: |
+          pnpm exec supabase status -o json > "$RUNNER_TEMP/stack.json"
+          {
+            echo "SUPABASE_URL=$(jq -r .API_URL "$RUNNER_TEMP/stack.json")"
+            echo "SUPABASE_PUBLISHABLE_KEY=$(jq -r .PUBLISHABLE_KEY "$RUNNER_TEMP/stack.json")"
+            echo "SUPABASE_SECRET_KEY=$(jq -r .SECRET_KEY "$RUNNER_TEMP/stack.json")"
+          } >> "$GITHUB_ENV"
+      - run: pnpm build
+      - run: pnpm --filter @performancevp/portal exec playwright install --with-deps chromium
+      - run: pnpm --filter @performancevp/portal e2e
+      - if: always()
+        run: pnpm exec supabase stop --no-backup

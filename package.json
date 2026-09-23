@@ -22,7 +22,8 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
-    "db:lint": "supabase db lint"
+    "db:lint": "supabase db lint",
+    "db:types": "supabase gen types typescript --local --schema public > apps/portal/lib/supabase/database.types.ts"
   },
   "devDependencies": {
     "eslint": "9.39.5",

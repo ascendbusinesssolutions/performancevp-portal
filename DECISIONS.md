@@ -2,7 +2,7 @@
 
 This register records the settled decisions behind the portal build and the reasoning behind the consequential ones, so they are not reopened from scratch later. The build plan (`PORTAL_BUILD_PLAN.md`) holds the detail; the corrected source documents and the Diagnostic Workbook hold the calculation truth; `CLAUDE.md` holds the standing principles and guardrails. This file is the why and the what, not a substitute for those.
 
-**Last updated:** 23 September 2026 (Milestone 3: staff access, sign-in and the tenancy decisions; see 5.6)
+**Last updated:** 23 September 2026 (Milestone 4: the setup decisions; see 5.7)
 **Owner of record:** Michael, PerformanceVP
 
 ---
@@ -184,6 +184,27 @@ Settled with the Milestone 3 plan and its checkpoint. The plan and the migration
 | Keys | The publishable and secret keys, all Supabase calls server-side. | The legacy anon and service-role keys are deprecated by the end of 2026. |
 | Job runner | Vercel Cron, calling authenticated job routes; one daily route from Milestone 3 (upload expiry, file removal, the purge). | One runner for every scheduled job; file removal needs the Storage API. |
 | Placeholders | `EMPLOYEE_BANDS` (band codes and ceilings), `SESSION_LIMITS` (recommended 8 hours inactivity and 24 hours absolute), `EMPLOYMENT_STATUS_VALUES` (informational text until defined). | Commercial or source decisions not yet made. |
+
+### 5.7 The setup decisions of 23 September 2026
+
+Settled with the Milestone 4 plan. The plan, the migration `20260923000900_setup.sql` and `apps/portal/lib/setup/readiness.ts` hold the detail.
+
+| Decision | Resolution | Reasoning |
+|---|---|---|
+| Unit size | A unit's own active staff count toward its 10. A unit with units below it and no staff of its own groups them and is not measured. A unit of 1 to 9 people, or an empty unit with nothing below it, blocks the first campaign. | The source requires 10 or more staff without addressing hierarchy; a unit is measured on the people in it. |
+| Reporting lines | Exactly one person, the head of the organisation, may have no manager. Anyone else without one, or reporting to someone who has left, blocks. | Manager ratings and skill coverage need every other reporting line. |
+| Framework counts | The Online Measurement Specification's counts block: 8 to 15 skills per role family in use, both kinds, at least one critical; 3 to 6 knowledge domains; 8 to 12 decision types; exactly 3 critical processes; 3 to 8 primary systems. A unit with no criticality-3 domain is a warning. | Each instrument needs its context; a missing critical domain only makes knowledge insufficient. |
+| Formal ratings at readiness | Ratings in the directory are mapped, every label, or the step is skipped. With none in the directory the step is skipped on its own. | Uploading ratings signals intent; an unmapped label would silently drop people from coverage. |
+| Where readiness runs | A pure function in the portal calling the intake package's own rules, with the setup counts in intake `constants.SETUP` (1.1.0). The campaign launch reruns it on the server (Milestone 5). | One home for each rule, so the preview says what the close will do. |
+| The readiness read of formal ratings | Logged as `ratings.checked`, not as a view. | The ratings area's count of views stays a count of people looking. |
+| Readiness styling | A glyph and a word in brand ink. | The status colours stay reserved for bands and trip-wires (PORTAL_UX_BRIEF.md 5). |
+| Warnings added | An upload awaiting review; a unit with no unit leader and no single candidate. | Neither blocks; both change what a campaign would measure. |
+| Unit leader | `business_units.unit_leader_employee_id`: an active member of the unit or nobody, released when the person moves or leaves, and proposed where one person in the unit reports outside it or to no one. | The leadership-team and team-leader modules need it (Milestone 5). |
+| Status colours | Defined as tokens, with contrast asserted by test. The trip-wire critical treatment is a 3 px rule and the label "Critical finding" in #7E2118 above the finding, with no fill. | As on the results mockup. |
+| Scale map in the audit log | Labels and bands are recorded as changed and never copied into images. | The log carries no rating vocabulary or band value, as for ratings; the campaign snapshot freezes the map. |
+| No progress rail | Setup progress is shown on the hub, not on every screen. | A rail would read formal ratings, and so write an audit entry, on every page view. |
+| ANZSIC | The 19 divisions as reference data; the class an optional four-digit code. | Metadata only. |
+| Placeholder | `ROLE_FAMILY_TEMPLATE_LIBRARY`: placeholder templates until the library is written. | Content, not a build decision. |
 
 ---
 

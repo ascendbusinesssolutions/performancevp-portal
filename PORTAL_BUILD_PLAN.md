@@ -1,6 +1,6 @@
 # PerformanceVP Online Subscription: Build Plan (v2)
 
-**Status:** Approved by Michael on 21 September 2026. Amended 22 September 2026: subscriptions are sales-led with no online payment (Sections 0, 1, 2.8, 4, 11, 12, 13 and 15). Amended 23 September 2026, with the Milestone 3 plan: staff reach client data through logged support sessions with no client switch, passwords for every role except managers, and the schema refinements Milestone 3 settled (Sections 1.2, 2.1, 2.2, 2.8, 3, 4, 12, 13, 14 and 15). This plan supersedes the June 2026 plan, which is archived at `archive/PORTAL_BUILD_PLAN_v1.md` for history only. The engine specification from that plan is preserved verbatim in `docs/ENGINE_SPEC.md`.
+**Status:** Approved by Michael on 21 September 2026. Amended 22 September 2026: subscriptions are sales-led with no online payment (Sections 0, 1, 2.8, 4, 11, 12, 13 and 15). Amended 23 September 2026, with the Milestone 3 plan: staff reach client data through logged support sessions with no client switch, passwords for every role except managers, and the schema refinements Milestone 3 settled (Sections 1.2, 2.1, 2.2, 2.8, 3, 4, 12, 13, 14 and 15). Amended 23 September 2026, with the Milestone 4 plan: the unit leader, the scale map, the reference templates and the status colours (Sections 2.1, 2.3, 2.4, 12 and 15). This plan supersedes the June 2026 plan, which is archived at `archive/PORTAL_BUILD_PLAN_v1.md` for history only. The engine specification from that plan is preserved verbatim in `docs/ENGINE_SPEC.md`.
 **Read with:** `Performance_Equation_Online_Measurement_Specification.md` and `Performance_Equation_Online_Recommendations_Specification.md`. Those two documents are the source for every online-specific rule in this plan. This plan says how to build what they define.
 
 ---
@@ -68,7 +68,7 @@ All tenant-owned tables carry `organisation_id`. Reference tables are seeded by 
 | Table | Notes |
 |---|---|
 | `organisations` | Adds `data_contribution_opt_out` (default false) and sector metadata (ANZSIC division and class, size band). The employee band and the subscription state live on `subscriptions` (2.8). There is no support-access switch (3.2). |
-| `business_units` | Adds a stable `unit_code`. Hierarchy by `parent_unit_id`. Minimum 10 staff to be measurable. |
+| `business_units` | Adds a stable `unit_code` and `unit_leader_employee_id` (an active member of the unit, or nobody). Hierarchy by `parent_unit_id`. Minimum 10 of its own staff to be measurable; a unit with units below it and no staff of its own is not measured. |
 | `unit_lineage` | Predecessor and successor links for merges and splits, with the effective date. Renames need no lineage row. |
 | `teams` | Team within a unit, for CII team-level scoring. |
 | `profiles` | One row per authenticated user. Flags: `is_owner`, `is_support_staff`. |
@@ -89,11 +89,11 @@ All tenant-owned tables carry `organisation_id`. Reference tables are seeded by 
 
 ### 2.3 Unit context (client-configured)
 
-`role_families`, `skills` (tags: critical or supporting; technical or behavioural), `knowledge_domains` (criticality 1 to 3), `decision_types`, `critical_processes`, `primary_systems`, and `rating_scale_maps` (client rating label to talent band, plus the calibration declaration). Clients configure context only. They cannot alter items, scales, scoring, thresholds or weights.
+`role_families`, `skills` (tags: critical or supporting; technical or behavioural), `knowledge_domains` (criticality 1 to 3), `decision_types`, `critical_processes`, `primary_systems`, and `rating_scale_maps` (the decision: mapped, with the calibration declaration, or skipped) with `rating_scale_map_entries` (client rating label to talent band). Clients configure context only. They cannot alter items, scales, scoring, thresholds or weights.
 
 ### 2.4 Reference data
 
-Carried from v1: `ref_sub_dimensions`, `ref_archetype_weights`, `ref_survey_items`, `ref_pulse_rotation`, `ref_intervention_patterns`. Added: `ref_modules` and `ref_module_items` (the Module Library modules plus M-C2-MGR), `ref_admin_checklists` (ADM-O1, ADM-O2, ADM-O4 with response values and bands), `ref_pattern_cards` (the online edition of each pattern), `ref_templates` (role-family frameworks, decision-type starter lists, prompts). `ref_dlp_norms` is dropped.
+Carried from v1: `ref_sub_dimensions`, `ref_archetype_weights`, `ref_survey_items`, `ref_pulse_rotation`, `ref_intervention_patterns`. Added: `ref_modules` and `ref_module_items` (the Module Library modules plus M-C2-MGR), `ref_admin_checklists` (ADM-O1, ADM-O2, ADM-O4 with response values and bands), `ref_pattern_cards` (the online edition of each pattern), `ref_templates` with `ref_template_items` (role-family frameworks, decision-type starter lists, prompts; placeholder content until the Role-Family Template Library), `ref_anzsic_divisions`. `ref_dlp_norms` is dropped.
 
 ### 2.5 Campaigns and responses
 
@@ -279,7 +279,7 @@ Price levels, Guided Setup scope, the support model and the legal terms are outs
 
 **Milestone 5: Campaign engine.** All five audiences, both member parts, reminders, validity, aggregation, thresholds and roll-up.
 
-**Milestone 6: The vertical slice, then results.** First the slice: one organisation, one unit, one baseline campaign with seeded responses through intake, engine, review, release and a unit dashboard seen by an executive viewer. Then the full dashboards, trends, footer, pulse trajectory and the ratings area. Note from Milestone 0: Tailwind's default palette is removed from the application, so the Green, Amber and Red status bands and any other status colour must be defined as deliberate tokens in `apps/portal/app/globals.css`, with contrast checked, before the display rules are built. No off-brand colour can be typed ad hoc. `assemblePulseView`, deferred from Milestone 1 because it has no workbook formula to mirror, is specified and built here with the pulse trajectory layer.
+**Milestone 6: The vertical slice, then results.** First the slice: one organisation, one unit, one baseline campaign with seeded responses through intake, engine, review, release and a unit dashboard seen by an executive viewer. Then the full dashboards, trends, footer, pulse trajectory and the ratings area. Note from Milestone 0: Tailwind's default palette is removed from the application, so the Green, Amber and Red status bands and any other status colour must be defined as deliberate tokens in `apps/portal/app/globals.css`, with contrast checked, before the display rules are built. No off-brand colour can be typed ad hoc. Done in Milestone 4: the band and critical tokens are defined, and `lib/design/contrast.test.ts` asserts their contrast. `assemblePulseView`, deferred from Milestone 1 because it has no workbook formula to mirror, is specified and built here with the pulse trajectory layer.
 
 **Milestone 7: Suggestions, what-if and action tracking.**
 
@@ -337,6 +337,8 @@ None is executed as part of the build without sign-off.
 **Made on 22 September 2026:** sales-led subscriptions with no online payment; the lapse and retention policy (Section 11; `DECISIONS.md` 5.5).
 
 **Made on 23 September 2026, with the Milestone 3 plan:** staff access through logged support sessions with no client switch; passwords for every role except managers; `portal@performancevp.com.au` for auth email; the directory spreadsheet read and written by our own code over `fflate`; RLS not forced; ratings read through logged functions; the audit image allowlist; the subscription state computed from its terms; formal ratings in their own table; staff writing the directory under a session; the account owner's history access in suspension; publishable and secret keys; Vercel Cron as the job runner (`DECISIONS.md` 5.6). New placeholders: `EMPLOYEE_BANDS`, `SESSION_LIMITS`, `EMPLOYMENT_STATUS_VALUES`.
+
+**Made on 23 September 2026, with the Milestone 4 plan:** the readiness rules, readiness in the portal over the intake's rules, the unit leader, the status colours and the trip-wire treatment, no progress rail (`DECISIONS.md` 5.7). New placeholder: `ROLE_FAMILY_TEMPLATE_LIBRARY`.
 
 **Deferred:** archetype weight sets; M1 behavioural lookups and the survey-behavioural flag; machine-themed open text; HRIS and engagement-platform integrations; the internal comparison set, pending legal review; `ENTITLEMENT_ENFORCEMENT`; Stripe Invoicing, as a possible later addition if invoicing ever moves out of the accounting system.
 

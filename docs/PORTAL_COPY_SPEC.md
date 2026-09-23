@@ -1,6 +1,6 @@
 # PerformanceVP Online Subscription: Copy Specification
 
-**Status:** Draft v0.1, 23 September 2026, for Michael's review. Companion to `PORTAL_UX_BRIEF.md`. Inventories every sentence the portal produces so that Claude Code builds the interface copy as a closed, tested set. The mockups it inventories are on the Claude Design canvas "PerformanceVP portal mockups" (eight screens, 23 September 2026).
+**Status:** Draft v0.2, 23 September 2026, amended with Milestone 4, for Michael's review. Companion to `PORTAL_UX_BRIEF.md`. Inventories every sentence the portal produces so that Claude Code builds the interface copy as a closed, tested set. The mockups it inventories are on the Claude Design canvas "PerformanceVP portal mockups" (eight screens, 23 September 2026).
 
 **Authority.** Every rule this document states about what a template says defers to the Online Measurement Specification, the Online Recommendations Specification and the Measurement Reference. This document owns the wording and the inventory only.
 
@@ -85,21 +85,25 @@ Slot names are in braces. Sources are result paths in `UnitMeasurementResult` (e
 
 **O3. Overview footnote.** `Breaches first, then lowest index first. Lowest force underlined. Units are measured; the organisation is not scored.` Fixed.
 
-**S1. Setup step status.** Per step: `{count} units` / `{n} people, uploaded {date}` / `{done} of {total} units. {remaining list} to go.` / `Skipped. Managers rate talent density.` or `Mapped. {n} people within 12 months.` / `{n} blockers` / `Opens when the readiness check passes`.
+**S1. Setup step status.** Per step: `{count} units` / `{n} people, uploaded {date}` / `{done} of {total} units. {remaining list} to go.` / `Skipped. Managers rate talent density.` or `Mapped. {n} people within 12 months.` / `{n} blockers` / `Opens when the readiness check passes`. Further branches: `No units yet.`; `{n} people` (no upload yet); `No one yet.`; `{done} of {total} units.` (all complete); `Waiting for people in the directory.`; `No formal ratings in the directory. Managers rate talent density.`; `Formal ratings found. Map them or skip them.`; `1 blocker`; `Passed.`; `Ready. The readiness check has passed.`
 
 **S2. Readiness rows.** Each check has a pass line, a warning line and a blocker line:
 - Units of 10: pass `All {n} units`; blocker `{unit} has {n}. A unit below 10 cannot be measured.`
 - Manager for everyone: pass `{n} of {n}`; blocker `{n} without: {list}. Manager ratings and skill coverage need the reporting line.`
-- Leadership team of 3: pass; warning `{unit} has {n} flagged. Clarity & decision rights will be insufficient for {unit} until a third is flagged.`
+- Leadership team of 3: pass; warning `{unit} has {n} flagged. Clarity & decision rights will be insufficient for {unit} until 3 are flagged.`
 - Team leaders: pass; warning `{unit} has none. The learning module goes to its unit leader instead.`
 - Unit for everyone: pass `{n} of {n}`; blocker `{n} without a unit: {list}`.
 - Role families and skills: pass `{units} of {units} units. {families} role families, {min} to {max} skills each, critical skills marked.`; blocker `{unit}: {missing}`.
 - Context: pass `{units} of {units} units. 3 processes named in each.`; blocker `{unit}: {missing}`.
 - Formal ratings: pass `Mapped to the five bands. Dated within 12 months for {n} people. {units below 80%}; its managers rate.`; skipped `Skipped. Managers rate.`
 - Work emails: pass `{n} of {n} valid. Invitations can be sent.`; blocker `{n} invalid or missing: {list}`.
-Summary `{b} blockers · {w} warnings · {p} passed` and the foot `Available once the {b} blockers are fixed. Warnings do not block; they shape what can be scored.`
+Summary `Blockers {b} · Warnings {w} · Passed {p}` and the foot `Available once the {b} blockers are fixed. Warnings do not block; they shape what can be scored.`
 
-**S3. Directory preview.** Counts `Joiners {n}`, `Leavers {n}`, `Moved unit {n}`, `New manager {n}`, `Details changed {n}`, `Unchanged {n}`. Warnings: `{n} people report to a manager ID that is not in the file: {ids}.`; `Unit code {code} is new. It will be created as a unit named {name}, {n} people.`; `{unit} would have no active staff. Record a merge or split after applying.` Formal ratings `Rating and date present for {n} of {total}. Dated within 12 months: {n}. Coverage by unit: {list}.` then `Units at 80% or above use these for talent density. {below list}'s managers will rate instead.` Apply `Apply {n} changes`. Leaver confirmation `{n} leavers is more than {threshold}. Confirm the file is the whole directory.` Fixed: `Nothing changes until you apply.` `Leavers are deactivated, not deleted. Their records are purged 30 days later.` `A running campaign keeps the directory it started with.`
+Further rows: unit leader (warning `{unit} has no unit leader.` or `{unit} has no unit leader: {n} people could lead it. Choose one.`); critical knowledge domain (warning `{unit} has no knowledge domain marked critical. Knowledge will be insufficient for {unit} until one is.`); directory uploads (warning when an upload awaits review). Units of 10 adds `{unit} has no one in it. Retire it, or record the merge or split it was part of.` Manager for everyone adds `{n} report to someone who has left: {list}.` and the pass line `{n} of {n}, with {head} at the head of the organisation.`
+
+**S3. Directory preview.** Counts `Joiners {n}`, `Leavers {n}`, `Moved unit {n}`, `New manager {n}`, `Details changed {n}`, `Unchanged {n}`. Warnings: `{n} people report to a manager ID that is not in the file: {ids}.`; `Unit code {code} is new. It will be created as a unit named {name}, {n} people.`; `{unit} would have no active staff. Record a merge or split after applying.` Formal ratings `Rating and date present for {n} of {total}. Dated within 12 months: {n}. Coverage by unit: {list}.` then `Units at 80% or above use these for talent density. The managers of {list} will rate instead.` Apply `Apply {n} changes`. Leaver confirmation `{n} leavers is more than {threshold}. Confirm the file is the whole directory before applying it.` Fixed: `Nothing changes until you apply.` `Leavers are deactivated, not deleted. Their records are purged 30 days later.` `A running campaign keeps the directory it started with.`
+
+The setup screens' fixed strings are inventoried in `apps/portal/lib/copy` (`setup.ts`, `units.ts`, `context.ts`, `ratings-map.ts`, `readiness.ts`, `directory.ts`), drafted in this document's voice with Milestone 4 for review. The Module Library 4.2 band names appear in client form ("Developing, partly meeting"); confirm against the source before the manager form uses them.
 
 **C1. Campaign header.** `Open, day {d} of {total}` · `Closes {day} {date}, {time}` · `{units} units, {people} people` · `Reminders sent {dates}. Next: {date}`. Other states: `Scheduled, opens {date}`; `Closed {date}, under review`; `Released {date}`.
 

@@ -1,8 +1,10 @@
 "use server";
 
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 
 import type { FormState } from "@/lib/auth/form-state";
+import { sendNewLink } from "@/lib/auth/new-link";
 import { authCopy } from "@/lib/copy/auth";
 import { appBaseUrl } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
@@ -21,6 +23,17 @@ export async function requestPasswordLink(
     });
   }
   return { message: authCopy["reset.sent"] };
+}
+
+/**
+ * "Send me a new link": the same answer whatever the address, with the decision and the sending
+ * done after the response (lib/auth/new-link.ts), so its timing reveals nothing either.
+ */
+export async function requestNewLink(_previous: FormState, formData: FormData): Promise<FormState> {
+  const email =
+    typeof formData.get("email") === "string" ? (formData.get("email") as string).trim() : "";
+  if (email !== "") after(() => sendNewLink(email));
+  return { message: authCopy["newLink.sent"] };
 }
 
 /**

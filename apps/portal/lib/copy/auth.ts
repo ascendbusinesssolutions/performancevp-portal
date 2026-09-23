@@ -30,6 +30,18 @@ export const authCopy = {
   "code.again": "Send a new code",
   "code.toPassword": "Sign in with a password instead",
 
+  "newLink.title": "Send me a new link",
+  "newLink.expired": "That link has expired or has already been used.",
+  "newLink.intro":
+    "Enter your work email. If it has an invitation or an account, we send a new link to finish setting up or to set your password.",
+  "newLink.email": "Work email",
+  "newLink.submit": "Send me a new link",
+  // The same answer whether or not the address has an invitation or an account.
+  "newLink.sent":
+    "If that address has an invitation or an account, a new link is on its way. It lasts one hour.",
+  "newLink.toLogin": "Back to sign in",
+  "login.toNewLink": "Link expired? Send me a new link",
+
   "reset.title": "Set or reset your password",
   "reset.intro":
     "Enter your work email. If it belongs to an account, we send a link to set a new password.",

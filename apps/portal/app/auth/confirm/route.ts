@@ -23,5 +23,6 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
     if (!error) return NextResponse.redirect(new URL(next, request.url));
   }
-  return NextResponse.redirect(new URL("/login?notice=link-expired", request.url));
+  // An expired or used link offers a new one (PORTAL_BUILD_PLAN.md Milestone 4).
+  return NextResponse.redirect(new URL("/auth/new-link?notice=expired", request.url));
 }

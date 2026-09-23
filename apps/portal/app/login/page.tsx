@@ -21,6 +21,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       <div className="mt-8 flex flex-col gap-3">
         <TextLink href="/login/code">{authCopy["login.toCode"]}</TextLink>
         <TextLink href="/auth/reset">{authCopy["login.toReset"]}</TextLink>
+        <TextLink href="/auth/new-link">{authCopy["login.toNewLink"]}</TextLink>
       </div>
     </AuthShell>
   );

@@ -471,6 +471,208 @@ create trigger employees_release_unit_leader
   after update of unit_id, status on public.employees
   for each row execute function private.release_unit_leader();
 
+-- The leaver confirmation (PORTAL_COPY_SPEC.md S3) ------------------------------------------------
+
+-- An upload that deactivates more people than this must be confirmed as the whole directory. The
+-- rule was inline in directory_diff (Milestone 3); it is named here so the preview can state it
+-- ("{n} leavers is more than {threshold}"), and directory_diff is replaced unchanged but for using
+-- it and reporting it. A staged upload previewed before this migration is previewed again.
+create function private.leaver_confirmation_threshold(p_active_before integer)
+returns integer
+language sql
+immutable
+set search_path = ''
+as $$
+  select greatest(5, ceil(p_active_before * 0.10))::integer
+$$;
+
+create or replace function private.directory_diff(p_upload_id uuid)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  v_org uuid;
+  v_people jsonb;
+  v_units jsonb;
+  v_teams jsonb;
+  v_families jsonb;
+  v_active_before integer;
+  v_active_after integer;
+  v_leavers integer;
+begin
+  select organisation_id into v_org from public.directory_uploads where id = p_upload_id;
+
+  with staged as (
+    select r.*, lower(r.employee_ref) as ref_key from public.directory_upload_rows r
+    where r.organisation_id = v_org and r.upload_id = p_upload_id
+  ),
+  live as (
+    select e.*, lower(e.employee_ref) as ref_key, u.unit_code, t.name as team_name,
+           mgr.employee_ref as manager_ref, rf.name as role_family_name,
+           fr.rating_label as formal_rating_label, fr.rating_date as formal_rating_date
+    from public.employees e
+    join public.business_units u on u.organisation_id = e.organisation_id and u.id = e.unit_id
+    left join public.teams t on t.organisation_id = e.organisation_id and t.id = e.team_id
+    left join public.employees mgr on mgr.organisation_id = e.organisation_id and mgr.id = e.manager_employee_id
+    left join public.role_families rf on rf.organisation_id = e.organisation_id and rf.id = e.role_family_id
+    left join public.formal_ratings fr on fr.organisation_id = e.organisation_id and fr.employee_id = e.id
+    where e.organisation_id = v_org
+  ),
+  compared as (
+    select
+      coalesce(s.employee_ref, l.employee_ref) as employee_ref,
+      coalesce(s.first_name, l.first_name) as first_name,
+      coalesce(s.last_name, l.last_name) as last_name,
+      case
+        when l.id is null then 'joiner'
+        when s.ref_key is null then case when l.status = 'active' then 'leaver' end
+        when l.status = 'inactive' then 'returning'
+        else 'update'
+      end as change,
+      case when s.ref_key is null then '{}'::jsonb else jsonb_strip_nulls(jsonb_build_object(
+        'first_name', case when s.first_name is distinct from l.first_name
+          then jsonb_build_object('from', l.first_name, 'to', s.first_name) end,
+        'last_name', case when s.last_name is distinct from l.last_name
+          then jsonb_build_object('from', l.last_name, 'to', s.last_name) end,
+        'work_email', case when lower(s.work_email) is distinct from lower(l.work_email)
+          then jsonb_build_object('from', l.work_email, 'to', s.work_email) end,
+        'unit', case when lower(s.unit_code) is distinct from lower(l.unit_code)
+          then jsonb_build_object('from', l.unit_code, 'to', s.unit_code) end,
+        'team', case when lower(s.team_name) is distinct from lower(l.team_name)
+          then jsonb_build_object('from', l.team_name, 'to', s.team_name) end,
+        'manager', case when lower(s.manager_ref) is distinct from lower(l.manager_ref)
+          then jsonb_build_object('from', l.manager_ref, 'to', s.manager_ref) end,
+        'role_title', case when s.role_title is distinct from l.role_title
+          then jsonb_build_object('from', l.role_title, 'to', s.role_title) end,
+        'role_family', case when lower(s.role_family_name) is distinct from lower(l.role_family_name)
+          then jsonb_build_object('from', l.role_family_name, 'to', s.role_family_name) end,
+        'start_date', case when s.start_date is distinct from l.start_date
+          then jsonb_build_object('from', l.start_date, 'to', s.start_date) end,
+        'fte', case when s.fte is distinct from l.fte
+          then jsonb_build_object('from', l.fte, 'to', s.fte) end,
+        'team_leader', case when s.is_team_leader is distinct from l.is_team_leader
+          then jsonb_build_object('from', l.is_team_leader, 'to', s.is_team_leader) end,
+        'leadership_team', case when s.is_leadership_team is distinct from l.is_leadership_team
+          then jsonb_build_object('from', l.is_leadership_team, 'to', s.is_leadership_team) end,
+        'employment_status', case when s.employment_status is distinct from l.employment_status
+          then jsonb_build_object('from', l.employment_status, 'to', s.employment_status) end,
+        'formal_rating', case
+          when (s.formal_rating_label, s.formal_rating_date) is distinct from (l.formal_rating_label, l.formal_rating_date)
+          then jsonb_build_object(
+            'from', case when l.formal_rating_label is not null
+              then jsonb_build_object('label', l.formal_rating_label, 'date', l.formal_rating_date) end,
+            'to', case when s.formal_rating_label is not null
+              then jsonb_build_object('label', s.formal_rating_label, 'date', s.formal_rating_date) end)
+          end
+      )) end as fields
+    from staged s
+    full join live l on l.ref_key = s.ref_key
+  )
+  select coalesce(jsonb_agg(
+    jsonb_build_object('employee_ref', employee_ref, 'first_name', first_name, 'last_name', last_name,
+                       'change', change, 'fields', fields)
+    order by lower(employee_ref)
+  ), '[]'::jsonb)
+  into v_people
+  from compared
+  where change in ('joiner', 'returning', 'leaver') or (change = 'update' and fields <> '{}'::jsonb);
+
+  with staged_units as (
+    select lower(unit_code) as code_key, min(unit_code) as unit_code, min(unit_name) as unit_name
+    from public.directory_upload_rows
+    where organisation_id = v_org and upload_id = p_upload_id
+    group by lower(unit_code)
+  ),
+  unit_changes as (
+    select su.unit_code, 'new'::text as change, null::text as name_from, su.unit_name as name_to
+    from staged_units su
+    where not exists (
+      select 1 from public.business_units u where u.organisation_id = v_org and lower(u.unit_code) = su.code_key
+    )
+    union all
+    select u.unit_code, 'renamed', u.name, su.unit_name
+    from staged_units su
+    join public.business_units u on u.organisation_id = v_org and lower(u.unit_code) = su.code_key
+    where u.status = 'active' and u.name is distinct from su.unit_name
+    union all
+    select u.unit_code, 'emptied', u.name, null
+    from public.business_units u
+    where u.organisation_id = v_org and u.status = 'active'
+      and private.unit_has_active_staff(v_org, u.id)
+      and lower(u.unit_code) not in (select code_key from staged_units)
+  )
+  select coalesce(jsonb_agg(
+    jsonb_strip_nulls(jsonb_build_object('unit_code', unit_code, 'change', change, 'name_from', name_from, 'name_to', name_to))
+    order by lower(unit_code), change
+  ), '[]'::jsonb)
+  into v_units
+  from unit_changes;
+
+  select coalesce(jsonb_agg(jsonb_build_object('unit_code', t.unit_code, 'team', t.team_name)
+    order by lower(t.unit_code), lower(t.team_name)), '[]'::jsonb)
+  into v_teams
+  from (
+    select min(r.unit_code) as unit_code, min(r.team_name) as team_name
+    from public.directory_upload_rows r
+    where r.organisation_id = v_org and r.upload_id = p_upload_id and r.team_name is not null
+    group by lower(r.unit_code), lower(r.team_name)
+  ) t
+  where not exists (
+    select 1 from public.teams tm
+    join public.business_units u on u.organisation_id = tm.organisation_id and u.id = tm.unit_id
+    where tm.organisation_id = v_org and lower(u.unit_code) = lower(t.unit_code)
+      and lower(tm.name) = lower(t.team_name)
+  );
+
+  select coalesce(jsonb_agg(f.role_family_name order by lower(f.role_family_name)), '[]'::jsonb)
+  into v_families
+  from (
+    select min(r.role_family_name) as role_family_name
+    from public.directory_upload_rows r
+    where r.organisation_id = v_org and r.upload_id = p_upload_id and r.role_family_name is not null
+    group by lower(r.role_family_name)
+  ) f
+  where not exists (
+    select 1 from public.role_families rf
+    where rf.organisation_id = v_org and lower(rf.name) = lower(f.role_family_name)
+  );
+
+  select count(*) into v_active_before from public.employees where organisation_id = v_org and status = 'active';
+  select count(*) into v_active_after from public.directory_upload_rows where organisation_id = v_org and upload_id = p_upload_id;
+  select count(*) into v_leavers from jsonb_array_elements(v_people) p where p ->> 'change' = 'leaver';
+
+  return jsonb_build_object(
+    'summary', jsonb_build_object(
+      'rows', v_active_after,
+      'joiners', (select count(*) from jsonb_array_elements(v_people) p where p ->> 'change' = 'joiner'),
+      'returning', (select count(*) from jsonb_array_elements(v_people) p where p ->> 'change' = 'returning'),
+      'leavers', v_leavers,
+      'moves', (select count(*) from jsonb_array_elements(v_people) p
+                where p ->> 'change' = 'update' and (p -> 'fields' ? 'unit' or p -> 'fields' ? 'team')),
+      'manager_changes', (select count(*) from jsonb_array_elements(v_people) p
+                          where p ->> 'change' = 'update' and p -> 'fields' ? 'manager'),
+      'updates', (select count(*) from jsonb_array_elements(v_people) p where p ->> 'change' = 'update'),
+      'formal_rating_changes', (select count(*) from jsonb_array_elements(v_people) p where p -> 'fields' ? 'formal_rating'),
+      'new_units', (select count(*) from jsonb_array_elements(v_units) u where u ->> 'change' = 'new'),
+      'renamed_units', (select count(*) from jsonb_array_elements(v_units) u where u ->> 'change' = 'renamed'),
+      'emptied_units', (select count(*) from jsonb_array_elements(v_units) u where u ->> 'change' = 'emptied'),
+      'new_teams', jsonb_array_length(v_teams),
+      'new_role_families', jsonb_array_length(v_families)
+    ),
+    'leaver_confirmation_required', v_leavers > private.leaver_confirmation_threshold(v_active_before),
+    'leaver_threshold', private.leaver_confirmation_threshold(v_active_before),
+    'entitlement', private.entitlement(v_org, v_active_after),
+    'people', v_people,
+    'units', v_units,
+    'teams', v_teams,
+    'role_families', v_families
+  );
+end
+$$;
+
 -- Formal ratings: one person's, and the readiness check's ----------------------------------------------
 
 -- Replaces the Milestone 3 function. p_employee_id narrows the read to one person, so the edit page's

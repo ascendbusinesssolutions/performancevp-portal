@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useId } from "react";
 
 import { INPUT_CLASS } from "./ui";
 
@@ -29,15 +29,22 @@ export function SelectField({
   hint?: string;
   disabled?: boolean;
 }) {
+  // An explicit label, not a wrapping one: a label wrapping a select takes every option into its
+  // text, which garbles the field's name for assistive technology.
+  const id = useId();
   return (
-    <label className="block">
-      <span className="block text-sm text-grey">{label}</span>
+    <div>
+      <label htmlFor={id} className="block text-sm text-grey">
+        {label}
+      </label>
       <select
+        id={id}
         className={INPUT_CLASS}
         name={name}
         defaultValue={defaultValue}
         required={required}
         disabled={disabled}
+        aria-describedby={hint ? `${id}-hint` : undefined}
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -45,8 +52,12 @@ export function SelectField({
           </option>
         ))}
       </select>
-      {hint ? <span className="mt-1 block text-xs text-grey">{hint}</span> : null}
-    </label>
+      {hint ? (
+        <p id={`${id}-hint`} className="mt-1 text-xs text-grey">
+          {hint}
+        </p>
+      ) : null}
+    </div>
   );
 }
 

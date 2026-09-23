@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { type ReactNode, useId } from "react";
 
 import { shellCopy } from "@/lib/copy/shell";
 
@@ -46,6 +46,7 @@ export function Field({
   hint,
   maxLength,
   disabled,
+  list,
 }: {
   label: string;
   name: string;
@@ -57,11 +58,19 @@ export function Field({
   hint?: string;
   maxLength?: number;
   disabled?: boolean;
+  list?: string;
 }) {
+  // The label holds its text only and names the input through htmlFor; the hint is linked by
+  // aria-describedby, so the field's accessible name is exactly its label.
+  const id = useId();
   return (
-    <label className="block">
-      <span className="block text-sm text-grey">{label}</span>
+    <div>
+      <label htmlFor={id} className="block text-sm text-grey">
+        {label}
+      </label>
       <input
+        id={id}
+        list={list}
         className={INPUT_CLASS}
         name={name}
         type={type}
@@ -71,9 +80,14 @@ export function Field({
         defaultValue={defaultValue}
         maxLength={maxLength}
         disabled={disabled}
+        aria-describedby={hint ? `${id}-hint` : undefined}
       />
-      {hint ? <span className="mt-1 block text-xs text-grey">{hint}</span> : null}
-    </label>
+      {hint ? (
+        <p id={`${id}-hint`} className="mt-1 text-xs text-grey">
+          {hint}
+        </p>
+      ) : null}
+    </div>
   );
 }
 

@@ -27,6 +27,7 @@ export interface Person {
   fte: number;
   is_team_leader: boolean;
   is_leadership_team: boolean;
+  employment_status: string | null;
   status: string;
 }
 
@@ -39,7 +40,7 @@ export interface Team {
 
 const PERSON_COLUMNS =
   "id, employee_ref, first_name, last_name, work_email, unit_id, team_id, manager_employee_id, " +
-  "role_family_id, role_title, start_date, fte, is_team_leader, is_leadership_team, status";
+  "role_family_id, role_title, start_date, fte, is_team_leader, is_leadership_team, employment_status, status";
 
 export async function loadUnits(supabase: Client, orgId: string): Promise<UnitRow[]> {
   return allRows((from, to) =>
@@ -81,4 +82,43 @@ export function headcountByUnit(people: readonly Person[]): Map<string, number> 
   const counts = new Map<string, number>();
   for (const p of people) counts.set(p.unit_id, (counts.get(p.unit_id) ?? 0) + 1);
   return counts;
+}
+
+export async function loadRoleFamilies(
+  supabase: Client,
+  orgId: string,
+): Promise<
+  Array<{
+    id: string;
+    name: string;
+    is_people_leader: boolean;
+    status: string;
+    template_code: string | null;
+  }>
+> {
+  return allRows((from, to) =>
+    supabase
+      .from("role_families")
+      .select("id, name, is_people_leader, status, template_code")
+      .eq("organisation_id", orgId)
+      .order("id")
+      .range(from, to),
+  );
+}
+
+/** One directory record, active or deactivated. */
+export async function loadPerson(
+  supabase: Client,
+  orgId: string,
+  employeeId: string,
+): Promise<Person | null> {
+  const { data } = await supabase
+    .from("employees")
+    .select(PERSON_COLUMNS)
+    .eq("organisation_id", orgId)
+    .eq("id", employeeId)
+    .maybeSingle();
+  if (!data) return null;
+  const person = data as unknown as Person;
+  return { ...person, fte: Number(person.fte) };
 }

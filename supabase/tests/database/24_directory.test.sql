@@ -9,7 +9,7 @@ begin;
 \ir helpers/tests.psql
 \ir helpers/fixture.psql
 
-select plan(53);
+select plan(54);
 
 select tests.seed_fixture();
 
@@ -231,6 +231,8 @@ select pg_temp.stage('upload_few', 'upload_few');
 create temp table preview_few as select pg_temp.preview('upload_few') as diff;
 select is((select (diff ->> 'leaver_confirmation_required')::boolean from preview_few), true,
   'deactivating more than five people, and more than a tenth of the directory, needs confirming');
+select is((select (diff ->> 'leaver_threshold')::integer from preview_few), 5,
+  'and the preview states the threshold it was judged against (the greater of 5 and a tenth of 18 active)');
 select alike(pg_temp.apply('upload_few', (select diff ->> 'preview_hash' from preview_few)), 'error: 22023%',
   'so it is refused without the confirmation');
 select is(tests.attempt('alpha_admin', format('select public.discard_directory_upload(%L)', tests.id('upload_few')), p_keep => true), '1',

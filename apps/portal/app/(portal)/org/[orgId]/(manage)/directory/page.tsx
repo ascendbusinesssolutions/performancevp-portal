@@ -1,62 +1,62 @@
-import { redirect } from "next/navigation";
+import Link from "next/link";
 
+import { LinkButton, buttonClass } from "@/components/button";
+import { SelectField } from "@/components/fields";
+import { homeCrumb, PageHeader, Section } from "@/components/page";
+import { Head, Row, Table, Td, Th } from "@/components/table";
 import { Notice, TextLink } from "@/components/ui";
 import { directoryCopy } from "@/lib/copy/directory";
+import { setupCopy } from "@/lib/copy/setup";
+import { fill } from "@/lib/copy/template";
 import { parseErrors } from "@/lib/directory/errors";
+import { requireOrgManager } from "@/lib/org/context";
+import { loadActivePeople, loadUnits } from "@/lib/setup/data";
+import { personName, unitTree } from "@/lib/setup/units";
 import { createClient } from "@/lib/supabase/server";
 
+import { PeopleTable, type PersonListRow } from "./people-table";
 import { UploadForm } from "./upload-form";
 
-const LIST_LIMIT = 200;
 const STATUSES = ["staged", "rejected", "applied", "discarded", "expired"] as const;
+const MISSING = ["manager", "email", "role_family"] as const;
+type Missing = (typeof MISSING)[number];
 
 function when(value: string): string {
-  return new Date(value).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" });
+  return new Date(value).toLocaleString("en-AU", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Australia/Sydney",
+  });
 }
 
 function statusLabel(status: string): string {
-  return (STATUSES as readonly string[]).includes(status)
-    ? directoryCopy[`status.${status as (typeof STATUSES)[number]}`]
-    : status;
+  const known = STATUSES.find((s) => s === status);
+  return known ? directoryCopy[`status.${known}`] : status;
 }
 
 /**
- * The directory (Milestone 3 plan, Section 9): the template, the upload, the recent uploads and
- * the people. For administrators, the account owner and staff under an open support session;
- * the database decides who that is. Individual edits arrive with the setup screens (Milestone 4).
+ * Setup step 2: the directory (PORTAL_BUILD_PLAN.md 7; Online Measurement Specification 6.1). The
+ * template, the upload and its difference preview (Milestone 3), the recent uploads, and the people,
+ * filtered by unit or by what is missing and edited one at a time. Only fixed keys and unit ids
+ * reach the query string; finding a person by name happens in the browser.
  */
 export default async function DirectoryPage({
   params,
   searchParams,
 }: PageProps<"/org/[orgId]/directory">) {
   const { orgId } = await params;
-  const { notice } = await searchParams;
+  const { notice, unit: unitParam, missing: missingParam } = await searchParams;
+  const org = await requireOrgManager(orgId);
   const supabase = await createClient();
-  const { data: allowed } = await supabase.rpc("can_manage_directory", {
-    p_organisation_id: orgId,
-  });
-  if (allowed !== true) redirect("/");
 
-  const [organisation, active, inactive, people, units, uploads] = await Promise.all([
-    supabase.from("organisations").select("name").eq("id", orgId).maybeSingle(),
-    supabase
-      .from("employees")
-      .select("id", { count: "exact", head: true })
-      .eq("organisation_id", orgId)
-      .eq("status", "active"),
+  const [inactive, people, units, uploads] = await Promise.all([
     supabase
       .from("employees")
       .select("id", { count: "exact", head: true })
       .eq("organisation_id", orgId)
       .eq("status", "inactive"),
-    supabase
-      .from("employees")
-      .select("id, employee_ref, first_name, last_name, unit_id, manager_employee_id, fte")
-      .eq("organisation_id", orgId)
-      .eq("status", "active")
-      .order("employee_ref")
-      .limit(LIST_LIMIT),
-    supabase.from("business_units").select("id, unit_code, name").eq("organisation_id", orgId),
+    loadActivePeople(supabase, orgId),
+    loadUnits(supabase, orgId),
     supabase
       .from("directory_uploads")
       .select("id, file_name, row_count, status, uploaded_at, errors")
@@ -65,76 +65,159 @@ export default async function DirectoryPage({
       .limit(10),
   ]);
 
-  const unit = new Map((units.data ?? []).map((u) => [u.id, u]));
-  const byId = new Map((people.data ?? []).map((p) => [p.id, p.employee_ref]));
-  const missingManagers = [
-    ...new Set(
-      (people.data ?? [])
-        .map((p) => p.manager_employee_id)
-        .filter((id): id is string => !!id && !byId.has(id)),
-    ),
-  ];
-  if (missingManagers.length > 0) {
-    const { data: managers } = await supabase
-      .from("employees")
-      .select("id, employee_ref")
-      .eq("organisation_id", orgId)
-      .in("id", missingManagers);
-    for (const m of managers ?? []) byId.set(m.id, m.employee_ref);
-  }
+  const byId = new Map(people.map((p) => [p.id, p]));
+  const unitName = new Map(units.map((u) => [u.id, u.name]));
+  const tree = unitTree(units);
+  const unitFilter =
+    typeof unitParam === "string" && units.some((u) => u.id === unitParam) ? unitParam : "";
+  const missing = MISSING.find((m) => m === missingParam) as Missing | undefined;
+  const isMissing = (p: (typeof people)[number]): boolean => {
+    if (missing === "manager") return !p.manager_employee_id || !byId.has(p.manager_employee_id);
+    if (missing === "email") return !p.work_email;
+    if (missing === "role_family") return !p.role_family_id;
+    return true;
+  };
+  const rows: PersonListRow[] = people
+    .filter((p) => (unitFilter === "" || p.unit_id === unitFilter) && isMissing(p))
+    .sort(
+      (a, b) =>
+        a.last_name.localeCompare(b.last_name, "en-AU") ||
+        a.first_name.localeCompare(b.first_name, "en-AU"),
+    )
+    .map((p) => ({
+      id: p.id,
+      ref: p.employee_ref,
+      name: personName(p),
+      unit: unitName.get(p.unit_id) ?? "",
+      manager: p.manager_employee_id ? (byId.get(p.manager_employee_id)?.employee_ref ?? "") : "",
+      fte: p.fte,
+      teamLeader: p.is_team_leader,
+      leadershipTeam: p.is_leadership_team,
+    }));
+  const staged = (uploads.data ?? []).find((u) => u.status === "staged");
 
   return (
-    <main className="mt-10 space-y-14">
-      <div>
-        <p className="text-sm text-grey">{organisation.data?.name}</p>
-        <h1 className="font-display text-3xl font-medium text-slate">
-          {directoryCopy["page.title"]}
-        </h1>
-        <p className="mt-3 max-w-2xl text-grey">{directoryCopy["page.intro"]}</p>
-        <p className="mt-4 text-sm text-slate" data-testid="directory-counts">
-          <span className="font-mono">{active.count ?? 0}</span> {directoryCopy["page.active"]},{" "}
-          <span className="font-mono">{inactive.count ?? 0}</span> {directoryCopy["page.inactive"]}
-        </p>
-      </div>
+    <main>
+      <PageHeader
+        crumbs={[
+          homeCrumb(),
+          { label: org.name },
+          { label: setupCopy["organisation.crumb"], href: `/org/${orgId}/setup` },
+        ]}
+        title={directoryCopy["page.title"]}
+        meta={
+          <span data-testid="directory-counts">
+            {fill(directoryCopy["page.meta"], {
+              active: people.length,
+              inactive: inactive.count ?? 0,
+            })}
+          </span>
+        }
+      >
+        <p className="text-grey">{directoryCopy["page.intro"]}</p>
+      </PageHeader>
 
       {notice === "applied" ? <Notice>{directoryCopy["preview.applied"]}</Notice> : null}
       {notice === "discarded" ? <Notice>{directoryCopy["preview.discarded"]}</Notice> : null}
-
-      <section className="space-y-6">
-        <p>
-          {/* A plain link: the route answers with the workbook as an attachment. */}
-          <a
-            href={`/org/${orgId}/directory/template`}
-            className="text-sm text-slate underline underline-offset-4 hover:text-gold-deep"
+      {staged ? (
+        <Notice tone="problem">
+          {directoryCopy["page.awaiting"]}{" "}
+          <Link
+            className="underline underline-offset-4 hover:text-gold-deep"
+            href={`/org/${orgId}/directory/uploads/${staged.id}`}
           >
-            {directoryCopy["page.template"]}
-          </a>
-        </p>
-        <UploadForm organisationId={orgId} />
-      </section>
+            {directoryCopy["page.awaitingLink"]}
+          </Link>
+        </Notice>
+      ) : null}
 
-      <section>
-        <h2 className="font-display text-xl text-slate">{directoryCopy["page.uploads"]}</h2>
-        {(uploads.data ?? []).length === 0 ? (
-          <p className="mt-3 text-sm text-grey">{directoryCopy["page.noUploads"]}</p>
+      <Section id="upload">
+        <div className="grid gap-10 md:grid-cols-[1fr_1fr]">
+          <div className="space-y-4">
+            <p>
+              {/* A plain link: the route answers with the workbook as an attachment. */}
+              <a href={`/org/${orgId}/directory/template`} className={buttonClass("secondary")}>
+                {directoryCopy["page.template"]}
+              </a>
+            </p>
+            <p className="max-w-md text-sm text-grey">{directoryCopy["page.ratingRule"]}</p>
+          </div>
+          {org.writable ? <UploadForm organisationId={orgId} /> : null}
+        </div>
+      </Section>
+
+      <Section
+        id="people"
+        title={directoryCopy["page.people"]}
+        aside={
+          org.writable ? (
+            <LinkButton href={`/org/${orgId}/directory/people/new`} variant="secondary">
+              {directoryCopy["page.addPerson"]}
+            </LinkButton>
+          ) : null
+        }
+      >
+        <form method="get" className="mb-8 flex flex-wrap items-end gap-4">
+          <div className="w-64">
+            <SelectField
+              label={directoryCopy["people.filter.unit"]}
+              name="unit"
+              defaultValue={unitFilter}
+              options={[
+                { value: "", label: directoryCopy["people.filter.allUnits"] },
+                ...tree.map((e) => ({
+                  value: e.unit.id,
+                  label: `${" ".repeat(e.depth)}${e.unit.name}`,
+                })),
+              ]}
+            />
+          </div>
+          <div className="w-80">
+            <SelectField
+              label={directoryCopy["people.filter.missing"]}
+              name="missing"
+              defaultValue={missing ?? ""}
+              options={[
+                { value: "", label: directoryCopy["people.filter.everyone"] },
+                ...MISSING.map((m) => ({ value: m, label: directoryCopy[`people.filter.${m}`] })),
+              ]}
+            />
+          </div>
+          <button type="submit" className={buttonClass("secondary")}>
+            {directoryCopy["people.filter.apply"]}
+          </button>
+        </form>
+        {people.length === 0 ? (
+          <p className="text-sm text-grey">{directoryCopy["page.noPeople"]}</p>
         ) : (
-          <table className="mt-4 w-full border-collapse text-left text-sm">
-            <thead className="text-grey">
-              <tr className="border-b border-grey-20">
-                <th className="py-2 font-normal">{directoryCopy["page.col.file"]}</th>
-                <th className="py-2 font-normal">{directoryCopy["page.col.rows"]}</th>
-                <th className="py-2 font-normal">{directoryCopy["page.col.status"]}</th>
-                <th className="py-2 font-normal">{directoryCopy["page.col.when"]}</th>
-              </tr>
-            </thead>
+          <PeopleTable orgId={orgId} rows={rows} />
+        )}
+        {(inactive.count ?? 0) > 0 ? (
+          <p className="mt-6 text-sm text-grey">{directoryCopy["page.inactiveNote"]}</p>
+        ) : null}
+      </Section>
+
+      <Section id="uploads" title={directoryCopy["page.uploads"]}>
+        {(uploads.data ?? []).length === 0 ? (
+          <p className="text-sm text-grey">{directoryCopy["page.noUploads"]}</p>
+        ) : (
+          <Table>
+            <Head>
+              <Th>{directoryCopy["page.col.file"]}</Th>
+              <Th align="right">{directoryCopy["page.col.rows"]}</Th>
+              <Th>{directoryCopy["page.col.status"]}</Th>
+              <Th>{directoryCopy["page.col.when"]}</Th>
+            </Head>
             <tbody>
               {(uploads.data ?? []).map((u) => {
                 const errors = parseErrors(u.errors);
                 return (
-                  <tr key={u.id} className="border-b border-grey-20 align-top">
-                    <td className="py-3 text-slate">{u.file_name}</td>
-                    <td className="py-3 font-mono text-grey">{u.row_count}</td>
-                    <td className="py-3 text-grey">
+                  <Row key={u.id}>
+                    <Td>{u.file_name}</Td>
+                    <Td figure muted align="right">
+                      {u.row_count}
+                    </Td>
+                    <Td muted>
                       {u.status === "staged" ? (
                         <TextLink href={`/org/${orgId}/directory/uploads/${u.id}`}>
                           {directoryCopy["page.review"]}
@@ -154,54 +237,15 @@ export default async function DirectoryPage({
                           ))}
                         </ul>
                       ) : null}
-                    </td>
-                    <td className="py-3 text-grey">{when(u.uploaded_at)}</td>
-                  </tr>
+                    </Td>
+                    <Td muted>{when(u.uploaded_at)}</Td>
+                  </Row>
                 );
               })}
             </tbody>
-          </table>
+          </Table>
         )}
-      </section>
-
-      <section>
-        <h2 className="font-display text-xl text-slate">{directoryCopy["page.people"]}</h2>
-        {(people.data ?? []).length === 0 ? (
-          <p className="mt-3 text-sm text-grey">{directoryCopy["page.noPeople"]}</p>
-        ) : (
-          <>
-            <table className="mt-4 w-full border-collapse text-left text-sm">
-              <thead className="text-grey">
-                <tr className="border-b border-grey-20">
-                  <th className="py-2 font-normal">{directoryCopy["page.col.id"]}</th>
-                  <th className="py-2 font-normal">{directoryCopy["page.col.name"]}</th>
-                  <th className="py-2 font-normal">{directoryCopy["page.col.unit"]}</th>
-                  <th className="py-2 font-normal">{directoryCopy["page.col.manager"]}</th>
-                  <th className="py-2 font-normal">{directoryCopy["page.col.fte"]}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(people.data ?? []).map((p) => (
-                  <tr key={p.id} className="border-b border-grey-20">
-                    <td className="py-2 font-mono text-slate">{p.employee_ref}</td>
-                    <td className="py-2 text-slate">
-                      {p.first_name} {p.last_name}
-                    </td>
-                    <td className="py-2 text-grey">{unit.get(p.unit_id)?.name}</td>
-                    <td className="py-2 font-mono text-grey">
-                      {p.manager_employee_id ? (byId.get(p.manager_employee_id) ?? "") : ""}
-                    </td>
-                    <td className="py-2 font-mono text-grey">{p.fte}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {(active.count ?? 0) > LIST_LIMIT ? (
-              <p className="mt-3 text-sm text-grey">{directoryCopy["page.listLimit"]}</p>
-            ) : null}
-          </>
-        )}
-      </section>
+      </Section>
     </main>
   );
 }

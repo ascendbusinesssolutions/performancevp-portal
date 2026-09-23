@@ -127,6 +127,42 @@ insert into expected_grants values
   ('replace_account_owner(uuid,text)', 'authenticated', 'EXECUTE'),
   ('reset_factors(uuid)', 'authenticated', 'EXECUTE');
 
+-- Step 4: structure and the context parents.
+insert into expected_grants values
+  ('public.business_units', 'authenticated', 'SELECT'),
+  ('public.business_units', 'authenticated', 'INSERT'),
+  ('public.business_units(name)', 'authenticated', 'UPDATE'),
+  ('public.business_units(parent_unit_id)', 'authenticated', 'UPDATE'),
+  ('public.business_units(unit_type)', 'authenticated', 'UPDATE'),
+  ('public.business_units(status)', 'authenticated', 'UPDATE'),
+  ('public.business_units(retired_on)', 'authenticated', 'UPDATE'),
+  ('public.teams', 'authenticated', 'SELECT'),
+  ('public.teams', 'authenticated', 'INSERT'),
+  ('public.teams(name)', 'authenticated', 'UPDATE'),
+  ('public.teams(status)', 'authenticated', 'UPDATE'),
+  ('public.unit_lineage', 'authenticated', 'SELECT'),
+  ('public.role_families', 'authenticated', 'SELECT'),
+  ('public.role_families', 'authenticated', 'INSERT'),
+  ('public.role_families(name)', 'authenticated', 'UPDATE'),
+  ('public.role_families(is_people_leader)', 'authenticated', 'UPDATE'),
+  ('public.role_families(status)', 'authenticated', 'UPDATE'),
+  ('public.skills', 'authenticated', 'SELECT'),
+  ('public.skills', 'authenticated', 'INSERT'),
+  ('public.skills(name)', 'authenticated', 'UPDATE'),
+  ('public.skills(is_critical)', 'authenticated', 'UPDATE'),
+  ('public.skills(kind)', 'authenticated', 'UPDATE'),
+  ('public.skills(status)', 'authenticated', 'UPDATE'),
+  ('public.knowledge_domains', 'authenticated', 'SELECT'),
+  ('public.knowledge_domains', 'authenticated', 'INSERT'),
+  ('public.knowledge_domains(name)', 'authenticated', 'UPDATE'),
+  ('public.knowledge_domains(criticality)', 'authenticated', 'UPDATE'),
+  ('public.knowledge_domains(status)', 'authenticated', 'UPDATE'),
+  ('public.unit_access', 'authenticated', 'SELECT'),
+  ('private.viewable_unit_ids()', 'authenticated', 'EXECUTE'),
+  ('private.can_view_unit(uuid)', 'authenticated', 'EXECUTE'),
+  ('record_unit_lineage(uuid,text,uuid[],uuid[],date)', 'authenticated', 'EXECUTE'),
+  ('set_unit_access(uuid,uuid[])', 'authenticated', 'EXECUTE');
+
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,
          a.privilege_type as privilege

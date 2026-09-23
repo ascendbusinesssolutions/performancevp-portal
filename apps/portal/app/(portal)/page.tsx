@@ -2,6 +2,7 @@ import { TextLink } from "@/components/ui";
 import { requireAccess } from "@/lib/auth/access";
 import { authCopy } from "@/lib/copy/auth";
 import { consoleCopy } from "@/lib/copy/console";
+import { directoryCopy } from "@/lib/copy/directory";
 
 /**
  * The landing page: the organisations and roles the person holds, and for PerformanceVP staff
@@ -27,11 +28,16 @@ export default async function PortalHome() {
                 <td className="py-3 text-slate">{m.organisationName}</td>
                 <td className="py-3 text-grey">{authCopy[`role.${m.role}`]}</td>
                 <td className="py-3 text-grey">{authCopy[`state.${m.state}`]}</td>
-                <td className="py-3 text-right">
+                <td className="space-x-6 py-3 text-right">
                   {m.role === "account_owner" || m.role === "administrator" ? (
-                    <TextLink href={`/org/${m.organisationId}/access`}>
-                      {consoleCopy["nav.access"]}
-                    </TextLink>
+                    <>
+                      <TextLink href={`/org/${m.organisationId}/directory`}>
+                        {directoryCopy["page.nav"]}
+                      </TextLink>
+                      <TextLink href={`/org/${m.organisationId}/access`}>
+                        {consoleCopy["nav.access"]}
+                      </TextLink>
+                    </>
                   ) : null}
                 </td>
               </tr>
@@ -54,7 +60,10 @@ export default async function PortalHome() {
                   <TextLink href={`/org/${s.organisationId}/access`}>{s.organisationName}</TextLink>{" "}
                   <span className="text-sm text-grey">
                     {authCopy["portal.expires"]} {new Date(s.expiresAt).toLocaleTimeString("en-AU")}
-                  </span>
+                  </span>{" "}
+                  <TextLink href={`/org/${s.organisationId}/directory`}>
+                    {directoryCopy["page.nav"]}
+                  </TextLink>
                 </li>
               ))}
             </ul>

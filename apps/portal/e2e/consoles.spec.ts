@@ -1,6 +1,6 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-import { clearMail, latestLink, PASSWORD, resetPersonas, sql, totp } from "./support";
+import { clearMail, latestLink, resetPersonas, signInAndEnrol, sql } from "./support";
 
 // The PerformanceVP console and the account owner's access page (Milestone 3 plan, step 8).
 const OWNER = "owner@pvp.local";
@@ -16,21 +16,6 @@ test.beforeEach(async () => {
   );
   await clearMail();
 });
-
-/** Signs in with a password and enrols TOTP (every persona here needs it); returns the secret. */
-async function signInAndEnrol(page: Page, email: string, password = PASSWORD): Promise<string> {
-  await page.goto("/login");
-  await page.getByLabel("Work email").fill(email);
-  await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(/\/mfa\/enrol$/);
-  await page.getByRole("button", { name: "Show the setup code" }).click();
-  const secret = (await page.getByTestId("totp-secret").innerText()).trim();
-  await page.getByLabel("Code from your app").fill((await totp(secret)).code);
-  await page.getByRole("button", { name: "Confirm" }).click();
-  await expect(page.getByRole("heading", { name: "Your access" })).toBeVisible();
-  return secret;
-}
 
 test("the Owner provisions an organisation and its account owner sets up their account", async ({
   page,

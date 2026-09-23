@@ -1737,6 +1737,10 @@ export type Database = {
         }
         Returns: Json
       }
+      can_manage_directory: {
+        Args: { p_organisation_id: string }
+        Returns: boolean
+      }
       close_support_session: {
         Args: { p_session_id: string }
         Returns: undefined
@@ -1886,6 +1890,10 @@ export type Database = {
           unit_id: string
           updated_at: string
         }[]
+      }
+      record_job_run: {
+        Args: { p_detail: Json; p_job: string }
+        Returns: undefined
       }
       record_subscription_term: {
         Args: {

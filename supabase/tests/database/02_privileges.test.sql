@@ -244,6 +244,11 @@ insert into expected_grants values
   ('staff_organisations()', 'authenticated', 'EXECUTE'),
   ('designate_support_staff(text)', 'authenticated', 'EXECUTE');
 
+-- Step 9: the directory screens and the daily job.
+insert into expected_grants values
+  ('can_manage_directory(uuid)', 'authenticated', 'EXECUTE'),
+  ('record_job_run(text,jsonb)', 'service_role', 'EXECUTE');
+
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,
          a.privilege_type as privilege

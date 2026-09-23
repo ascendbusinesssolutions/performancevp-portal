@@ -7,7 +7,7 @@ begin;
 \ir helpers/tests.psql
 \ir helpers/fixture.psql
 
-select plan(8);
+select plan(13);
 
 select tests.seed_fixture();
 select tests.set_state('beta', 'grace');
@@ -44,6 +44,21 @@ select is(tests.value_as('owner', $$select public.designate_support_staff('new.s
   'an address with no account is reported, so the server can invite it first');
 select is(tests.attempt('support_a', $$select public.designate_support_staff('x@pvp.test')$$), 'denied',
   'support staff cannot designate staff');
+
+-- The directory screens ask whether the signed-in person may manage the directory.
+select is(tests.value_as('alpha_admin', $$select public.can_manage_directory(tests.id('alpha'))::text$$), 'true',
+  'an administrator may manage the directory');
+select is(tests.value_as('support_a', $$select public.can_manage_directory(tests.id('alpha'))::text$$), 'true',
+  'so may staff under a session');
+select is(tests.value_as('alpha_exec', $$select public.can_manage_directory(tests.id('alpha'))::text$$), 'false',
+  'an executive viewer may not');
+
+-- The daily job records each run.
+select tests.value_as('service', $$select public.record_job_run('daily', '{"records_purged": 0}')::text$$);
+select ok(exists (select 1 from public.audit_logs where action = 'job.daily_completed' and organisation_id is null),
+  'each run of the daily job is recorded as a platform event');
+select is(tests.attempt('alpha_admin', $$select public.record_job_run('daily', '{}')$$), 'denied',
+  'only the service role records a job run');
 
 select * from finish();
 

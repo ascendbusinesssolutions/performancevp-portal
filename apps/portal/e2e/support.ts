@@ -1,3 +1,4 @@
+import { expect, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 import { generateSync } from "otplib";
 import { Client } from "pg";
@@ -109,4 +110,27 @@ export async function latestLink(email: string, type: "recovery" | "invite"): Pr
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   throw new Error(`no ${type} link arrived for ${email}`);
+}
+
+/**
+ * Signs in with a password and enrols TOTP (every persona here needs it); returns the secret. The
+ * sign-in pages are loaded to network idle, so a first test against a freshly started server does
+ * not click before the form is hydrated.
+ */
+export async function signInAndEnrol(
+  page: Page,
+  email: string,
+  password = PASSWORD,
+): Promise<string> {
+  await page.goto("/login", { waitUntil: "networkidle" });
+  await page.getByLabel("Work email").fill(email);
+  await page.getByLabel("Password").fill(password);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/mfa\/enrol$/);
+  await page.getByRole("button", { name: "Show the setup code" }).click();
+  const secret = (await page.getByTestId("totp-secret").innerText()).trim();
+  await page.getByLabel("Code from your app").fill((await totp(secret)).code);
+  await page.getByRole("button", { name: "Confirm" }).click();
+  await expect(page.getByRole("heading", { name: "Your access" })).toBeVisible();
+  return secret;
 }

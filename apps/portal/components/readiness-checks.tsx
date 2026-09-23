@@ -124,7 +124,7 @@ const where = {
 };
 
 /** The units a unit under 10 could be measured with, each with the total together. */
-function candidateLine(candidate: CandidateRef): string {
+export function candidateLine(candidate: CandidateRef): string {
   const slots = {
     candidate: candidate.target.name,
     people: peopleCount(candidate.n),

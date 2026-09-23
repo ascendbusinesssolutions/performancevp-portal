@@ -9,11 +9,16 @@ import { setupCopy } from "@/lib/copy/setup";
 import { fill } from "@/lib/copy/template";
 import { unitsCopy } from "@/lib/copy/units";
 import { requireOrgManager } from "@/lib/org/context";
-import { headcountByUnit, loadActivePeople, loadUnits } from "@/lib/setup/data";
+import {
+  headcountByUnit,
+  loadActivePeople,
+  loadMeasurementUnits,
+  loadUnits,
+} from "@/lib/setup/data";
+import { isGroupingState, measurementModel } from "@/lib/setup/measurement";
 import {
   asUnitType,
   hasChildren,
-  isGroupingUnit,
   leaderState,
   personName,
   UNIT_TYPES,
@@ -22,21 +27,40 @@ import {
 import { createClient } from "@/lib/supabase/server";
 
 import { addUnit, recordLineage } from "./actions";
+import { type MeasurementNotice, MeasurementSection } from "./measurement-section";
+
+const NOTICES: readonly MeasurementNotice[] = ["combined", "undone", "kept", "withdrawn"];
 
 /**
  * Setup step 1, second half: the units, with stable codes, arranged into a hierarchy
  * (PORTAL_BUILD_PLAN.md 7; Online Measurement Specification 6.2). Each unit's leader is shown, with
- * the proposed default where one person could lead it. Merges and splits are recorded here, after
- * people have moved, so trends carry across the restructure.
+ * the proposed default where one person could lead it, and what it is measured as. Below them, the
+ * measurement units, where units under 10 are combined (Milestone 4b). Merges and splits are
+ * recorded here, after people have moved, so trends carry across the restructure.
  */
-export default async function UnitsPage({ params }: PageProps<"/org/[orgId]/units">) {
+export default async function UnitsPage({ params, searchParams }: PageProps<"/org/[orgId]/units">) {
   const { orgId } = await params;
+  const { notice: noticeParam, measurement: measurementParam } = await searchParams;
   const org = await requireOrgManager(orgId);
   const supabase = await createClient();
-  const [units, people] = await Promise.all([
+  const [units, people, measurement] = await Promise.all([
     loadUnits(supabase, orgId),
     loadActivePeople(supabase, orgId),
+    loadMeasurementUnits(supabase, orgId),
   ]);
+  const model = measurementModel({ units, people, ...measurement });
+  const notice = NOTICES.find((n) => n === noticeParam) ?? null;
+  const measuredAs = (unitId: string) => {
+    const view = model.ofUnit.get(unitId);
+    if (!view) return "";
+    if (view.combined) return view.row.name;
+    if (isGroupingState(view.state)) return unitsCopy["row.grouping"];
+    return view.state === "measured"
+      ? unitsCopy["measuredAs.own"]
+      : view.state === "short"
+        ? unitsCopy["measuredAs.short"]
+        : unitsCopy["measuredAs.empty"];
+  };
   const tree = unitTree(units);
   const counts = headcountByUnit(people);
   const empty = tree
@@ -74,6 +98,7 @@ export default async function UnitsPage({ params }: PageProps<"/org/[orgId]/unit
               <Th>{unitsCopy["col.unit"]}</Th>
               <Th>{unitsCopy["col.type"]}</Th>
               <Th align="right">{unitsCopy["col.people"]}</Th>
+              <Th>{unitsCopy["col.measuredAs"]}</Th>
               <Th>{unitsCopy["col.leader"]}</Th>
               <Th />
             </Head>
@@ -92,22 +117,21 @@ export default async function UnitsPage({ params }: PageProps<"/org/[orgId]/unit
                     <Td figure align="right">
                       {counts.get(unit.id) ?? 0}
                     </Td>
+                    <Td muted>{measuredAs(unit.id)}</Td>
                     <Td muted>
-                      {isGroupingUnit(units, unit.id, counts.get(unit.id) ?? 0)
-                        ? unitsCopy["row.grouping"]
-                        : leader.kind === "designated"
-                          ? leader.person
-                            ? personName(leader.person)
-                            : unitsCopy["leader.unknown"]
-                          : leader.kind === "proposed"
-                            ? fill(unitsCopy["leader.proposed"], {
-                                name: personName(leader.person),
-                              })
-                            : leader.kind === "ambiguous"
-                              ? fill(unitsCopy["leader.ambiguous"], { n: leader.candidates.length })
-                              : (counts.get(unit.id) ?? 0) === 0
-                                ? unitsCopy["row.noStaff"]
-                                : unitsCopy["leader.none"]}
+                      {leader.kind === "designated"
+                        ? leader.person
+                          ? personName(leader.person)
+                          : unitsCopy["leader.unknown"]
+                        : leader.kind === "proposed"
+                          ? fill(unitsCopy["leader.proposed"], {
+                              name: personName(leader.person),
+                            })
+                          : leader.kind === "ambiguous"
+                            ? fill(unitsCopy["leader.ambiguous"], { n: leader.candidates.length })
+                            : (counts.get(unit.id) ?? 0) === 0
+                              ? unitsCopy["row.noStaff"]
+                              : unitsCopy["leader.none"]}
                     </Td>
                     <Td align="right">
                       <Link
@@ -124,6 +148,18 @@ export default async function UnitsPage({ params }: PageProps<"/org/[orgId]/unit
             </tbody>
           </Table>
         </Section>
+      ) : null}
+
+      {tree.length > 0 ? (
+        <MeasurementSection
+          orgId={orgId}
+          writable={org.writable}
+          model={model}
+          units={units}
+          people={people}
+          notice={notice}
+          noticeUnitId={typeof measurementParam === "string" ? measurementParam : null}
+        />
       ) : null}
 
       {empty.length > 0 ? (

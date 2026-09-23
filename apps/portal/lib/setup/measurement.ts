@@ -260,6 +260,24 @@ export function branchOk<U extends UnitRow>(
   return reached.size === view.units.length;
 }
 
+// The name ---------------------------------------------------------------------------------------
+
+/**
+ * The name a combination takes: the default worded from its units' names (the caller words it from
+ * the copy module), unless the administrator renamed the combination being extended, whose name is
+ * then kept. Names are at most 200 characters, as the database holds them.
+ */
+export function combinationName(
+  defaultOf: (names: string[]) => string,
+  next: readonly UnitRow[],
+  extending?: { name: string; units: readonly UnitRow[] },
+): string {
+  const fresh = defaultOf(next.map((u) => u.name)).slice(0, 200);
+  if (!extending) return fresh;
+  const previous = defaultOf(extending.units.map((u) => u.name)).slice(0, 200);
+  return extending.name === previous ? fresh : extending.name;
+}
+
 // The leader -------------------------------------------------------------------------------------
 
 /**

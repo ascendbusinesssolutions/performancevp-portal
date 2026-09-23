@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   branchOk,
   candidates,
+  combinationName,
   measurementLeader,
   measurementModel,
   type MeasurementUnitRow,
@@ -280,5 +281,26 @@ describe("measurementLeader", () => {
       person: { id: "exec1" },
       source: "chosen",
     });
+  });
+});
+
+describe("combinationName", () => {
+  const wordy = (names: string[]) => names.join(" and ");
+  const [a, b, p] = [UNITS[1]!, UNITS[2]!, UNITS[5]!];
+
+  it("words a new combination's name from its units", () => {
+    expect(combinationName(wordy, [a, b])).toBe("A and B");
+  });
+
+  it("renames an extended combination that still has its default name", () => {
+    expect(combinationName(wordy, [a, b, p], { name: "A and B", units: [a, b] })).toBe(
+      "A and B and P",
+    );
+  });
+
+  it("keeps the name the administrator gave it", () => {
+    expect(combinationName(wordy, [a, b, p], { name: "Customer group", units: [a, b] })).toBe(
+      "Customer group",
+    );
   });
 });

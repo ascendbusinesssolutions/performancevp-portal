@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ancestorIds,
   descendantIds,
+  eligibleLeaders,
   hasChildren,
   isGroupingUnit,
   isMeasuredUnit,
@@ -113,5 +115,38 @@ describe("isGroupingUnit and isMeasuredUnit (Online Measurement Specification 6.
   it("ignores retired units below", () => {
     const retired = [unit("top", null), unit("a", "top", { status: "retired" })];
     expect(isGroupingUnit(retired, "top", 3)).toBe(false);
+  });
+});
+
+describe("ancestorIds and eligibleLeaders (Online Measurement Specification 6.1)", () => {
+  const units = [
+    unit("top", null),
+    unit("div", "top"),
+    unit("a", "div"),
+    unit("b", "div"),
+    unit("old", "top", { status: "retired" }),
+  ];
+  const people = [
+    person("head", "top", null),
+    person("dl", "div", "head"),
+    person("a1", "a", "dl"),
+    person("b1", "b", "dl"),
+  ];
+
+  it("walks up from a unit, nearest first", () => {
+    expect(ancestorIds(units, "a")).toEqual(["div", "top"]);
+    expect(ancestorIds(units, "top")).toEqual([]);
+  });
+
+  it("offers a unit's members, then the members of the units above it, and nobody beside it", () => {
+    const { inside, above } = eligibleLeaders(units, ["a"], people);
+    expect(inside.map((p) => p.id)).toEqual(["a1"]);
+    expect(above.map((p) => p.id)).toEqual(["dl", "head"]);
+  });
+
+  it("for a combination, offers the members of all its units and of the units above them", () => {
+    const { inside, above } = eligibleLeaders(units, ["a", "b"], people);
+    expect(inside.map((p) => p.id)).toEqual(["a1", "b1"]);
+    expect(above.map((p) => p.id)).toEqual(["dl", "head"]);
   });
 });

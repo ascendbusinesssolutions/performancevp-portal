@@ -11,6 +11,7 @@ import { requireOrgManager } from "@/lib/org/context";
 import { loadActivePeople, loadTeams, loadUnits } from "@/lib/setup/data";
 import {
   descendantIds,
+  eligibleLeaders,
   hasChildren,
   leaderState,
   personName,
@@ -41,6 +42,9 @@ export default async function UnitPage({ params }: PageProps<"/org/[orgId]/units
     .filter((p) => p.unit_id === unitId)
     .sort((a, b) => personName(a).localeCompare(personName(b), "en-AU"));
   const leader = leaderState(unit, people);
+  // A member of the unit, or of a unit above it (Online Measurement Specification 6.1).
+  const { above } = eligibleLeaders(units, [unitId], people);
+  const unitName = new Map(units.map((u) => [u.id, u.name]));
   const below = descendantIds(units, unitId);
   const parentOptions = unitTree(units)
     .filter((e) => !below.has(e.unit.id))
@@ -139,6 +143,13 @@ export default async function UnitPage({ params }: PageProps<"/org/[orgId]/units
             options={[
               { value: "", label: unitsCopy["leader.field.none"] },
               ...members.map((p) => ({ value: p.id, label: personName(p) })),
+              ...above.map((p) => ({
+                value: p.id,
+                label: fill(unitsCopy["leader.option.above"], {
+                  name: personName(p),
+                  unit: unitName.get(p.unit_id) ?? "",
+                }),
+              })),
             ]}
           />
         </ActionForm>

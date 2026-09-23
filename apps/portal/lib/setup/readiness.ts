@@ -11,6 +11,7 @@ import {
 } from "./frameworks";
 import {
   branchOk,
+  type Candidate,
   candidates,
   type Direction,
   isGroupingState,
@@ -172,6 +173,18 @@ export function unitRef(view: MeasurementView): UnitRef {
   };
 }
 
+/** A candidate in a finding, and on the units screen. */
+export function candidateRef(candidate: Candidate): CandidateRef {
+  return {
+    target: unitRef(candidate.view),
+    direction: candidate.direction,
+    via: candidate.via ? { id: candidate.via.id, name: candidate.via.name } : null,
+    n: candidate.view.staff,
+    total: candidate.total,
+    short: candidate.short,
+  };
+}
+
 export function evaluateReadiness(input: ReadinessInput): Readiness {
   const model = measurementModel({
     units: input.units,
@@ -184,14 +197,7 @@ export function evaluateReadiness(input: ReadinessInput): Readiness {
     return input.people.filter((p) => inside.has(p.unit_id));
   };
   const candidateRefs = (view: MeasurementView, only?: readonly Direction[]): CandidateRef[] =>
-    candidates(model, view, only).map((c) => ({
-      target: unitRef(c.view),
-      direction: c.direction,
-      via: c.via ? { id: c.via.id, name: c.via.name } : null,
-      n: c.view.staff,
-      total: c.total,
-      short: c.short,
-    }));
+    candidates(model, view, only).map(candidateRef);
   const holds = (view: MeasurementView): Ref[] =>
     view.units.map((u) => ({ id: u.id, name: u.name }));
   const measured = model.views.filter((v) => v.state === "measured");

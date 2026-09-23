@@ -14,6 +14,50 @@ export interface CopyFixture {
 export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
   "common.list.more": [{ slots: { n: 3 }, expected: "3 more" }],
   "common.people.many": [{ slots: { n: 7 }, expected: "7 people" }],
+  "units.leader.option.above": [
+    { slots: { name: "Ruth Root", unit: "Head Office" }, expected: "Ruth Root, Head Office" },
+  ],
+  "units.measurement.leader.rollUp": [
+    {
+      slots: { name: "Mia Manager", unit: "Operations" },
+      expected: "Mia Manager, the leader of Operations",
+    },
+  ],
+  "units.measurement.short.heading": [
+    { slots: { unit: "Claims", people: "7 people" }, expected: "Claims, 7 people" },
+  ],
+  "units.measurement.combine.name": [
+    { slots: { unit: "Claims", candidate: "Service" }, expected: "Combine Claims with Service" },
+  ],
+  "units.measurement.withdraw.name": [
+    { slots: { unit: "Executive" }, expected: "Measure Executive with a unit below instead" },
+  ],
+  "units.measurement.combination.holds": [
+    {
+      slots: { list: "Claims and Service", people: "14 people" },
+      expected: "Holds Claims and Service: 14 people.",
+    },
+  ],
+  "units.measurement.combination.rollUp": [
+    {
+      slots: { unit: "Operations" },
+      expected:
+        "Led by the leader of Operations, the unit above the others it holds. Change it on that unit.",
+    },
+  ],
+  "units.measurement.combination.undoNote": [
+    {
+      slots: { name: "Claims and Service" },
+      expected:
+        "Undoing removes the context entered for Claims and Service. Each unit's own context is kept.",
+    },
+  ],
+  "units.measurement.notice.combined": [
+    {
+      slots: { name: "Claims and Service", list: "Claims and Service", people: "14 people" },
+      expected: "Combined. Claims and Service holds Claims and Service: 14 people.",
+    },
+  ],
   "console.access.sessions.line": [
     {
       slots: {

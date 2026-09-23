@@ -95,6 +95,41 @@ export function descendantIds(units: readonly UnitRow[], unitId: string): Set<st
   return found;
 }
 
+/** The active units above a unit, nearest first. */
+export function ancestorIds(units: readonly UnitLink[], unitId: string): string[] {
+  const byId = new Map(units.map((u) => [u.id, u]));
+  const out: string[] = [];
+  let current = byId.get(unitId)?.parent_unit_id ?? null;
+  while (current && !out.includes(current)) {
+    const unit = byId.get(current);
+    if (!unit || unit.status !== "active") break;
+    out.push(current);
+    current = unit.parent_unit_id;
+  }
+  return out;
+}
+
+/**
+ * Who may be named leader of the given units (Online Measurement Specification 6.1): their active
+ * members, then the members of the units above them, such as the executive their staff report to.
+ * The database's leader_eligible holds the same rule.
+ */
+export function eligibleLeaders<P extends PersonRef>(
+  units: readonly UnitLink[],
+  unitIds: readonly string[],
+  people: readonly P[],
+): { inside: P[]; above: P[] } {
+  const inside = new Set(unitIds);
+  const above = new Set(
+    unitIds.flatMap((id) => ancestorIds(units, id)).filter((id) => !inside.has(id)),
+  );
+  const byName = (a: P, b: P) => personName(a).localeCompare(personName(b), "en-AU");
+  return {
+    inside: people.filter((p) => inside.has(p.unit_id)).sort(byName),
+    above: people.filter((p) => above.has(p.unit_id)).sort(byName),
+  };
+}
+
 /** Whether a unit has active units below it. */
 export function hasChildren(units: readonly UnitLink[], unitId: string): boolean {
   return units.some((u) => u.status === "active" && u.parent_unit_id === unitId);

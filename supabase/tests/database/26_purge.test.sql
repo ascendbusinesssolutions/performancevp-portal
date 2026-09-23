@@ -5,13 +5,15 @@
 -- revoked, its snapshot rows are redacted so they stay distinct, its formal rating and the record
 -- itself are deleted, links to it become null, and an account left with no membership is deleted.
 -- Nothing else is deleted, no row audit is written for the link clearing, and each organisation
--- gets one event with the counts. In the fixture, E019 (a manager with an account in Alpha) was
--- deactivated 31 days ago and E020 29 days ago, in both organisations.
+-- gets one event with the counts. Ratings about the person, and a manager's sessions, are kept with
+-- the link removed, so earlier inputs stay reproducible. In the fixture, E019 (a manager with an
+-- account in Alpha, and rated in the closed campaign) was deactivated 31 days ago and E020 29 days
+-- ago, in both organisations.
 begin;
 \ir helpers/tests.psql
 \ir helpers/fixture.psql
 
-select plan(15);
+select plan(17);
 
 select tests.seed_fixture();
 
@@ -80,6 +82,20 @@ select is(
   'every snapshot keeps its size'
 );
 
+select results_eq(
+  $$
+    select (select count(*)::integer from public.skill_ratings where subject_snapshot_member_id in (select id from redacted_ids) and employee_id is null),
+           (select count(*)::integer from public.knowledge_ratings where subject_snapshot_member_id in (select id from redacted_ids) and employee_id is null),
+           (select count(*)::integer from public.talent_bands where subject_snapshot_member_id in (select id from redacted_ids) and employee_id is null)
+  $$,
+  $$ values (2, 2, 2) $$,
+  'ratings about the purged person are kept, in a closed campaign, with the link to them removed'
+);
+select is(
+  (select manager_employee_id from public.rating_sessions where id = tests.id('alpha_closed_session_gone')),
+  null,
+  'the purged manager''s rating session is kept, unlinked from them'
+);
 select ok(not exists (select 1 from auth.users where id = tests.user_id('alpha_gone_mgr')),
   'the purged manager''s account, left with no membership, is deleted');
 select is(

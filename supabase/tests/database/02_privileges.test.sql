@@ -199,6 +199,46 @@ insert into expected_grants values
   ('uploads_awaiting_file_removal()', 'service_role', 'EXECUTE'),
   ('mark_upload_file_removed(uuid)', 'service_role', 'EXECUTE');
 
+-- Step 6: invitations, anonymous responses and identified ratings. The anonymous tables and
+-- invitations have no grant for any role.
+insert into expected_grants values
+  ('public.rating_sessions', 'authenticated', 'SELECT'),
+  ('public.skill_ratings', 'authenticated', 'SELECT'),
+  ('public.skill_ratings', 'authenticated', 'DELETE'),
+  ('public.skill_ratings(organisation_id)', 'authenticated', 'INSERT'),
+  ('public.skill_ratings(rating_session_id)', 'authenticated', 'INSERT'),
+  ('public.skill_ratings(subject_snapshot_member_id)', 'authenticated', 'INSERT'),
+  ('public.skill_ratings(skill_id)', 'authenticated', 'INSERT'),
+  ('public.skill_ratings(rating)', 'authenticated', 'INSERT'),
+  ('public.skill_ratings(evidence_note)', 'authenticated', 'INSERT'),
+  ('public.skill_ratings(rating)', 'authenticated', 'UPDATE'),
+  ('public.skill_ratings(evidence_note)', 'authenticated', 'UPDATE'),
+  ('public.knowledge_ratings', 'authenticated', 'SELECT'),
+  ('public.knowledge_ratings', 'authenticated', 'DELETE'),
+  ('public.knowledge_ratings(organisation_id)', 'authenticated', 'INSERT'),
+  ('public.knowledge_ratings(rating_session_id)', 'authenticated', 'INSERT'),
+  ('public.knowledge_ratings(subject_snapshot_member_id)', 'authenticated', 'INSERT'),
+  ('public.knowledge_ratings(knowledge_domain_id)', 'authenticated', 'INSERT'),
+  ('public.knowledge_ratings(rating)', 'authenticated', 'INSERT'),
+  ('public.knowledge_ratings(evidence_note)', 'authenticated', 'INSERT'),
+  ('public.knowledge_ratings(rating)', 'authenticated', 'UPDATE'),
+  ('public.knowledge_ratings(evidence_note)', 'authenticated', 'UPDATE'),
+  ('public.talent_bands', 'authenticated', 'SELECT'),
+  ('public.talent_bands', 'authenticated', 'DELETE'),
+  ('public.talent_bands(organisation_id)', 'authenticated', 'INSERT'),
+  ('public.talent_bands(rating_session_id)', 'authenticated', 'INSERT'),
+  ('public.talent_bands(subject_snapshot_member_id)', 'authenticated', 'INSERT'),
+  ('public.talent_bands(band)', 'authenticated', 'INSERT'),
+  ('public.talent_bands(evidence_note)', 'authenticated', 'INSERT'),
+  ('public.talent_bands(band)', 'authenticated', 'UPDATE'),
+  ('public.talent_bands(evidence_note)', 'authenticated', 'UPDATE'),
+  ('private.my_rating_session_ids()', 'authenticated', 'EXECUTE'),
+  ('private.my_open_rating_session_ids()', 'authenticated', 'EXECUTE'),
+  ('read_skill_ratings(uuid,uuid,uuid,uuid,text)', 'authenticated', 'EXECUTE'),
+  ('read_knowledge_ratings(uuid,uuid,uuid,uuid,text)', 'authenticated', 'EXECUTE'),
+  ('read_talent_bands(uuid,uuid,uuid,uuid,text)', 'authenticated', 'EXECUTE'),
+  ('invitation_status_counts(uuid)', 'authenticated', 'EXECUTE');
+
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,
          a.privilege_type as privilege

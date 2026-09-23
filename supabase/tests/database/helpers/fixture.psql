@@ -274,6 +274,116 @@ begin
 end
 $$;
 
+-- The snapshot row of a person in a campaign's snapshot.
+create function tests.member(p_org text, p_campaign text, p_ref text)
+returns uuid
+language sql
+stable
+as $$
+  select sm.id from public.snapshot_members sm
+  where sm.snapshot_id = tests.id(p_org || '_' || p_campaign || '_snapshot')
+    and sm.employee_id = tests.id(p_org || '_' || p_ref)
+$$;
+
+-- Rating sessions and ratings, invitations and anonymous responses. Per organisation: the manager
+-- persona (E002) has a session in both campaigns; in Alpha, alpha_mgr2 (E009) has one in the open
+-- campaign and the gone manager (E019) one in the closed campaign. Ratings (open campaign): E002
+-- rates E003 (skill 4, domain 4, band 3) and E004 (skill 5 and band 5, with notes); in Alpha E009
+-- rates E010 (skill 3). Closed campaign: E002 rated E003 (skill 3) and E019 (skill 4, domain 5 and
+-- band 1, with notes). Invitations: members Part A of C1 (E003 to E008) and C2 (E010 to E013) in
+-- the open campaign. Anonymous responses: three in C1 of the open campaign and two in the closed
+-- one, two items each.
+create function tests.seed_ratings()
+returns void
+language plpgsql
+as $$
+declare
+  v_org text;
+  v_org_id uuid;
+  v_session uuid;
+  v_response uuid;
+  v_cu uuid;
+  i integer;
+begin
+  foreach v_org in array array['alpha', 'beta'] loop
+    v_org_id := tests.id(v_org);
+
+    insert into public.rating_sessions (organisation_id, campaign_id, manager_snapshot_member_id, manager_employee_id)
+    values (v_org_id, tests.id(v_org || '_open'), tests.member(v_org, 'open', 'E002'), tests.id(v_org || '_E002'))
+    returning id into v_session;
+    perform tests.remember(v_org || '_open_session_mgr', v_session);
+    insert into public.skill_ratings (organisation_id, rating_session_id, subject_snapshot_member_id, skill_id, rating, evidence_note)
+    values
+      (v_org_id, v_session, tests.member(v_org, 'open', 'E003'), tests.id(v_org || '_skill_modelling'), 4, null),
+      (v_org_id, v_session, tests.member(v_org, 'open', 'E004'), tests.id(v_org || '_skill_modelling'), 5, 'Built the pricing model the unit now runs on');
+    insert into public.knowledge_ratings (organisation_id, rating_session_id, subject_snapshot_member_id, knowledge_domain_id, rating)
+    values (v_org_id, v_session, tests.member(v_org, 'open', 'E003'), tests.id(v_org || '_domain_c1'), 4);
+    insert into public.talent_bands (organisation_id, rating_session_id, subject_snapshot_member_id, band, evidence_note)
+    values
+      (v_org_id, v_session, tests.member(v_org, 'open', 'E003'), 3, null),
+      (v_org_id, v_session, tests.member(v_org, 'open', 'E004'), 5, 'Consistently leads the hardest client work');
+
+    -- The closed campaign's ratings were entered while it was open.
+    update public.campaigns set status = 'open' where id = tests.id(v_org || '_closed');
+    insert into public.rating_sessions (organisation_id, campaign_id, manager_snapshot_member_id, manager_employee_id, status, submitted_at)
+    values (v_org_id, tests.id(v_org || '_closed'), tests.member(v_org, 'closed', 'E002'), tests.id(v_org || '_E002'), 'submitted', now() - interval '61 days')
+    returning id into v_session;
+    perform tests.remember(v_org || '_closed_session_mgr', v_session);
+    insert into public.skill_ratings (organisation_id, rating_session_id, subject_snapshot_member_id, skill_id, rating, evidence_note)
+    values
+      (v_org_id, v_session, tests.member(v_org, 'closed', 'E003'), tests.id(v_org || '_skill_modelling'), 3, null),
+      (v_org_id, v_session, tests.member(v_org, 'closed', 'E019'), tests.id(v_org || '_skill_modelling'), 4, null);
+    insert into public.knowledge_ratings (organisation_id, rating_session_id, subject_snapshot_member_id, knowledge_domain_id, rating, evidence_note)
+    values (v_org_id, v_session, tests.member(v_org, 'closed', 'E019'), tests.id(v_org || '_domain_c1'), 5, 'Wrote the reporting procedures');
+    insert into public.talent_bands (organisation_id, rating_session_id, subject_snapshot_member_id, band, evidence_note)
+    values (v_org_id, v_session, tests.member(v_org, 'closed', 'E019'), 1, 'Performance plan in place');
+    update public.campaigns set status = 'closed' where id = tests.id(v_org || '_closed');
+
+    -- Invitations, members Part A, open campaign.
+    select id into v_cu from public.campaign_units where campaign_id = tests.id(v_org || '_open') and unit_id = tests.id(v_org || '_C1');
+    insert into public.invitations (organisation_id, campaign_unit_id, audience, snapshot_member_id, email, token_hash, status, sent_at)
+    select v_org_id, v_cu, 'members_part_a', tests.member(v_org, 'open', r), lower(r) || '@' || v_org || '.test',
+           encode(sha256(convert_to(v_org || r, 'UTF8')), 'hex'),
+           case when r in ('E003', 'E004', 'E005') then 'responded' else 'sent' end, now() - interval '2 days'
+    from unnest(array['E003', 'E004', 'E005', 'E006', 'E007', 'E008']) as r;
+    insert into public.invitations (organisation_id, campaign_unit_id, audience, snapshot_member_id, email, token_hash, status, sent_at)
+    select v_org_id, cu.id, 'members_part_a', tests.member(v_org, 'open', r), lower(r) || '@' || v_org || '.test',
+           encode(sha256(convert_to(v_org || r, 'UTF8')), 'hex'), 'sent', now() - interval '2 days'
+    from public.campaign_units cu, unnest(array['E010', 'E011', 'E012', 'E013']) as r
+    where cu.campaign_id = tests.id(v_org || '_open') and cu.unit_id = tests.id(v_org || '_C2');
+
+    -- Anonymous responses.
+    for i in 1..3 loop
+      insert into public.survey_responses (organisation_id, campaign_unit_id, audience, team_id, completion_seconds)
+      values (v_org_id, v_cu, 'members_part_a', tests.id(v_org || '_C1_T1'), 600 + i * 30)
+      returning id into v_response;
+      insert into public.survey_item_responses (organisation_id, response_id, item_code, value)
+      values (v_org_id, v_response, 'CII-01', 4), (v_org_id, v_response, 'MI2-03', 2);
+    end loop;
+    select id into v_cu from public.campaign_units where campaign_id = tests.id(v_org || '_closed') and unit_id = tests.id(v_org || '_C1');
+    for i in 1..2 loop
+      insert into public.survey_responses (organisation_id, campaign_unit_id, audience, completion_seconds)
+      values (v_org_id, v_cu, 'members_part_a', 700)
+      returning id into v_response;
+      insert into public.survey_item_responses (organisation_id, response_id, item_code, value)
+      values (v_org_id, v_response, 'CII-01', 3), (v_org_id, v_response, 'MI2-03', 3);
+    end loop;
+  end loop;
+
+  -- Alpha only: the second manager in the open campaign, and the gone manager in the closed one.
+  insert into public.rating_sessions (organisation_id, campaign_id, manager_snapshot_member_id, manager_employee_id)
+  values (tests.id('alpha'), tests.id('alpha_open'), tests.member('alpha', 'open', 'E009'), tests.id('alpha_E009'))
+  returning id into v_session;
+  perform tests.remember('alpha_open_session_mgr2', v_session);
+  insert into public.skill_ratings (organisation_id, rating_session_id, subject_snapshot_member_id, skill_id, rating)
+  values (tests.id('alpha'), v_session, tests.member('alpha', 'open', 'E010'), tests.id('alpha_skill_modelling'), 3);
+  insert into public.rating_sessions (organisation_id, campaign_id, manager_snapshot_member_id, manager_employee_id, status)
+  values (tests.id('alpha'), tests.id('alpha_closed'), tests.member('alpha', 'closed', 'E019'), tests.id('alpha_E019'), 'submitted')
+  returning id into v_session;
+  perform tests.remember('alpha_closed_session_gone', v_session);
+end
+$$;
+
 -- Everything the fixture holds at this step of the build.
 create function tests.seed_fixture()
 returns void
@@ -283,6 +393,7 @@ begin
   perform tests.seed_identity();
   perform tests.seed_structure();
   perform tests.seed_directory();
+  perform tests.seed_ratings();
 end
 $$;
 

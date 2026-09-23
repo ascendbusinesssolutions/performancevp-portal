@@ -5,7 +5,8 @@
 -- each, 2 snapshots holding 20 and 18 people, 7 snapshot formal ratings. alpha_mgr manages E003 to
 -- E008 and E014 (seven active reports; eight in the closed snapshot, seven in the open one).
 -- alpha_mgr2 manages E010 to E013 (four active; five and four in the snapshots). alpha_gone_mgr's
--- directory record is inactive, so the role no longer counts. Managers sign in with an email code.
+-- directory record is inactive, so the role no longer counts. Managers see the campaigns they rate
+-- in (alpha_mgr both, alpha_mgr2 the open one). Managers sign in with an email code.
 begin;
 \ir helpers/tests.psql
 \ir helpers/fixture.psql
@@ -54,7 +55,10 @@ insert into manager_visibility values
   ('alpha_gone_mgr', 'employees', 'alpha', 0), ('alpha_mgr', 'employees', 'beta', 0),
   ('alpha_mgr', 'snapshot_members', 'alpha', 15), ('alpha_mgr2', 'snapshot_members', 'alpha', 9),
   ('alpha_gone_mgr', 'snapshot_members', 'alpha', 0),
-  ('alpha_mgr', 'directory_uploads', 'alpha', 0), ('alpha_mgr', 'campaigns', 'alpha', 0),
+  ('alpha_mgr', 'directory_uploads', 'alpha', 0), ('alpha_mgr', 'campaigns', 'alpha', 2),
+  ('alpha_mgr', 'campaign_units', 'alpha', 6), ('alpha_mgr', 'directory_snapshots', 'alpha', 2),
+  ('alpha_mgr2', 'campaigns', 'alpha', 1), ('alpha_mgr2', 'directory_snapshots', 'alpha', 1),
+  ('alpha_gone_mgr', 'campaigns', 'alpha', 0),
   ('alpha_mgr', 'org_memberships', 'alpha', 1), ('alpha_mgr', 'organisations', 'alpha', 1),
   ('alpha_mgr', 'business_units', 'alpha', 5), ('alpha_mgr', 'teams', 'alpha', 4),
   ('alpha_mgr', 'role_families', 'alpha', 2), ('alpha_mgr', 'skills', 'alpha', 4),
@@ -71,7 +75,7 @@ select is_empty(
     from manager_visibility
     where expected is distinct from tests.visible_rows(persona, tbl, tests.id(org), 'aal1', array['otp'])
   $$,
-  'a manager reads their own active direct reports and their snapshot rows, the structure and context, and nothing else'
+  'a manager reads their own active direct reports and their snapshot rows, the campaigns they rate in, the structure and context, and nothing else'
 );
 
 select is(

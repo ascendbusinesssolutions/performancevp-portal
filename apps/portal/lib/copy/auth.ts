@@ -25,10 +25,10 @@ export const authCopy = {
   "code.email": "Work email",
   "code.send": "Send code",
   // PORTAL_COPY_SPEC.md M2: the same response whether or not the address has an account.
-  "code.sent": "If that address is on a rating list, a code is on its way. It lasts 10 minutes.",
+  "code.sent": "If that address is on a rating list, a code is on its way. It lasts one hour.",
   "code.code": "Code",
   "code.submit": "Sign in",
-  "code.error": "That code did not work. Codes last 10 minutes and work once.",
+  "code.error": "That code did not work. Codes last one hour and work once.",
   "code.again": "Send a new code",
   "code.toPassword": "Sign in with a password instead",
 
@@ -37,7 +37,7 @@ export const authCopy = {
     "Enter your work email. If it belongs to an account, we send a link to set a new password.",
   "reset.email": "Work email",
   "reset.submit": "Send link",
-  "reset.sent": "If that address belongs to an account, a link is on its way. It lasts 10 minutes.",
+  "reset.sent": "If that address belongs to an account, a link is on its way. It lasts one hour.",
   "reset.toLogin": "Back to sign in",
 
   "setPassword.title": "Choose a password",

@@ -119,7 +119,7 @@ Summary `{b} blockers · {w} warnings · {p} passed` and the foot `Available onc
 
 **M1. Manager form.** `{cadence} · {unit}`; `{done} of {total} done. Closes {day} {date}. Your answers save as you go.`; fixed `These ratings carry your name and your administrators can see them. The staff survey is separate and anonymous.`; `Last year's ratings shown. Change any that have moved.` (or `First time rating this team.`); scale anchors for skills `1 novice · 3 does the job without help · 5 expert others turn to` and for knowledge `1 little · 3 sound for the role · 5 an authority others consult` (align to Module Library 4.1 and Online Measurement Specification 4.1 anchors); band labels from Module Library 4.2 in client form; evidence prompts `A 5 needs one line of evidence` and `A 5 or a 1 needs one line of evidence.`; `Done, next: {name}`; fixed `Someone missing, or not yours? Tell your administrator. Only you can rate your team.`
 
-**M2. Code sign-in.** Same response whether or not the address has an account: `If that address is on a rating list, a code is on its way. It lasts 10 minutes.`
+**M2. Code sign-in.** Same response whether or not the address has an account: `If that address is on a rating list, a code is on its way. It lasts one hour.`
 
 ---
 

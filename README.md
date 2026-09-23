@@ -64,7 +64,7 @@ The portal uses Supabase's publishable and secret keys; the legacy anon and serv
 
 Account owners, administrators, viewers and PerformanceVP staff sign in with a password: at least 12 characters with upper and lower case letters and digits, and a password change needs a recent sign-in. The Owner, support staff, account owners and administrators must enrol a TOTP authenticator and complete it at every sign-in; anyone else who enrols one is challenged too. Managers who rate their direct reports sign in with a six-digit code sent by email and never have a password. The database is the authority on all of this: a session opened by email code counts only for the manager role, and a role that needs TOTP counts only at `aal2`. `apps/portal/proxy.ts` sends people to the right step first, and sets the content security policy with a fresh nonce on every request.
 
-Public sign-up is off. People join by invitation, from the PerformanceVP console (an account owner, when an organisation is provisioned) or from the account owner's access page. Supabase has one expiry for codes and email links, set to 10 minutes, so an invitation or password link must be used within 10 minutes; the invitation email says how to ask for a fresh link.
+Public sign-up is off. People join by invitation, from the PerformanceVP console (an account owner, when an organisation is provisioned) or from the account owner's access page. Supabase has one expiry for email codes and email links, set to one hour (decided 23 September 2026), so an invitation or password link must be used within the hour and a manager's code lasts as long. The invitation email says how to ask for a fresh link.
 
 ## Scheduled jobs
 

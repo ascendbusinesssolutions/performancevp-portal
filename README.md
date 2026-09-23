@@ -49,7 +49,7 @@ Every check the CI runs, in one command: `pnpm check`.
 | `pnpm build` | `next build` of the application |
 | `pnpm db:start`, `db:stop`, `db:reset`, `db:test`, `db:lint` | The local Supabase stack; `db:test` runs the pgTAP suite |
 | `pnpm db:types` | Regenerates `apps/portal/lib/supabase/database.types.ts` from the local database; CI fails if the committed file differs |
-| `pnpm --filter @performancevp/portal e2e` | The Playwright suite against the local stack. Run `pnpm build` first; it starts `next start` itself, or reuses a server already on port 3000 |
+| `pnpm --filter @performancevp/portal e2e` | The Playwright suite against the local stack. Run `pnpm build` first; it starts `next start` itself, or reuses a server already on port 3000. `e2e/setup.spec.ts` is the Milestone 4 exit criterion; set `E2E_SHOT_DIR` to a folder to keep its screenshots |
 
 ## Environment variables
 
@@ -73,7 +73,7 @@ One route, `GET /api/jobs/daily`, runs every scheduled job. Vercel Cron calls it
 
 ## The database suite
 
-`supabase/tests/database` holds the pgTAP suite: 21 files and 334 assertions at Milestone 3. It proves the access matrix of `PORTAL_BUILD_PLAN.md` Section 3.3 across two seeded organisations, including that no role can read anonymous responses and that executive and unit viewers cannot read ratings. Two include files carry the shared machinery: `helpers/tests.psql` (personas, `tests.authenticate_as`, and data-driven matrix runners) and `helpers/fixture.psql` (the two organisations, their directories, campaigns, responses and ratings). Each test file includes them with `\ir` inside its own transaction and rolls back, so nothing persists. `02_privileges` holds the exact list of grants; a new table or function without its grant line fails there.
+`supabase/tests/database` holds the pgTAP suite: 21 files and 334 assertions at Milestone 3, 24 files and 384 at Milestone 4. It proves the access matrix of `PORTAL_BUILD_PLAN.md` Section 3.3 across two seeded organisations, including that no role can read anonymous responses and that executive and unit viewers cannot read ratings. Two include files carry the shared machinery: `helpers/tests.psql` (personas, `tests.authenticate_as`, and data-driven matrix runners) and `helpers/fixture.psql` (the two organisations, their directories, campaigns, responses and ratings). Each test file includes them with `\ir` inside its own transaction and rolls back, so nothing persists. `02_privileges` holds the exact list of grants; a new table or function without its grant line fails there.
 
 ## Local personas
 
@@ -147,6 +147,7 @@ Consequential decisions not yet settled are held as named placeholders rather th
 
 | `EMPLOYEE_BANDS` | The subscription bands and the most employees each allows. `ref_employee_bands` is created empty; the dev seed and the test fixture carry test bands, and staging needs one clearly labelled test band before an organisation can be provisioned. | First client |
 | `SESSION_LIMITS` | The inactivity and absolute session timeouts, recommended at 8 and 24 hours. Hosted Supabase sets them on the Pro plan only. | Staging on Pro |
+| `ROLE_FAMILY_TEMPLATE_LIBRARY` | The starter content the unit-context screens offer: role-family skill frameworks, decision-type starter lists by unit type, and prompts for knowledge domains, processes and systems (Online Measurement Specification 4.5). `ref_templates` is seeded with placeholder content, every row flagged `is_placeholder`, until the library is written. | First client |
 | `EMPLOYMENT_STATUS_VALUES` | The values of the directory's employment status field. Online Measurement Specification 6.1 names the field without defining them, so it is held as free text for information only and used by no rule. | Before any rule depends on it |
 
 `ENTITLEMENT_ENFORCEMENT`, the commercial rule for headcount against plan band, is held in `PORTAL_BUILD_PLAN.md` Section 11. The directory preview shows the active headcount against the band and does nothing more until it is settled.

@@ -10,12 +10,16 @@ import { buttonClass } from "./button";
  * (app/globals.css). Control boundaries use grey-80, which meets 3:1 on white (WCAG 1.4.11).
  */
 
-/** The wordmark on a white page: "Performance" in slate, "VP" in Strategic Gold. */
+/**
+ * The wordmark on a white page: "Performance" in slate, "VP" in gold-deep, the brand's gold for
+ * text on white (PORTAL_UX_BRIEF.md 7; Strategic Gold is 2.58:1 on white, gold-deep 5.20:1). The
+ * header keeps Strategic Gold, which meets 4.5:1 on slate.
+ */
 export function Wordmark() {
   return (
     <p className="font-display text-[26px] leading-none font-medium">
       <span className="text-slate">{shellCopy["wordmark.first"]}</span>
-      <span className="text-gold">{shellCopy["wordmark.second"]}</span>
+      <span className="text-gold-deep">{shellCopy["wordmark.second"]}</span>
     </p>
   );
 }

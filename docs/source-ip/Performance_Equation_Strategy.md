@@ -3,7 +3,7 @@
 
 **Author:** Michael, PerformanceVP
 **Status:** Working draft. Source-of-truth file for the book, consulting offering and diagnostic instrument. This revision reconciles the Strategy with the consolidated measurement model used across the operational document set (Measurement Reference Parts 1 and 2, Sub-Dimension × Cadence Master Reference, Survey Blueprint, Data Audit Template, Tier 1 & 2 Data Collection Guide, Tier 3 Module Library, Diagnostic Delivery Handbook).
-**Last updated:** 21 September 2026 (the paired-measurement and triangulation passages now state that the perception score feeds the O composite when the audit-perception gap exceeds 15. Prior, 11 June 2026: binding-constraint identification in Parts 4.2 and 4.3 revised to the realistic-P-gain ranking, weighted toward genuine relative weaknesses via the unit mean; supersedes the earlier lift-to-ceiling contribution ranking; see Diagnostic Workbook Spec Part 10)
+**Last updated:** 23 September 2026 (Part 4 rewritten for the two product lines: Offerings 1 and 2 are consultant-led and report through the document packs, with the Diagnostic repeatable annually; Offering 3 is the online self-service subscription, replacing the Tracking Subscription, with the portal built for it alone; Parts 4.4 to 4.6 now describe the online product, and the organisation-wide average and enterprise binding constraint are withdrawn from the portal design. Prior, 21 September 2026: the paired-measurement and triangulation passages now state that the perception score feeds the O composite when the audit-perception gap exceeds 15. Prior, 11 June 2026: binding-constraint identification in Parts 4.2 and 4.3 revised to the realistic-P-gain ranking, weighted toward genuine relative weaknesses via the unit mean; supersedes the earlier lift-to-ceiling contribution ranking; see Diagnostic Workbook Spec Part 10)
 **Companion documents:** Performance Equation Measurement Reference Part 1 of 2 (Capability and Motivation); Measurement Reference Part 2 of 2 (Opportunity, Synergy, DLP); Sub-Dimension × Cadence Master Reference; Survey Blueprint; Data Audit Template; Tier 1 & 2 Data Collection Guide; Tier 3 Module Library; Diagnostic Delivery Handbook.
 
 ---
@@ -326,13 +326,13 @@ Four design rules hold across all instruments:
 
 ### 4.1 The three commercial offerings
 
-The Performance Equation is commercialised through three products, in sequence:
+The Performance Equation is commercialised through two product lines that run on one equation: a consultant-led line (Offerings 1 and 2) and an online self-service subscription (Offering 3). The lines serve different buyers. The consultant-led line is for organisations that want a high-touch, personal engagement and the fullest measurement; the online subscription is for organisations that want to measure themselves, at a subscription price, with PerformanceVP available for setup and support but not in the measurement loop.
 
-**1. The Diagnostic (one-off, fixed-fee).** A 6–8 week engagement (longer for large portfolios) producing a quantified baseline: the P score, the C/M/O/S breakdown, all 17 sub-dimension scores, the binding constraint, the Decision Latency Score, trip-wire status, and 5–8 prioritised intervention recommendations per unit. Deliverables: a unit-level diagnostic report (30–50 pages), a board-ready executive summary (4 pages), and a 90-minute executive briefing. This is the entry point for every client.
+**1. The Diagnostic (fixed-fee, repeatable annually).** A 6–8 week engagement (longer for large portfolios) producing a quantified baseline: the P score, the C/M/O/S breakdown, all 17 sub-dimension scores, the binding constraint, the Decision Latency Score, trip-wire status, and 5–8 prioritised intervention recommendations per unit. It uses the client's own Tier 1 and Tier 2 data wherever it qualifies and deploys PerformanceVP instruments only for the gaps. Deliverables: a unit-level diagnostic report (30–50 pages), a board-ready executive summary (4 pages), and a 90-minute executive briefing. Clients who want ongoing consultant-led measurement re-run the Diagnostic annually; the packs are the reporting surface, and the portal is not used.
 
-**2. Intervention Design (project-based).** Detailed design of one to three priority interventions identified by the Diagnostic, with success criteria and tracking. Delivered by PerformanceVP, the client, or a partner.
+**2. Intervention Design (project-based).** Detailed design of one to three priority interventions identified by a Diagnostic, root-caused and tailored to the unit, with success criteria and a measurement plan. PerformanceVP designs and measures; the client implements. Also available to online subscribers who want a tailored brief for a priority their measurement has surfaced.
 
-**3. The Tracking Subscription (ongoing).** The recurring-revenue layer and the basis of the client portal. Quarterly pulses, half-yearly health checks and an annual baseline refresh, with a login portal showing the score breakdown, data, and change over time. Cadence and refresh logic are set out in Part 4.4.
+**3. The Online Subscription (annual, priced by employee count).** A self-service product. The client sets up its own organisation and directory, runs the PerformanceVP instruments itself at the cadence the Cadence Master sets (annual baseline, half-yearly, quarterly pulse, event-triggered), and reads its results online: P and the 17 sub-dimension scores for every unit, the binding constraint, the priority ranking with pattern-level suggestions from the Intervention Design Library, a what-if simulator, action tracking and trends. It measures with instruments only, with one exception (formal performance ratings for talent density), does not include the Decision Latency Protocol, and labels every score as self-administered. Subscriptions are sales-led and invoiced; there is no online payment and no self-registration. Guided Setup (implementation, training of the client's administrators, post-implementation support) is an optional fixed-fee service. The measurement route, the ranking and suggestion rules and the product design are defined in the Online Measurement Specification, the Online Recommendations Specification and the portal build plan; this document sets the commercial shape only. The Tracking Subscription described in earlier revisions is retired: its cadence logic lives on in the online product, and consultant-led clients re-measure through the Diagnostic.
 
 ### 4.2 The baseline diagnostic report
 
@@ -360,44 +360,46 @@ Two outputs distinguish the Performance Equation from existing diagnostics, and 
 
 The deeper value, which the reporting should make explicit, is **traceability**: every one of the 17 sub-dimensions carries its own score and its own contribution to P. The diagnostic does not merely say "performance is a 64"; it says exactly which sub-dimension is dragging, by how much, and what moving it would do. This score → component → sub-dimension → specific intervention → expected P-impact chain is what converts a number into a targeted, prioritised, highest-ROI action plan. That traceability is the product.
 
-### 4.4 The Tracking Subscription: cadence and dashboard refresh
+### 4.4 The Online Subscription: cadence and refresh
 
-The Tracking Subscription is the recurring product and the basis for the client portal. Its central design principle is that **the score updates when the data updates, not on an arbitrary calendar tick.** The P score and the equation refresh on real new data; the dashboard does not recompute the headline number when nothing has changed.
+The online subscription is the recurring product and the only product the portal serves. Its central design principle is unchanged from the earlier Tracking Subscription: **the score updates when the data updates, not on an arbitrary calendar tick.** The P score and the equation refresh on real new data; the portal does not recompute the headline number when nothing has changed. The client runs each campaign itself; scoring runs automatically at close behind the validity thresholds, and a client administrator reviews and releases the result before viewers see it.
 
 **The headline P score refreshes half-yearly and annually.** These are the two points at which genuinely new survey and scoring data enters the equation:
 
-- **Annual baseline refresh** — full re-measurement of all 17 sub-dimensions, full P recalculation, weight refresh, and instrument review.
-- **Half-yearly health check** — re-measurement of the fast- and medium-moving sub-dimensions (engagement, psychological safety, leadership enablement, collaboration friction, the full CII, the O1/O2/O3 perception components, resource adequacy, conflict health, and the trip-wires), with the genuinely slow-moving annual-only sub-dimensions (autonomous motivation, purpose, and the system-data Capability sub-dimensions) carried forward. P recalculates at this point.
+- **Annual baseline refresh** — full re-measurement of all 17 sub-dimensions through every instrument (the member survey in two parts, the manager, team-leader and leadership-team modules, and the administrator checklists), full P recalculation, and instrument review.
+- **Half-yearly health check** — re-measurement of the fast- and medium-moving sub-dimensions through the member survey and the capacity facts (engagement, psychological safety, leadership enablement, collaboration friction, the full CII, the O1/O2/O3 perception components, resource adequacy, conflict health, and the trip-wires), with the annual-only sub-dimensions (autonomous motivation, purpose, the manager-rated Capability sub-dimensions, skill complementarity and the structural modules) carried forward at their original measurement dates. P recalculates at this point.
 
-**The quarterly pulse is an early-warning layer, not a P recalculation.** The pulse refreshes only the fastest-moving indicators (engagement, psychological safety, leadership enablement, collaboration friction, the trip-wires, and a single CII early-warning item). Because it touches only a handful of sub-dimensions, recomputing the full P from a mostly carried-forward set would create false precision. So the pulse shows indicator trajectories (up/down/flat), the current P carried forward with a confidence annotation, trip-wire status, the DLP operational-class score, and behavioural triangulators — but it does not move the headline P. Its job is to catch deterioration between the half-yearly scoring points.
+**The quarterly pulse is an early-warning layer, not a P recalculation.** The pulse refreshes only the fastest-moving indicators (engagement, psychological safety, leadership enablement, collaboration friction, the trip-wires, and a single CII early-warning item). Because it touches only a handful of sub-dimensions, recomputing the full P from a mostly carried-forward set would create false precision. So the pulse shows indicator trajectories (up/down/flat), the current P carried forward with a confidence annotation, and trip-wire status, but it does not move the headline P. Its job is to catch deterioration between the half-yearly scoring points.
 
-**Event-triggered refresh.** Defined events (a major reorganisation, a new manager, a trip-wire breach, a significant pulse drop of more than ~10 points on an indicator) trigger an out-of-cycle re-measurement of the affected sub-dimensions and a P recalculation. This is what allows the score to respond between half-yearly points when the data genuinely justifies it — without routine false updates. The standard subscription includes up to two event-triggered refreshes per unit per year.
+**Event-triggered refresh.** Defined events (a major reorganisation, a new manager, a trip-wire breach, a significant pulse drop of more than ~10 points on an indicator) trigger an out-of-cycle re-measurement of the affected sub-dimensions and a P recalculation. The portal detects the directory-based triggers (headcount and team-composition change, a new manager) and prompts the administrator; the others are chosen from a menu. Because the online product carries no services cost per refresh, the subscription places no cap on event-triggered refreshes.
 
-**Behavioural triangulators** (turnover, absence, overtime, etc.) flow continuously and feed gap-flagging and the pulse view, but they do not independently recompute the C/M/O scores.
+**Behavioural triangulators** are not scored in the online product's first version. The administrator may record turnover and absence as unscored context beside engagement.
 
-**Confidence annotation throughout.** Every score on the portal carries a "last refreshed" date and a High / Medium / Low confidence band based on how recently it was measured against its cadence. This is the mechanism that lets the portal show live trajectory and early warnings honestly, without ever implying the headline P is freshly computed when it is carried forward. It is also the methodological transparency that protects the offering from false-precision criticism.
+**Confidence annotation throughout.** Every score on the portal carries a "last refreshed" date and a High / Medium / Low confidence band based on how recently it was measured against its cadence, and every results view carries a methodology footer stating the route, response rates, exclusions, sub-dimensions marked insufficient, adjustments applied and carry-forwards, together with the standing statements that manager ratings and checklists are self-reported and that decision latency is not measured. This is the mechanism that lets the portal show live trajectory and early warnings honestly, without ever implying the headline P is freshly computed when it is carried forward. It is also the methodological transparency that protects the offering from false-precision criticism.
 
-### 4.5 The dashboard / portal structure
+### 4.5 The portal structure
 
-The portal (to be built) is the surface for the Tracking Subscription. Structure:
+The portal is the surface for the online subscription only. Its detailed design is held in the portal's UX brief, mockups and copy specification; the structure is:
 
-**Top-level view:** the current P score with trend over the last four refresh points; the three component scores (C, M, O) with trend; the synergy coefficient S; the current binding constraint, visually emphasised; trip-wire status, presented as its own clearly-separated element (never folded into the P score); and a flag where any component has moved materially since the last refresh.
+**Organisation view:** every measured unit with its P, C, M, O and S, confidence, movement since baseline, its top three priorities in order, and trip-wire status; units with a breach first, then lowest P first; critical findings across units in a strip at the top. There is no organisation-wide P and no organisation-wide average: the unit is the level the measurement is built for, and the executive reads across units rather than being given a number the method cannot stand behind.
 
-**Drill-down by business unit:** P, C, M, O, S per unit; comparison against the organisation-wide average and the unit's own history; a flag where a unit's binding constraint differs from the enterprise binding constraint.
+**Unit view, in a fixed order:** any trip-wire breach first, with its action path; P with its confidence band, C, M, O and S, the lowest-scoring force, and the binding-constraint statement; the priority ranking of the fourteen C, M and O sub-dimensions, the top six by default with the full list one click away and strengths (85 and above) shown separately; the Synergy sub-dimensions in their own lane beside the ranking, as a coefficient rather than a candidate; findings from the flags (structure-versus-perception gaps and the false-consensus pattern); suggestions, with full pattern cards for the top three priorities and summaries for the next three; the what-if simulator; action tracking; and the methodology footer.
 
-**Drill-down by sub-dimension:** all 17 sub-dimensions (5 C, 4 M, 5 O, 3 S), each with its score, trend, and contribution to P; the three CII sub-scores within C4; the Decision Latency Score within the Opportunity view; heat-map visualisation of weak sub-dimensions; gap-flag indicators (survey-vs-behavioural for Motivation, audit-vs-perception for Opportunity).
+**Drill-down by sub-dimension:** score, confidence and measurement date, the two layers and the gap where a sub-dimension has them, and the item groups at unit level. Nothing below unit level is shown except team-level engagement, safety and enablement above the display thresholds, to the account owner and executive viewers only.
 
-**Trip-wire view:** the three trip-wires shown as independent indicators alongside (not inside) the P score, with any breach flagged as a critical finding — consistent with the reporting requirement in Part 3.3.1.
+**Trip-wire view:** the three trip-wires shown as independent indicators alongside (not inside) the P score, with any breach flagged as a critical finding — consistent with the reporting requirement in Part 3.3.1 — and undismissable at unit level.
 
-**Decision latency view:** the DLS composite and the underlying latencies by decision class, trend, and the longest-latency decision pathways with intervention status.
+**Decision latency:** not part of the online product. The Opportunity view states that decision latency is measured in the consultant-led Diagnostic.
 
-**Intervention tracking:** active interventions mapped to the sub-dimensions they target, with expected and actual P movement, and lead/lag indicators.
+**Action tracking:** the client records a suggestion as considering, under way, completed or set aside, with a start date; from the cycle at which the pattern's pace says movement could show, the portal displays the sub-dimension's movement against the pattern's indicative range, with the statement that movement cannot be attributed to the action alone.
+
+**Two surfaces outside results:** a ratings area, for administrators only, access-logged and visibly separate from results, holding the identified manager ratings; and a subscription view for the account owner.
 
 ### 4.6 Visual design principles
 
 **One headline number.** The P score is the largest element; everything else is supporting context.
 
-**Three colour bands.** Green (above 75), amber (50–75), red (below 50). Sub-dimensional views may use a five-band heat-map where finer resolution helps.
+**Three colour bands.** Green (above 75), amber (50–75), red (below 50), defined as deliberate tokens with contrast checked, and never the only carrier of meaning: the number or the word is always beside the colour. The four forces share the brand slate and are told apart by position, label and shape.
 
 **Trend always visible.** Every score is shown with its trajectory; a high score declining is a different signal from a high score holding.
 
@@ -405,7 +407,7 @@ The portal (to be built) is the surface for the Tracking Subscription. Structure
 
 **Trip-wires never buried.** Trip-wire status is always presented as a distinct element, never implied by the headline P.
 
-**No false precision.** Scores are reported to the nearest integer; movement below two points is not flagged as significant; confidence bands are always shown.
+**No false precision.** Scores are reported to the nearest integer and P to one decimal; within half a point of a threshold a score shows one decimal so that a reader can see why it did or did not fire, and thresholds are always applied to the unrounded value; movement below two points is not flagged as significant; confidence bands are always shown.
 
 ---
 

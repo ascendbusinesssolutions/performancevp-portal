@@ -3,7 +3,7 @@
 
 **Author:** Michael, PerformanceVP
 **Status:** Working draft. Master reference for sub-dimension specification, data collection, cadence and refresh logic.
-**Last updated:** 21 September 2026 (O1 audit-perception gap analysis now states which value feeds the O composite. Prior: 22 May 2026)
+**Last updated:** 23 September 2026 (7.3 trigger authorisation and 7.7 subscription scope rewritten for the online self-service subscription, which replaces the Tracking Subscription; the two-refresh cap and the per-unit briefing allocation are withdrawn; consultant-led clients re-measure through an annual Diagnostic. Prior, 21 September 2026: O1 audit-perception gap analysis now states which value feeds the O composite. Prior: 22 May 2026)
 **Companion documents:** Performance Equation Strategy (master reference); Diagnostic Delivery Handbook; Tier 1 & 2 Data Collection Guide; Data Audit Template.
 
 ---
@@ -877,7 +877,7 @@ Consolidated list of event triggers across all sub-dimensions:
 | Customer complaint spike on a process-related issue | O3 (affected process) | Out-of-cycle audit |
 | Decision-latency complaint or escalation | DLP (affected class) | Out-of-cycle DLP |
 
-**Trigger authorisation.** The subscription contract includes up to 2 event-triggered refreshes per unit per year. Additional triggered refreshes are billed separately at the per-refresh rate.
+**Trigger authorisation.** In the online subscription the client runs event-triggered refreshes itself, without a cap: the portal detects the directory-based triggers in this table (headcount change, team-composition change, a new manager) and prompts the administrator, and the rest are chosen from a menu. Where a trigger names the DLP, the online product refreshes the other sub-dimensions in the row and does not measure decision latency. In consultant-led work an out-of-cycle refresh is a scoped piece of work agreed with the client; there is no standing allocation.
 
 ## 7.4 Pulse anonymity and validity thresholds
 
@@ -917,19 +917,21 @@ This is the methodological transparency that protects the model from false-preci
 
 ## 7.7 Subscription scope and refresh allocation
 
-The standard tracking subscription includes, per unit per year:
+The Tracking Subscription described in earlier versions is retired. Ongoing measurement is delivered two ways, and the cadence in this document applies to both.
 
-| Item | Quantity |
-|---|---|
-| Quarterly pulses | 4 |
-| Half-yearly health checks | 2 |
-| Annual baseline refresh | 1 |
-| Event-triggered refreshes | Up to 2 included |
-| Executive briefings | 4 quarterly + 1 annual deep review |
-| Sector benchmark refresh | n/a (no external benchmark; classification metadata only) |
-| Dashboard access and maintenance | Continuous |
+**The online subscription** (Strategy 4.1, offering 3) is priced annually by employee count and includes, for every unit in the organisation, every cycle in the cadence: the annual baseline, two half-yearly health checks, four quarterly pulses, and event-triggered refreshes without cap. The client runs each campaign; the portal scores it at close, and a client administrator reviews and releases the result. Reporting is the portal itself. No consultant time is included; Guided Setup (implementation, administrator training and post-implementation support) is an optional fixed-fee service, and Intervention Design is available on request. The online route measures with PerformanceVP instruments only, with one exception (formal performance ratings for C3), and does not include the DLP; the Online Measurement Specification defines the route and the Online Recommendations Specification the ranking and suggestions.
 
-Additional event-triggered refreshes, additional intervention design work, or additional ad hoc analyses are billed separately.
+**Consultant-led re-measurement** is an annual Diagnostic (Strategy 4.1, offering 1), reported through the document packs, with the executive briefing that the Diagnostic includes. Out-of-cycle refreshes and additional analyses are scoped and billed separately. There is no standing allocation of briefings or refreshes.
+
+| Item | Online subscription | Consultant-led |
+|---|---|---|
+| Quarterly pulses | 4, client-run | Not offered |
+| Half-yearly health checks | 2, client-run | Not offered |
+| Annual baseline refresh | 1, client-run | 1, as an annual Diagnostic |
+| Event-triggered refreshes | Uncapped, client-run | Scoped separately |
+| Executive briefings | None; the portal reports | 1, with the Diagnostic |
+| Sector benchmark refresh | n/a (no external benchmark; classification metadata only) | n/a |
+| Portal access | Continuous, for the subscription term | Not used |
 
 ---
 

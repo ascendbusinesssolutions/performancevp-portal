@@ -229,3 +229,45 @@ export async function loadTemplates(supabase: Client): Promise<Template[]> {
       })),
   }));
 }
+
+/**
+ * The organisation's formal ratings for the readiness check and the mapping screen: read through
+ * read_formal_ratings with the purpose 'check', which is logged as ratings.checked (not as a view).
+ * Only counts derived from them reach the page. Paged, since max_rows applies to functions too.
+ */
+export async function loadFormalRatingsForCheck(
+  supabase: Client,
+  orgId: string,
+): Promise<
+  Array<{ employee_id: string; unit_id: string; rating_label: string; rating_date: string }>
+> {
+  return allRows((from, to) =>
+    supabase
+      .rpc("read_formal_ratings", { p_organisation_id: orgId, p_purpose: "check" })
+      .select("employee_id, unit_id, rating_label, rating_date")
+      .range(from, to),
+  );
+}
+
+export interface ScaleMap {
+  decision: "mapped" | "skipped";
+  calibrated: boolean | null;
+  entries: Array<{ label: string; band: 1 | 2 | 3 | 4 | 5 }>;
+}
+
+export async function loadScaleMap(supabase: Client, orgId: string): Promise<ScaleMap | null> {
+  const [{ data: map }, { data: entries }] = await Promise.all([
+    supabase
+      .from("rating_scale_maps")
+      .select("decision, calibrated")
+      .eq("organisation_id", orgId)
+      .maybeSingle(),
+    supabase.from("rating_scale_map_entries").select("label, band").eq("organisation_id", orgId),
+  ]);
+  if (!map) return null;
+  return {
+    decision: map.decision === "skipped" ? "skipped" : "mapped",
+    calibrated: map.calibrated,
+    entries: (entries ?? []).map((e) => ({ label: e.label, band: e.band as 1 | 2 | 3 | 4 | 5 })),
+  };
+}

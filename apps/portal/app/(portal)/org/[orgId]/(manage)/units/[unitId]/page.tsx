@@ -201,6 +201,7 @@ export default async function UnitPage({ params }: PageProps<"/org/[orgId]/units
         )}
         <ActionForm
           action={addTeam}
+          resetOnSuccess
           submitLabel={unitsCopy["teams.addSubmit"]}
           variant="secondary"
           className="mt-6 max-w-md"

@@ -173,6 +173,7 @@ export default async function UnitContextPage({
     org.writable ? (
       <ActionForm
         action={addUnitItem}
+        resetOnSuccess
         submitLabel={contextCopy["unit.add"]}
         variant="secondary"
         className="mt-6 max-w-xl"
@@ -257,6 +258,7 @@ export default async function UnitContextPage({
         {org.writable ? (
           <ActionForm
             action={addDomain}
+            resetOnSuccess
             submitLabel={contextCopy["unit.add"]}
             variant="secondary"
             className="mt-6 max-w-xl"

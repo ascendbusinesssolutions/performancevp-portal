@@ -140,7 +140,12 @@ export default async function UnitsPage({ params }: PageProps<"/org/[orgId]/unit
       ) : null}
 
       <Section id="add" title={unitsCopy["add.title"]}>
-        <ActionForm action={addUnit} submitLabel={unitsCopy["add.submit"]} className="max-w-3xl">
+        <ActionForm
+          action={addUnit}
+          resetOnSuccess
+          submitLabel={unitsCopy["add.submit"]}
+          className="max-w-3xl"
+        >
           <input type="hidden" name="organisationId" value={orgId} />
           <div className="grid gap-5 md:grid-cols-2">
             <Field

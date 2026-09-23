@@ -19,8 +19,9 @@ import { Notice } from "./ui";
  * the submit button disabled while the action runs. The fields are passed as children.
  *
  * React resets a form whenever its action finishes, which would clear what the person typed when
- * the action refuses it. Here the entries are kept when the action reports an error and cleared
- * only when it succeeds. Without JavaScript the form still submits through its action.
+ * the action refuses it, and would put an edit form back to the values it was first drawn with.
+ * Here the entries are kept, and a form that adds something clears itself after a success
+ * (resetOnSuccess). Without JavaScript the form still submits through its action.
  */
 export function ActionForm({
   action,
@@ -30,6 +31,7 @@ export function ActionForm({
   compact = false,
   variant,
   submitName,
+  resetOnSuccess = false,
 }: {
   action: (previous: FormState, formData: FormData) => Promise<FormState>;
   submitLabel: string;
@@ -39,6 +41,8 @@ export function ActionForm({
   variant?: ButtonVariant;
   /** The button's accessible name, where its visible label is shared by many rows ("Remove"). */
   submitName?: string;
+  /** Clear the fields after a success: for forms that add something, not for forms that edit it. */
+  resetOnSuccess?: boolean;
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, {});
   const form = useRef<HTMLFormElement>(null);
@@ -52,8 +56,8 @@ export function ActionForm({
   }
 
   useEffect(() => {
-    if (!state.error && state.message) form.current?.reset();
-  }, [state]);
+    if (resetOnSuccess && !state.error && state.message) form.current?.reset();
+  }, [state, resetOnSuccess]);
 
   return (
     <form ref={form} action={formAction} onSubmit={submit} className={className}>

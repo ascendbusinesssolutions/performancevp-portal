@@ -106,6 +106,17 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
   "context.range": [{ slots: { min: 3, max: 6 }, expected: "3 to 6" }],
   "context.need.range": [{ slots: { min: 8, max: 12 }, expected: "8 to 12 needed" }],
   "context.need.exact": [{ slots: { n: 3 }, expected: "exactly 3 needed" }],
+  "ratings-map.labels.bandOption": [
+    {
+      slots: { band: 4, name: "Exceeding expectations" },
+      expected: "Band 4: Exceeding expectations",
+    },
+  ],
+  "ratings-map.decision.mapped": [
+    { slots: { calibration: "calibrated" }, expected: "Mapped, and declared calibrated." },
+    { slots: { calibration: "not calibrated" }, expected: "Mapped, and declared not calibrated." },
+  ],
+  "ratings-map.units.coverage": [{ slots: { pct: 85 }, expected: "85% of FTE" }],
   "directory.preview.newUnitLine": [
     {
       slots: { code: "CLM", name: "Claims", n: 34 },

@@ -3,6 +3,7 @@ import { commonCopy } from "./common";
 import { consoleCopy } from "./console";
 import { contextCopy } from "./context";
 import { directoryCopy } from "./directory";
+import { ratingsMapCopy } from "./ratings-map";
 import { setupCopy } from "./setup";
 import { shellCopy } from "./shell";
 import { unitsCopy } from "./units";
@@ -21,6 +22,7 @@ export const COPY_TABLES: Readonly<
   console: { table: consoleCopy },
   context: { table: contextCopy },
   directory: { table: directoryCopy },
+  "ratings-map": { table: ratingsMapCopy },
   setup: { table: setupCopy },
   shell: { table: shellCopy },
   units: { table: unitsCopy },

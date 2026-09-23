@@ -82,6 +82,7 @@ export default async function ConsolePage() {
                   ) : (
                     <ActionForm
                       action={openSupportSession}
+                      resetOnSuccess
                       submitLabel={consoleCopy["pvp.session.openButton"]}
                       compact
                     >
@@ -101,6 +102,7 @@ export default async function ConsolePage() {
         {bands && bands.length > 0 ? (
           <ActionForm
             action={provisionOrganisation}
+            resetOnSuccess
             submitLabel={consoleCopy["pvp.provision.submit"]}
             className="mt-4"
           >
@@ -166,6 +168,7 @@ export default async function ConsolePage() {
           )}
           <ActionForm
             action={designateSupportStaff}
+            resetOnSuccess
             submitLabel={consoleCopy["pvp.staff.designate"]}
             className="mt-6"
           >

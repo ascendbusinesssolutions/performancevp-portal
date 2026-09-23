@@ -222,6 +222,7 @@ export default async function AccessPage({ params }: PageProps<"/org/[orgId]/acc
                   {isAccountOwner && m.user_id !== access.userId ? (
                     <ActionForm
                       action={resetAuthenticator}
+                      resetOnSuccess
                       submitLabel={consoleCopy["access.people.reset"]}
                       compact
                     >
@@ -259,6 +260,7 @@ export default async function AccessPage({ params }: PageProps<"/org/[orgId]/acc
           <h2 className="font-display text-xl text-slate">{consoleCopy["access.invite.title"]}</h2>
           <ActionForm
             action={inviteMember}
+            resetOnSuccess
             submitLabel={consoleCopy["access.invite.submit"]}
             className="mt-4"
           >

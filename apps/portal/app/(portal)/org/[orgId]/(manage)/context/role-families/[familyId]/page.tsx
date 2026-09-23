@@ -181,6 +181,7 @@ export default async function RoleFamilyPage({
           <>
             <ActionForm
               action={addSkill}
+              resetOnSuccess
               submitLabel={contextCopy["family.addSkill"]}
               variant="secondary"
               className="mt-8 max-w-4xl"

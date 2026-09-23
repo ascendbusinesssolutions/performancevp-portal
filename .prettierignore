@@ -13,3 +13,5 @@ archive/
 # Generated parity fixtures and workbook extracts (packages/engine/fixtures) are data, not code.
 packages/engine/fixtures/
 packages/intake/fixtures/
+# Generated from the database schema by `supabase gen types`.
+apps/portal/lib/supabase/database.types.ts

@@ -16,3 +16,31 @@ export function appEnv(): AppEnv | "unset" {
   const value = process.env.APP_ENV;
   return isAppEnv(value) ? value : "unset";
 }
+
+function required(name: string): string {
+  const value = process.env[name];
+  if (value === undefined || value === "") {
+    throw new Error(`${name} is not set. See apps/portal/.env.example.`);
+  }
+  return value;
+}
+
+/** Whether the Supabase variables are present, so the proxy can refuse cleanly when they are not. */
+export function supabaseConfigured(): boolean {
+  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_PUBLISHABLE_KEY);
+}
+
+/** The Supabase project URL. Server-only; every Supabase call is made on the server. */
+export function supabaseUrl(): string {
+  return required("SUPABASE_URL");
+}
+
+/** The publishable key: requests made with it run as the signed-in user, under row level security. */
+export function supabasePublishableKey(): string {
+  return required("SUPABASE_PUBLISHABLE_KEY");
+}
+
+/** The absolute base URL of this deployment, for links in email and auth redirects. */
+export function appBaseUrl(): string {
+  return required("APP_BASE_URL").replace(/\/+$/, "");
+}

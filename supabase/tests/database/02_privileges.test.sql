@@ -112,6 +112,21 @@ insert into expected_grants values
   ('private.visible_profile_ids()', 'authenticated', 'EXECUTE'),
   ('my_access()', 'authenticated', 'EXECUTE');
 
+-- Step 3: the audit trail and the identity functions.
+insert into expected_grants values
+  ('public.audit_logs', 'authenticated', 'SELECT'),
+  ('provision_organisation(text,text,date,date,date,text,text)', 'authenticated', 'EXECUTE'),
+  ('record_subscription_term(uuid,text,date,date,date,text)', 'authenticated', 'EXECUTE'),
+  ('set_subscription_override(uuid,text,text)', 'authenticated', 'EXECUTE'),
+  ('set_support_staff(uuid,boolean)', 'authenticated', 'EXECUTE'),
+  ('open_support_session(uuid,text)', 'authenticated', 'EXECUTE'),
+  ('close_support_session(uuid)', 'authenticated', 'EXECUTE'),
+  ('set_data_contribution_opt_out(uuid,boolean)', 'authenticated', 'EXECUTE'),
+  ('invite_member(uuid,text,text,uuid[])', 'authenticated', 'EXECUTE'),
+  ('revoke_membership(uuid)', 'authenticated', 'EXECUTE'),
+  ('replace_account_owner(uuid,text)', 'authenticated', 'EXECUTE'),
+  ('reset_factors(uuid)', 'authenticated', 'EXECUTE');
+
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,
          a.privilege_type as privilege

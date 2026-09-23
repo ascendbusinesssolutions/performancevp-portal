@@ -74,6 +74,18 @@ begin
 end
 $$;
 
+-- The Sydney calendar date, callable from a statement run as a persona (who holds no execute
+-- right on private.today()).
+create function tests.today()
+returns date
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select private.today()
+$$;
+
 -- Returns to the owner role with no JWT claims.
 create function tests.as_postgres()
 returns void
@@ -115,12 +127,14 @@ $$;
 -- (sub, email, aal, amr, session_id) and the `authenticated` role. By default a password
 -- session, completed with TOTP at aal2. Pass p_methods => array['otp'] for an email-code session.
 -- Returns the session id, so a test can revoke it; pass it back as p_session to present the same
--- token again (no new session row is created then).
+-- token again (no new session row is created then). p_factor_age backdates the amr timestamps,
+-- for the step-up checks.
 create function tests.authenticate_as(
   p_key text,
   p_aal text default 'aal2',
   p_methods text[] default null,
-  p_session uuid default null
+  p_session uuid default null,
+  p_factor_age interval default interval '0 seconds'
 )
 returns uuid
 language plpgsql
@@ -128,7 +142,7 @@ as $$
 declare
   v_user tests.personas;
   v_session uuid := coalesce(p_session, gen_random_uuid());
-  v_now bigint := extract(epoch from now())::bigint;
+  v_now bigint := extract(epoch from now() - p_factor_age)::bigint;
   v_methods text[] := coalesce(
     p_methods,
     case when p_aal = 'aal2' then array['password', 'totp'] else array['password'] end
@@ -265,6 +279,33 @@ begin
   end;
   perform tests.as_postgres();
   return v_n;
+end
+$$;
+
+-- Runs a query as a persona and returns its first column as text (null when it returns no row).
+-- Errors propagate, so throws_ok can wrap it.
+create function tests.value_as(
+  p_key text,
+  p_sql text,
+  p_aal text default 'aal2',
+  p_methods text[] default null
+)
+returns text
+language plpgsql
+as $$
+declare
+  v_value text;
+begin
+  if p_key = 'anon' then
+    perform tests.as_anon();
+  elsif p_key = 'service' then
+    perform tests.as_service();
+  else
+    perform tests.authenticate_as(p_key, p_aal, p_methods);
+  end if;
+  execute p_sql into v_value;
+  perform tests.as_postgres();
+  return v_value;
 end
 $$;
 

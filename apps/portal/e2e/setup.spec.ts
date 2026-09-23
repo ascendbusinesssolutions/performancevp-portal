@@ -1,13 +1,19 @@
-import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { expect, type Page, test } from "@playwright/test";
 
-import { expect, type Page, test, type TestInfo } from "@playwright/test";
-
-import { directoryCopy } from "../lib/copy/directory";
 import { COLUMNS } from "../lib/directory/columns";
-import { buildWorkbook, type TestCell } from "../lib/directory/test-workbook";
-import { readWorkbook } from "../lib/directory/xlsx-read";
-import { clearMail, hydrated, latestLink, resetPersonas, signInAndEnrol, totp } from "./support";
+import type { TestCell } from "../lib/directory/test-workbook";
+import {
+  completeUnitContext,
+  fillFamilyFromTemplate,
+  go,
+  isoDaysAgo,
+  OWNER,
+  provision,
+  shot,
+  signInWithFactor,
+  uploadFromTemplate,
+} from "./setup-helpers";
+import { clearMail, hydrated, resetPersonas } from "./support";
 
 // The Milestone 4 exit criterion: a new organisation, provisioned by the Owner in the console,
 // reaches a passing readiness check through the portal's screens alone. After provisioning the test
@@ -16,10 +22,6 @@ import { clearMail, hydrated, latestLink, resetPersonas, signInAndEnrol, totp } 
 // unit of 9, a second person without a manager, a missing work email); each is fixed by following
 // the readiness check's links. Midway the account owner signs out and back in, and the hub shows
 // the progress kept.
-
-const OWNER = "owner@pvp.local";
-const PASSWORD = "Harbour-freight-2026";
-const HEADERS = COLUMNS.map((c) => directoryCopy[`header.${c.key}`]);
 
 interface PersonSpec {
   ref: string;
@@ -183,10 +185,6 @@ function people(): PersonSpec[] {
   return list;
 }
 
-function isoDaysAgo(days: number): string {
-  return new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
-}
-
 function rows(list: PersonSpec[]): TestCell[][] {
   const ratingDate = isoDaysAgo(90);
   return list.map((p) =>
@@ -231,83 +229,6 @@ function rows(list: PersonSpec[]): TestCell[][] {
   );
 }
 
-/** Follows the organisation navigation in the header (breadcrumbs repeat some of its names). */
-async function go(page: Page, name: string) {
-  await hydrated(page);
-  await page
-    .getByRole("navigation", { name: "Organisation" })
-    .getByRole("link", { name, exact: true })
-    .click();
-}
-
-/** Attaches a full-page screenshot, and writes it to E2E_SHOT_DIR when set (for reviews). */
-async function shot(page: Page, info: TestInfo, name: string) {
-  const body = await page.screenshot({ fullPage: true });
-  await info.attach(name, { body, contentType: "image/png" });
-  const dir = process.env.E2E_SHOT_DIR;
-  if (dir) await writeFile(join(dir, `${name}.png`), body);
-}
-
-async function signInWithFactor(page: Page, email: string, secret: string, after: number) {
-  await page.goto("/login");
-  await hydrated(page);
-  await page.getByLabel("Work email").fill(email);
-  await page.getByLabel("Password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(/\/mfa\/challenge$/);
-  await page.getByLabel("Code from your app").fill((await totp(secret, after)).code);
-  await page.getByRole("button", { name: "Continue" }).click();
-  await expect(page.getByRole("heading", { name: "Your access" })).toBeVisible();
-}
-
-async function completeUnitContext(page: Page, unitName: string) {
-  await go(page, "Unit context");
-  await hydrated(page);
-  await page.getByRole("link", { name: `Open ${unitName}` }).click();
-  await expect(page.getByRole("heading", { name: unitName, level: 1 })).toBeVisible();
-  const domains = page.locator("#domains");
-  for (const [name, criticality] of [
-    ["Policy wording", "3"],
-    ["Our products", "2"],
-    ["Local regulations", "2"],
-  ] as const) {
-    await page.getByLabel("Knowledge domain", { exact: true }).fill(name);
-    await domains.getByLabel("Criticality", { exact: true }).selectOption(criticality);
-    await domains.getByRole("button", { name: "Add", exact: true }).click();
-    await expect(page.getByTestId("domain-list")).toContainText(name);
-  }
-  const starter = page.getByTestId("starter-list").getByRole("checkbox");
-  for (let i = 0; i < 8; i++) await starter.nth(i).check();
-  await page.getByRole("button", { name: "Save the selection" }).click();
-  await expect(page.getByTestId("decisions-count")).toContainText("8 named; complete.");
-  for (const name of ["Intake", "Assessment", "Settlement"]) {
-    await page.getByLabel("Process", { exact: true }).fill(name);
-    await page.locator("#processes").getByRole("button", { name: "Add", exact: true }).click();
-    await expect(page.getByTestId("process-list")).toContainText(name);
-  }
-  for (const name of ["Core platform", "CRM", "Document store"]) {
-    await page.getByLabel("System", { exact: true }).fill(name);
-    await page.locator("#systems").getByRole("button", { name: "Add", exact: true }).click();
-    await expect(page.getByTestId("system-list")).toContainText(name);
-  }
-  await expect(page.getByTestId("domains-count")).toContainText("complete");
-  await expect(page.getByTestId("processes-count")).toContainText("complete");
-  await expect(page.getByTestId("systems-count")).toContainText("complete");
-}
-
-async function fillFamilyFromTemplate(page: Page, family: string, template: string, drop?: string) {
-  await go(page, "Unit context");
-  await hydrated(page);
-  await page.getByRole("link", { name: `Edit ${family}` }).click();
-  await hydrated(page);
-  await page.getByRole("link", { name: "Add skills from the template library" }).click();
-  await page.getByLabel("Template").selectOption(template);
-  await page.getByRole("button", { name: "Continue" }).click();
-  if (drop) await page.getByRole("checkbox", { name: `Keep ${drop}` }).uncheck();
-  await page.getByRole("button", { name: "Add these skills" }).click();
-  await expect(page.getByTestId("family-status")).toContainText("ready");
-}
-
 async function setUpUnit(page: Page, unitName: string, type: string, leader: string) {
   await go(page, "Units");
   await hydrated(page);
@@ -335,28 +256,11 @@ test("a new organisation reaches a passing readiness check through the screens a
   const organisation = `Harbour Freight ${stamp}`;
   const accountOwner = `harbour.ao.${stamp}@local.test`;
 
-  // The Owner provisions the organisation and invites its account owner.
-  await signInAndEnrol(page, OWNER);
-  await page.getByRole("link", { name: "PerformanceVP console" }).click();
-  await page.getByLabel("Organisation name").fill(organisation);
-  await page.getByLabel("Term starts").fill(isoDaysAgo(30));
-  await page.getByLabel("Term ends").fill(isoDaysAgo(-335));
-  await page.getByLabel("Agreement signed").fill(isoDaysAgo(35));
-  await page.getByLabel("Invoice reference").fill(`INV-${stamp}`);
-  await page.getByLabel("Account owner's work email").fill(accountOwner);
-  await page.getByRole("button", { name: "Provision" }).click();
-  await expect(page.getByText("Provisioned. The account owner has access")).toBeVisible();
-  await page.getByRole("button", { name: "Sign out" }).click();
-
-  // From here on, only the account owner and the screens.
-  await page.goto(await latestLink(accountOwner, "invite"));
-  await hydrated(page);
-  await page.getByLabel("New password", { exact: true }).fill(PASSWORD);
-  await page.getByLabel("Confirm new password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Save password" }).click();
-  await expect(page).toHaveURL(/\/login\?notice=password-set$/);
-  const secret = await signInAndEnrol(page, accountOwner, PASSWORD);
-  let window = Math.floor(Date.now() / 30_000);
+  // The Owner provisions the organisation and invites its account owner; from here on, only the
+  // account owner and the screens.
+  const provisioned = await provision(page, organisation, accountOwner, stamp);
+  const secret = provisioned.secret;
+  let window = provisioned.window;
 
   await page.getByRole("link", { name: "Setup", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Setup", level: 1 })).toBeVisible();
@@ -377,21 +281,7 @@ test("a new organisation reaches a passing readiness check through the screens a
   await expect(page.getByText("Unit added.")).toBeVisible();
 
   // Step 2: the directory, from the downloaded template.
-  await go(page, "Directory");
-  const downloading = page.waitForEvent("download");
-  await page.getByRole("link", { name: "Download the template" }).click();
-  const template = readWorkbook(
-    new Uint8Array(await readFile((await (await downloading).path())!)),
-  );
-  expect(template.sheets[0]!.rows[0]!.map((c) => c?.value)).toEqual(HEADERS);
-  const file = buildWorkbook([HEADERS, ...rows(people())], { sharedStrings: true });
-  await page.getByLabel("Choose the file").setInputFiles({
-    name: "harbour.xlsx",
-    mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    buffer: Buffer.from(file),
-  });
-  await page.getByRole("button", { name: "Upload a directory" }).click();
-  await expect(page.getByRole("heading", { name: "Review the differences" })).toBeVisible();
+  await uploadFromTemplate(page, rows(people()), "harbour.xlsx");
   await expect(page.getByTestId("summary-joiners")).toHaveText("35");
   await expect(page.getByTestId("summary-new_units")).toHaveText("3");
   await expect(

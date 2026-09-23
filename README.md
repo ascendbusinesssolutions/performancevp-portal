@@ -49,7 +49,7 @@ Every check the CI runs, in one command: `pnpm check`.
 | `pnpm build` | `next build` of the application |
 | `pnpm db:start`, `db:stop`, `db:reset`, `db:test`, `db:lint` | The local Supabase stack; `db:test` runs the pgTAP suite |
 | `pnpm db:types` | Regenerates `apps/portal/lib/supabase/database.types.ts` from the local database; CI fails if the committed file differs |
-| `pnpm --filter @performancevp/portal e2e` | The Playwright suite against the local stack. Run `pnpm build` first; it starts `next start` itself, or reuses a server already on port 3000. `e2e/setup.spec.ts` is the Milestone 4 exit criterion; set `E2E_SHOT_DIR` to a folder to keep its screenshots |
+| `pnpm --filter @performancevp/portal e2e` | The Playwright suite against the local stack. Run `pnpm build` first; it starts `next start` itself, or reuses a server already on port 3000. `e2e/setup.spec.ts` is the Milestone 4 exit criterion and `e2e/measurement-units.spec.ts` the Milestone 4b one, sharing `e2e/setup-helpers.ts`; set `E2E_SHOT_DIR` to a folder to keep their screenshots |
 
 ## Environment variables
 
@@ -71,9 +71,13 @@ Public sign-up is off. People join by invitation, from the PerformanceVP console
 
 One route, `GET /api/jobs/daily`, runs every scheduled job. Vercel Cron calls it daily at 17:00 UTC (03:00 in Sydney in winter, 04:00 in summer) with `CRON_SECRET` as a bearer token, and the route refuses any other caller. It expires directory uploads left undecided for 7 days, removes the files of decided uploads from storage, purges directory records deactivated 30 or more days earlier, and records each run in the audit log as `job.daily_completed`, so a missed run shows as a gap. Later milestones add their jobs to the same route. Vercel's Hobby plan allows daily cron only; the campaign engine in Milestone 5 will need more frequent runs.
 
+## Measurement units
+
+The directory keeps a client's units as their HRIS holds them; campaigns measure measurement units, laid over them (Online Measurement Specification 6.2; migration `20260923001000_measurement_units.sql`). Every org unit has a single measurement unit, created with it by trigger, that carries its code and follows its name and status. An administrator combines a unit under 10 with others in its branch on the units screen, and the combination, coded with its units' codes joined by `+`, holds them until it is undone. Unit context and `campaign_units` key on measurement units, and so will results, suggestions and trends from Milestone 6; nothing later reads an org unit where it means what is measured. `apps/portal/lib/setup/measurement.ts` holds the model the readiness check and the setup screens share: each measurement unit's state, the candidates a unit under 10 could combine with, whether a combination's units still share a branch, and where its leader comes from. The database holds tenancy, exclusive membership and the rule that nothing a campaign has measured is changed.
+
 ## The database suite
 
-`supabase/tests/database` holds the pgTAP suite: 21 files and 334 assertions at Milestone 3, 24 files and 384 at Milestone 4. It proves the access matrix of `PORTAL_BUILD_PLAN.md` Section 3.3 across two seeded organisations, including that no role can read anonymous responses and that executive and unit viewers cannot read ratings. Two include files carry the shared machinery: `helpers/tests.psql` (personas, `tests.authenticate_as`, and data-driven matrix runners) and `helpers/fixture.psql` (the two organisations, their directories, campaigns, responses and ratings). Each test file includes them with `\ir` inside its own transaction and rolls back, so nothing persists. `02_privileges` holds the exact list of grants; a new table or function without its grant line fails there.
+`supabase/tests/database` holds the pgTAP suite: 21 files and 334 assertions at Milestone 3, 24 files and 384 at Milestone 4, 25 files and 437 at Milestone 4b. It proves the access matrix of `PORTAL_BUILD_PLAN.md` Section 3.3 across two seeded organisations, including that no role can read anonymous responses and that executive and unit viewers cannot read ratings. Two include files carry the shared machinery: `helpers/tests.psql` (personas, `tests.authenticate_as`, and data-driven matrix runners) and `helpers/fixture.psql` (the two organisations, their directories, campaigns, responses and ratings). Each test file includes them with `\ir` inside its own transaction and rolls back, so nothing persists. `02_privileges` holds the exact list of grants; a new table or function without its grant line fails there.
 
 ## Local personas
 

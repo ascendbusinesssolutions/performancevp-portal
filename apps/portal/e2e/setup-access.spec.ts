@@ -131,6 +131,10 @@ test("in grace every setup screen can be read and nothing can be changed", async
 
   await page.goto(`/org/${orgId}/units`);
   await expect(page.getByLabel("Unit code")).toBeDisabled();
+  // Units under 10 are shown with their candidates, and nothing can be combined or kept.
+  await expect(page.getByTestId("short-OPS")).toContainText("Sales, beside it");
+  await expect(page.getByRole("button", { name: /^Combine / })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Keep as a grouping unit" })).toHaveCount(0);
   await page.goto(`/org/${orgId}/directory`);
   await expect(page.getByLabel("Choose the file")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Add a person" })).toHaveCount(0);

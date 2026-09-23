@@ -127,6 +127,27 @@ test("every setup screen passes an axe scan", async ({ page }) => {
   await expect(page.getByText(directoryCopy["preview.discarded"])).toBeVisible();
 });
 
+test("the units screen with a combination, and the combination's context, pass an axe scan", async ({
+  page,
+}) => {
+  await signInAndEnrol(page, ADMIN);
+  await page.goto(`/org/${orgId}/units`);
+  await hydrated(page);
+  await page.getByRole("button", { name: "Combine Operations with Sales" }).click();
+  await expect(page.getByText(/^Combined\./)).toBeVisible();
+  await scan(page, "units with a combination");
+  const [combined] = await sql<{ id: string }>(
+    `select id from public.measurement_units where organisation_id = $1 and kind = 'combined'`,
+    [orgId],
+  );
+  await page.goto(`/org/${orgId}/context/units/${combined!.id}`);
+  await scan(page, "context of a combination");
+  await page.goto(`/org/${orgId}/units`);
+  await hydrated(page);
+  await page.getByRole("button", { name: "Undo the combination" }).click();
+  await expect(page.getByText(/^Undone\./)).toBeVisible();
+});
+
 test("the readiness check's links are reached and followed by keyboard, with the focus visible", async ({
   page,
 }) => {

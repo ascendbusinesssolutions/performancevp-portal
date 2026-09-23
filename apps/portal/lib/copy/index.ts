@@ -1,0 +1,21 @@
+import { authCopy } from "./auth";
+import { commonCopy } from "./common";
+import { consoleCopy } from "./console";
+import { directoryCopy } from "./directory";
+import { shellCopy } from "./shell";
+
+/**
+ * Every copy table, by module name. The copy check (copy.test.ts) lints each one and requires a
+ * fixture for every templated key, so a module added here is covered without further wiring. The
+ * methodology footer module, the one place sub-dimension codes may appear, joins in Milestone 6
+ * with `footer: true`.
+ */
+export const COPY_TABLES: Readonly<
+  Record<string, { table: Readonly<Record<string, string>>; footer?: boolean }>
+> = {
+  auth: { table: authCopy },
+  common: { table: commonCopy },
+  console: { table: consoleCopy },
+  directory: { table: directoryCopy },
+  shell: { table: shellCopy },
+};

@@ -188,6 +188,30 @@ const eslintConfig = defineConfig([
       ]),
     },
   },
+  {
+    // Every string the portal shows comes from the copy module, keyed (PORTAL_COPY_SPEC.md
+    // Section 1), so the copy lint sees all of it. JSX may carry punctuation and spacing only, and
+    // the attributes a reader or a screen reader meets may not hold literal text.
+    files: ["apps/portal/app/**/*.tsx", "apps/portal/components/**/*.tsx"],
+    rules: {
+      "react/jsx-no-literals": [
+        "error",
+        {
+          noStrings: true,
+          ignoreProps: true,
+          allowedStrings: [" ", ",", ", ", ":", ": ", ".", "/", "(", ")", "·", "–", "+"],
+        },
+      ],
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "JSXAttribute[name.name=/^(aria-label|aria-description|title|placeholder|alt)$/] > Literal[value!='']",
+          message: "Take this text from the copy module (apps/portal/lib/copy).",
+        },
+      ],
+    },
+  },
   globalIgnores([
     "**/node_modules/**",
     "**/.next/**",

@@ -17,6 +17,7 @@
     "format:check": "prettier --check .",
     "typecheck": "pnpm --recursive typecheck",
     "test": "pnpm --recursive test",
+    "copy": "pnpm --filter @performancevp/portal copy",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test",
     "db:start": "supabase start",
     "db:stop": "supabase stop",

@@ -44,6 +44,17 @@ jobs:
       - uses: ./.github/actions/setup-workspace
       - run: pnpm --filter @performancevp/${{ matrix.package }} test
 
+  # The copy check (PORTAL_COPY_SPEC.md Sections 6 and 7): the lint over every copy table, every
+  # template fixture and the Supabase Auth email templates. Also part of test (portal); named on
+  # its own so it can be a required check.
+  copy:
+    name: copy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-workspace
+      - run: pnpm copy
+
   build:
     name: build
     runs-on: ubuntu-latest

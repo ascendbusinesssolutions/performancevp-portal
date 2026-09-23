@@ -45,6 +45,7 @@ Every check the CI runs, in one command: `pnpm check`.
 | `pnpm lint`, `pnpm format:check` | ESLint across the workspace; Prettier on code (Markdown and the snapshots are excluded) |
 | `pnpm typecheck` | Every workspace; package source and package tests are checked separately |
 | `pnpm test` | Each package's own Vitest suite. A package can also run its suite alone from its folder |
+| `pnpm copy` | The copy check: the copy lint over every string in `apps/portal/lib/copy`, every template fixture and the three Supabase Auth email templates |
 | `pnpm build` | `next build` of the application |
 | `pnpm db:start`, `db:stop`, `db:reset`, `db:test`, `db:lint` | The local Supabase stack; `db:test` runs the pgTAP suite |
 | `pnpm db:types` | Regenerates `apps/portal/lib/supabase/database.types.ts` from the local database; CI fails if the committed file differs |
@@ -130,7 +131,7 @@ Three guards, each independent, all proven on a deliberately violating file at M
 
 ## CI and deployment
 
-`.github/workflows/ci.yml` runs on every pull request and on pushes to `main`: `lint`, `typecheck`, `test (engine)`, `test (intake)`, `test (recommendations)`, `test (portal)`, `build` and `e2e`, as separately named checks. The `e2e` job starts the local Supabase stack from the migrations and the dev seed, builds the application and runs the Playwright suite against it. `.github/workflows/database.yml` runs always: it starts Postgres alone, lints the schema, runs the pgTAP suite and checks that the committed generated types match the migrations. `database`, `test (portal)` and `e2e` are to be required checks on `main`. Actions are pinned to commit SHAs. No secrets are stored in GitHub.
+`.github/workflows/ci.yml` runs on every pull request and on pushes to `main`: `lint`, `typecheck`, `copy`, `test (engine)`, `test (intake)`, `test (recommendations)`, `test (portal)`, `build` and `e2e`, as separately named checks. The `e2e` job starts the local Supabase stack from the migrations and the dev seed, builds the application and runs the Playwright suite against it. `.github/workflows/database.yml` runs always: it starts Postgres alone, lints the schema, runs the pgTAP suite and checks that the committed generated types match the migrations. `database`, `copy`, `test (portal)` and `e2e` are to be required checks on `main`. Actions are pinned to commit SHAs. No secrets are stored in GitHub.
 
 Deployment is through Vercel's Git integration, not from Actions. The Vercel project's root directory is `apps/portal`; `main` deploys to the project's temporary `*.vercel.app` URL, which serves as staging until cutover to `app.performancevp.com.au`; pull requests get preview URLs. `apps/portal/vercel.json` sets the function region to Sydney. `GET /api/health` reports the environment, the commit and the three package versions.
 

@@ -52,6 +52,7 @@ export const authCopy = {
     "Your role can see identified ratings, so signing in needs a second step. Add PerformanceVP to an authenticator app, then enter the six-digit code it shows.",
   "mfa.enrol.start": "Show the setup code",
   "mfa.enrol.scan": "Scan this with your authenticator app.",
+  "mfa.enrol.qrAlt": "Setup code for your authenticator app",
   "mfa.enrol.secret": "Or enter this key by hand",
   "mfa.enrol.code": "Code from your app",
   "mfa.enrol.submit": "Confirm",

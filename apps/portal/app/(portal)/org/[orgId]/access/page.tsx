@@ -5,6 +5,7 @@ import { Field, Notice } from "@/components/ui";
 import { requireAccess } from "@/lib/auth/access";
 import { authCopy } from "@/lib/copy/auth";
 import { consoleCopy } from "@/lib/copy/console";
+import { fill } from "@/lib/copy/template";
 import { createClient } from "@/lib/supabase/server";
 
 import {
@@ -115,7 +116,10 @@ export default async function AccessPage({ params }: PageProps<"/org/[orgId]/acc
             <dd className="font-mono text-slate">{subscription.data.employee_band}</dd>
             <dt className="text-grey">{consoleCopy["access.term"]}</dt>
             <dd className="font-mono text-slate">
-              {subscription.data.period_start} to {subscription.data.period_end}
+              {fill(consoleCopy["access.termRange"], {
+                start: subscription.data.period_start,
+                end: subscription.data.period_end,
+              })}
             </dd>
             {state ? (
               <>
@@ -299,9 +303,12 @@ export default async function AccessPage({ params }: PageProps<"/org/[orgId]/acc
               return (
                 <li key={s.id} className="border-l-2 border-slate-20 pl-4">
                   <p className="text-sm text-slate">
-                    {s.staff_name}, {when(s.started_at)} to{" "}
-                    {s.ended_at ? when(s.ended_at) : consoleCopy["access.sessions.open"]},{" "}
-                    {s.reason}
+                    {fill(consoleCopy["access.sessions.line"], {
+                      staff: s.staff_name,
+                      start: when(s.started_at),
+                      end: s.ended_at ? when(s.ended_at) : consoleCopy["access.sessions.open"],
+                      reason: s.reason,
+                    })}
                   </p>
                   {steps.length === 0 ? (
                     <p className="mt-1 text-xs text-grey">

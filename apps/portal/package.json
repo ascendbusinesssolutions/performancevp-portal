@@ -10,6 +10,7 @@
     "start": "next start",
     "typecheck": "next typegen && tsc -p tsconfig.json",
     "test": "vitest run",
+    "copy": "vitest run lib/copy",
     "e2e": "playwright test"
   },
   "dependencies": {

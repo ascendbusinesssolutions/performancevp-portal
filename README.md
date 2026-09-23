@@ -105,6 +105,8 @@ The reason is the network, not the suite. `supabase test db` runs its test runne
 
 The URI carries the database password. It is set in the shell for the session only, and never written to a file in the repository or committed. URL-encode the password (`@` as `%40`, `:` as `%3A`, `/` as `%2F`, `#` as `%23`, `%` as `%25`), and keep the whole URI in single quotes so zsh does not expand `$` or `!` inside it. An `export` typed at the prompt is kept in the shell history; start the line with a space when `HIST_IGNORE_SPACE` is set, or remove the entry afterwards.
 
+The staging Security Advisor reports two expected warning types, and neither needs action: the SECURITY DEFINER functions that signed-in users can call (26 at Milestone 3), which by design are the checked, audited route for every action a row policy cannot express, and leaked-password protection being off, which Supabase offers on the Pro plan only.
+
 ## Version pins and why
 
 Each pin below is deliberate and is revisited when its blocker clears, not before.

@@ -42,7 +42,7 @@ If any of these files are missing from `docs/source-ip/`, stop and ask Michael t
 
 - **Frontend and server.** Next.js (App Router), TypeScript, deployed on Vercel. The existing marketing site is a separate Next.js app on Vercel at `www.performancevp.com.au`; the portal is its own app, running on the confirmed subdomain `app.performancevp.com.au`. "Log in via the PerformanceVP site" is satisfied by a login entry point on the marketing site that routes to the portal subdomain.
 - **Database, auth, storage.** Supabase (Postgres, Supabase Auth, Row Level Security, Storage for uploaded files).
-- **Styling.** Tailwind CSS with the brand tokens in section 8. Read `/mnt/skills/public/frontend-design/SKILL.md` conventions if available in the environment.
+- **Styling.** Tailwind CSS with the brand tokens in section 8. Follow Anthropic's frontend-design skill, versioned in this repository at `.claude/skills/frontend-design/SKILL.md`. Where the skill and `docs/PORTAL_UX_BRIEF.md` differ, the brief wins, as the skill itself directs.
 - **Email.** Survey invitations and notifications go through Resend, consistent with the existing PerformanceVP email pipeline. Do not stand up a second email provider.
 - **Billing.** None in the portal. Subscriptions are sales-led and invoiced from the accounting system; the portal holds the subscription record and enforces the grace, suspension and retention rules. No payment provider is introduced.
 - **Spreadsheets.** The employee directory template is generated and parsed server-side as `.xlsx`. Uploaded files are size-limited, stored privately with a hash, and never executed or rendered.

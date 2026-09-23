@@ -9,8 +9,9 @@
   confused with Corporate Slate Blue.
 
   The four forces (Capability, Motivation, Opportunity, Synergy) share Slate Blue and are
-  distinguished by position, label and shape, never by colour. Dashboard status bands
-  (Green, Amber, Red) are a Milestone 6 decision and are not defined here.
+  distinguished by position, label and shape, never by colour. The status colours below are
+  reserved for score bands and trip-wires (PORTAL_UX_BRIEF.md 5), and are never the only
+  carrier of meaning: the band's word or the number is always shown with them.
 
   The tint scales, the accessible gold and the type families match the marketing site's
   brand.css so the two properties read as one.
@@ -45,6 +46,45 @@
   --color-grey-40: #bec2c6;
   --color-grey-60: #9da3a9;
   --color-grey-80: #767e86;
+
+  /*
+    Status bands (PORTAL_UX_BRIEF.md 5 and 8.2; Milestone 4 plan, Section 10). Green above 75,
+    Amber at 50 or more, Red below, Neutral where there is no score. Each band has an ink for
+    text, a tint for backgrounds and a mark for bars and glyphs. Contrast is asserted by
+    lib/design/contrast.test.ts: ink at least 4.5:1 on white and on its tint, marks at least 3:1
+    on white. Amber is kept orange-brown so it cannot be read as Strategic Gold.
+  */
+  --color-band-green: #2e6b4e;
+  --color-band-green-tint: #e7f0ea;
+  --color-band-green-mark: #3f7f5f;
+  --color-band-amber: #8a5300;
+  --color-band-amber-tint: #f8edda;
+  --color-band-amber-mark: #b8740f;
+  --color-band-red: #a1362b;
+  --color-band-red-tint: #f7e6e3;
+  --color-band-red-mark: #b8473a;
+  --color-band-neutral: #5c6670;
+  --color-band-neutral-tint: #eff0f1;
+  --color-band-neutral-mark: #767e86;
+
+  /*
+    The trip-wire critical finding (decided 23 September 2026, as on the results mockup): a 3px
+    rule in this colour above the finding, the label "Critical finding" in this colour, and the
+    finding's text in brand ink. There is deliberately no fill and no tint.
+  */
+  --color-critical: #7e2118;
+}
+
+/*
+  The page scale from the setup mockups (Milestone 4 plan, Section 2): a 44px Spectral page title,
+  a 13px breadcrumb, and one radius for controls. Body text keeps Tailwind's rem scale.
+*/
+@theme {
+  --text-title: 2.75rem;
+  --text-title--line-height: 1.1;
+  --text-crumb: 0.8125rem;
+  --text-crumb--line-height: 1.4;
+  --radius-control: 4px;
 }
 
 /* Type families are provided by next/font in app/layout.tsx as CSS variables. */

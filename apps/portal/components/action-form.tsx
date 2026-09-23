@@ -4,6 +4,7 @@ import { type ReactNode, useActionState } from "react";
 
 import type { FormState } from "@/lib/auth/form-state";
 
+import { type ButtonVariant, buttonClass } from "./button";
 import { Notice } from "./ui";
 
 /**
@@ -16,14 +17,17 @@ export function ActionForm({
   children,
   className,
   compact = false,
+  variant,
 }: {
   action: (previous: FormState, formData: FormData) => Promise<FormState>;
   submitLabel: string;
   children?: ReactNode;
   className?: string;
   compact?: boolean;
+  variant?: ButtonVariant;
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, {});
+  const style = variant ?? (compact ? "quiet" : "primary");
   return (
     <form action={formAction} className={className}>
       {state.error ? <Notice tone="problem">{state.error}</Notice> : null}
@@ -32,11 +36,7 @@ export function ActionForm({
       <button
         type="submit"
         disabled={pending}
-        className={
-          compact
-            ? "text-sm text-slate underline underline-offset-4 hover:text-gold-deep disabled:opacity-60"
-            : "mt-4 bg-slate px-4 py-2 text-white hover:bg-slate-90 focus:outline-2 focus:outline-offset-2 focus:outline-slate disabled:opacity-60"
-        }
+        className={style === "quiet" ? buttonClass("quiet") : `mt-4 ${buttonClass(style)}`}
       >
         {submitLabel}
       </button>

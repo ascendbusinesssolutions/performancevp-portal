@@ -1,3 +1,5 @@
+import { PageHeader, Section } from "@/components/page";
+import { Head, Row, Table, Td, Th } from "@/components/table";
 import { TextLink } from "@/components/ui";
 import { requireAccess } from "@/lib/auth/access";
 import { authCopy } from "@/lib/copy/auth";
@@ -17,44 +19,50 @@ export default async function PortalHome() {
     access.memberships.every((m) => m.role === "manager_respondent");
 
   return (
-    <main className="mt-10">
-      <h1 className="font-display text-3xl font-medium text-slate">{authCopy["portal.title"]}</h1>
+    <main>
+      <PageHeader title={authCopy["portal.title"]} meta={access.email} />
 
       {access.memberships.length > 0 ? (
-        <table className="mt-8 w-full border-collapse text-left">
-          <tbody>
-            {access.memberships.map((m) => (
-              <tr key={`${m.organisationId}-${m.role}`} className="border-b border-grey-20">
-                <td className="py-3 text-slate">{m.organisationName}</td>
-                <td className="py-3 text-grey">{authCopy[`role.${m.role}`]}</td>
-                <td className="py-3 text-grey">{authCopy[`state.${m.state}`]}</td>
-                <td className="space-x-6 py-3 text-right">
-                  {m.role === "account_owner" || m.role === "administrator" ? (
-                    <>
-                      <TextLink href={`/org/${m.organisationId}/directory`}>
-                        {directoryCopy["page.nav"]}
-                      </TextLink>
-                      <TextLink href={`/org/${m.organisationId}/access`}>
-                        {consoleCopy["nav.access"]}
-                      </TextLink>
-                    </>
-                  ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <Section>
+          <Table>
+            <Head>
+              <Th>{authCopy["portal.col.organisation"]}</Th>
+              <Th>{authCopy["portal.col.role"]}</Th>
+              <Th>{authCopy["portal.col.subscription"]}</Th>
+              <Th />
+            </Head>
+            <tbody>
+              {access.memberships.map((m) => (
+                <Row key={`${m.organisationId}-${m.role}`}>
+                  <Td>{m.organisationName}</Td>
+                  <Td muted>{authCopy[`role.${m.role}`]}</Td>
+                  <Td muted>{authCopy[`state.${m.state}`]}</Td>
+                  <Td align="right">
+                    {m.role === "account_owner" || m.role === "administrator" ? (
+                      <span className="space-x-6">
+                        <TextLink href={`/org/${m.organisationId}/directory`}>
+                          {directoryCopy["page.nav"]}
+                        </TextLink>
+                        <TextLink href={`/org/${m.organisationId}/access`}>
+                          {consoleCopy["nav.access"]}
+                        </TextLink>
+                      </span>
+                    ) : null}
+                  </Td>
+                </Row>
+              ))}
+            </tbody>
+          </Table>
+          {managerOnly ? <p className="mt-6 text-grey">{authCopy["portal.managerNote"]}</p> : null}
+        </Section>
       ) : null}
 
-      {managerOnly ? <p className="mt-6 text-grey">{authCopy["portal.managerNote"]}</p> : null}
-
       {staff ? (
-        <section className="mt-10">
-          <h2 className="font-display text-xl text-slate">{authCopy["portal.staffSessions"]}</h2>
+        <Section title={authCopy["portal.staffSessions"]}>
           {access.openSupportSessions.length === 0 ? (
-            <p className="mt-3 text-grey">{authCopy["portal.noStaffSessions"]}</p>
+            <p className="text-grey">{authCopy["portal.noStaffSessions"]}</p>
           ) : (
-            <ul className="mt-3">
+            <ul>
               {access.openSupportSessions.map((s) => (
                 <li key={s.sessionId} className="border-b border-grey-20 py-3 text-slate">
                   <TextLink href={`/org/${s.organisationId}/access`}>{s.organisationName}</TextLink>{" "}
@@ -71,7 +79,7 @@ export default async function PortalHome() {
           <p className="mt-6">
             <TextLink href="/pvp">{consoleCopy["nav.console"]}</TextLink>
           </p>
-        </section>
+        </Section>
       ) : null}
     </main>
   );

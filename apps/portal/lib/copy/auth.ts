@@ -4,8 +4,6 @@
  * Michael's review with the copy module before Milestone 6.
  */
 export const authCopy = {
-  "brand.eyebrow": "PerformanceVP",
-
   "login.title": "Sign in",
   "login.email": "Work email",
   "login.password": "Password",
@@ -68,6 +66,9 @@ export const authCopy = {
     "You are signed in, but your account has no access to an organisation. Your account owner can grant it.",
 
   "portal.title": "Your access",
+  "portal.col.organisation": "Organisation",
+  "portal.col.role": "Role",
+  "portal.col.subscription": "Subscription",
   "portal.signOut": "Sign out",
   "portal.staffSessions": "Open support sessions",
   "portal.noStaffSessions": "No open support sessions.",

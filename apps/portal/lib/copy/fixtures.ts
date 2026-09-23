@@ -13,6 +13,7 @@ export interface CopyFixture {
 
 export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
   "common.list.more": [{ slots: { n: 3 }, expected: "3 more" }],
+  "common.people.many": [{ slots: { n: 7 }, expected: "7 people" }],
   "console.access.sessions.line": [
     {
       slots: {
@@ -123,13 +124,13 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
     { slots: { b: 2, w: 1, p: 9 }, expected: "Blockers 2 \u00b7 Warnings 1 \u00b7 Passed 9" },
   ],
   "readiness.units.pass": [{ slots: { n: 4 }, expected: "All 4 units." }],
-  "readiness.units.groupingOne": [
+  "readiness.grouping.keptOne": [
     {
       slots: { unit: "Executive" },
       expected: "Executive groups the units below it and is not measured.",
     },
   ],
-  "readiness.units.groupingMany": [
+  "readiness.grouping.keptMany": [
     {
       slots: { list: "Executive and Corporate" },
       expected: "Executive and Corporate group the units below them and are not measured.",
@@ -170,7 +171,66 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
   "readiness.units.blocker": [
     {
       slots: { unit: "Claims", n: 9 },
-      expected: "Claims has 9. A unit below 10 cannot be measured.",
+      expected: "Claims has 9. Nothing under 10 is measured. Combine it with a unit in its branch.",
+    },
+  ],
+  "readiness.units.combinationShort": [
+    {
+      slots: { unit: "Claims and Service", list: "Claims and Service", people: "8 people" },
+      expected: "Claims and Service holds Claims and Service: 8 people, still short of 10.",
+    },
+  ],
+  "readiness.units.branchBroken": [
+    {
+      slots: { unit: "Claims and Service" },
+      expected:
+        "Claims and Service holds units that no longer share a branch. Undo it and choose again.",
+    },
+  ],
+  "readiness.grouping.undecided": [
+    {
+      slots: { unit: "Executive", n: 3 },
+      expected:
+        "Executive has 3 of its own and units below it. Unless it is combined with a unit below, it is not measured and its people are not surveyed as members.",
+    },
+  ],
+  "readiness.candidate.beside": [
+    {
+      slots: { candidate: "Service", people: "7 people", together: "14 together" },
+      expected: "Service, beside it: 7 people, 14 together.",
+    },
+  ],
+  "readiness.candidate.above": [
+    {
+      slots: { candidate: "Field", people: "1 person", together: "8 together, still short of 10" },
+      expected: "Field, above it: 1 person, 8 together, still short of 10.",
+    },
+  ],
+  "readiness.candidate.aboveGrouping": [
+    {
+      slots: {
+        candidate: "Head Office",
+        parent: "Field",
+        people: "3 people",
+        together: "12 together",
+      },
+      expected: "Head Office, above Field: 3 people, 12 together.",
+    },
+  ],
+  "readiness.candidate.below": [
+    {
+      slots: { candidate: "Claims", people: "8 people", together: "14 together" },
+      expected: "Claims, below it: 8 people, 14 together.",
+    },
+  ],
+  "readiness.candidate.together": [{ slots: { total: 14 }, expected: "14 together" }],
+  "readiness.candidate.togetherShort": [
+    { slots: { total: 8 }, expected: "8 together, still short of 10" },
+  ],
+  "readiness.unitLeader.notFlagged": [
+    {
+      slots: { leader: "Ruth Root", unit: "Claims and Service" },
+      expected: "Ruth Root, who leads Claims and Service, is not flagged as leadership team.",
     },
   ],
   "readiness.units.empty": [

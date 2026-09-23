@@ -17,6 +17,7 @@ import {
   loadTemplates,
   loadUnitContext,
   loadUnits,
+  singleMeasurementUnitId,
   type Template,
 } from "@/lib/setup/data";
 import { contextCounts, lacksCriticalDomain, type NamedRow } from "@/lib/setup/frameworks";
@@ -107,19 +108,22 @@ export default async function UnitContextPage({
   const { orgId, unitId } = await params;
   const org = await requireOrgManager(orgId);
   const supabase = await createClient();
-  const [units, people, context, templates] = await Promise.all([
+  const [units, people, context, templates, measurementUnitId] = await Promise.all([
     loadUnits(supabase, orgId),
     loadActivePeople(supabase, orgId),
     loadUnitContext(supabase, orgId),
     loadTemplates(supabase),
+    singleMeasurementUnitId(supabase, orgId, unitId),
   ]);
   const unit = units.find((u) => u.id === unitId && u.status === "active");
-  if (!unit) redirect(`/org/${orgId}/context`);
+  if (!unit || !measurementUnitId) redirect(`/org/${orgId}/context`);
 
-  const counts = contextCounts(unitId, context);
+  // The unit's own measurement unit, until the context screens are keyed on measurement units
+  // (Milestone 4b, step 4).
+  const counts = contextCounts(measurementUnitId, context);
   const mine = <R extends NamedRow>(rows: readonly R[]) =>
     rows
-      .filter((r) => r.unit_id === unitId && r.status === "active")
+      .filter((r) => r.measurement_unit_id === measurementUnitId && r.status === "active")
       .sort((a, b) => a.name.localeCompare(b.name, "en-AU"));
   const domains = mine(context.domains);
   const decisions = mine(context.decisions);

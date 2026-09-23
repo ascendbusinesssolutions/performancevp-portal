@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   loadActivePeople,
   loadFormalRatingsForCheck,
+  loadMeasurementUnits,
   loadRoleFamilies,
   loadScaleMap,
   loadSkills,
@@ -17,7 +18,7 @@ import {
 } from "./data";
 import { contextCounts, incompleteParts } from "./frameworks";
 import { evaluateReadiness, type Readiness } from "./readiness";
-import { unitTree, type UnitRow } from "./units";
+import type { UnitRow } from "./units";
 
 /**
  * Everything the setup hub and the readiness page need, read once per request (React cache) as the
@@ -49,9 +50,10 @@ export interface SetupState {
 
 export const loadSetupState = cache(async (orgId: string): Promise<SetupState> => {
   const supabase = await createClient();
-  const [units, people, families, skills, context, formalRatings, scaleMap, uploads] =
+  const [units, measurement, people, families, skills, context, formalRatings, scaleMap, uploads] =
     await Promise.all([
       loadUnits(supabase, orgId),
+      loadMeasurementUnits(supabase, orgId),
       loadActivePeople(supabase, orgId),
       loadRoleFamilies(supabase, orgId),
       loadSkills(supabase, orgId),
@@ -72,6 +74,7 @@ export const loadSetupState = cache(async (orgId: string): Promise<SetupState> =
   const readiness = evaluateReadiness({
     today,
     units,
+    ...measurement,
     people,
     families,
     skills,
@@ -81,10 +84,8 @@ export const loadSetupState = cache(async (orgId: string): Promise<SetupState> =
     stagedUploadId: staged?.id ?? null,
   });
 
-  const measured = new Set(readiness.measured.map((u) => u.id));
-  const measuredUnits = unitTree(units)
-    .map((e) => e.unit)
-    .filter((u) => measured.has(u.id));
+  // Context is complete per measurement unit measured (Milestone 4b).
+  const measuredUnits = readiness.measured;
   const complete = measuredUnits.filter(
     (u) => incompleteParts(contextCounts(u.id, context)).length === 0,
   );

@@ -56,14 +56,14 @@ describe("a unit's context", () => {
   const named = (n: number, unit = "u") =>
     Array.from({ length: n }, (_, i) => ({
       id: `${unit}${i}`,
-      unit_id: unit,
+      measurement_unit_id: unit,
       name: `N${i}`,
       status: "active",
     }));
   const domains = (criticalities: number[]) =>
     criticalities.map((c, i) => ({
       id: `d${i}`,
-      unit_id: "u",
+      measurement_unit_id: "u",
       name: `D${i}`,
       status: "active",
       criticality: c,
@@ -95,7 +95,10 @@ describe("a unit's context", () => {
     const counts = contextCounts("u", {
       domains: [],
       decisions: [...named(8), ...named(4, "v")],
-      processes: [...named(3), { id: "x", unit_id: "u", name: "Old", status: "retired" }],
+      processes: [
+        ...named(3),
+        { id: "x", measurement_unit_id: "u", name: "Old", status: "retired" },
+      ],
       systems: named(3),
     });
     expect(counts.decisions).toBe(8);

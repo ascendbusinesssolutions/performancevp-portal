@@ -3,13 +3,21 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { Glyph, type GlyphKind } from "@/components/glyph";
-import { commonCopy } from "@/lib/copy/common";
+import { commonCopy, peopleCount } from "@/lib/copy/common";
 import { contextCopy } from "@/lib/copy/context";
 import { fillNodes } from "@/lib/copy/nodes";
 import { readinessCopy } from "@/lib/copy/readiness";
 import { fill, listOf } from "@/lib/copy/template";
 import type { FamilyProblem } from "@/lib/setup/frameworks";
-import type { Check, CheckKey, Finding, Level, Ref } from "@/lib/setup/readiness";
+import type {
+  CandidateRef,
+  Check,
+  CheckKey,
+  Finding,
+  Level,
+  Ref,
+  UnitRef,
+} from "@/lib/setup/readiness";
 
 const SETUP = constants.SETUP;
 const LIST_LIMIT = 5;
@@ -17,6 +25,7 @@ const LIST_LIMIT = 5;
 /** The S2 order, with the Milestone 4 additions beside the checks they belong with. */
 export const CHECK_ORDER: readonly CheckKey[] = [
   "units",
+  "grouping",
   "managers",
   "leadershipTeam",
   "teamLeaders",
@@ -89,19 +98,98 @@ function unitLink(href: string, unit: Ref): ReactNode {
   );
 }
 
+const LIST_WORDS = {
+  and: commonCopy["list.and"],
+  more: (n: number) => fill(commonCopy["list.more"], { n }),
+};
+
+/**
+ * Where a measurement unit's findings are fixed. A single's are fixed on its unit's own screens; a
+ * combination's on the measurement units section of the units screen, or its context (Milestone 4b).
+ */
+const where = {
+  directory: (base: string, unit: UnitRef, missing?: string) =>
+    `${base}/directory${
+      unit.combined
+        ? missing
+          ? `?missing=${missing}`
+          : ""
+        : `?unit=${unit.unitIds[0]}${missing ? `&missing=${missing}` : ""}`
+    }`,
+  context: (base: string, unit: UnitRef, anchor = "") =>
+    unit.combined ? `${base}/context` : `${base}/context/units/${unit.unitIds[0]}${anchor}`,
+  leader: (base: string, unit: UnitRef) =>
+    unit.combined ? `${base}/units#measurement` : `${base}/units/${unit.unitIds[0]}#leader`,
+  measurement: (base: string) => `${base}/units#measurement`,
+};
+
+/** The units a unit under 10 could be measured with, each with the total together. */
+function candidateLine(candidate: CandidateRef): string {
+  const slots = {
+    candidate: candidate.target.name,
+    people: peopleCount(candidate.n),
+    together: fill(
+      readinessCopy[candidate.short ? "candidate.togetherShort" : "candidate.together"],
+      { total: candidate.total },
+    ),
+  };
+  return candidate.direction === "aboveGrouping"
+    ? fill(readinessCopy["candidate.aboveGrouping"], {
+        ...slots,
+        parent: candidate.via?.name ?? "",
+      })
+    : fill(readinessCopy[`candidate.${candidate.direction}`], slots);
+}
+
+/** A finding's candidates, where it has any. */
+export function findingCandidates(finding: Finding): ReactNode {
+  const list =
+    finding.kind === "unitShort" ||
+    finding.kind === "combinationShort" ||
+    finding.kind === "groupingUndecided"
+      ? finding.candidates
+      : [];
+  if (list.length === 0) return null;
+  return (
+    <ul className="mt-1 space-y-0.5 pl-4 text-grey" data-testid="candidates">
+      {list.map((c) => (
+        <li key={c.target.id}>{candidateLine(c)}</li>
+      ))}
+    </ul>
+  );
+}
+
 /** One finding, worded from the copy module, with its names linked to where each is fixed. */
 export function findingLine(orgId: string, finding: Finding): ReactNode {
   const base = `/org/${orgId}`;
   switch (finding.kind) {
-    case "unitSize":
-      return finding.n === 0
-        ? fillNodes(readinessCopy["units.empty"], {
-            unit: unitLink(`${base}/units/${finding.unit.id}`, finding.unit),
-          })
-        : fillNodes(readinessCopy["units.blocker"], {
-            unit: unitLink(`${base}/directory?unit=${finding.unit.id}`, finding.unit),
-            n: finding.n,
-          });
+    case "unitShort":
+      return fillNodes(readinessCopy["units.blocker"], {
+        unit: unitLink(where.directory(base, finding.unit), finding.unit),
+        n: finding.n,
+      });
+    case "unitEmpty":
+      return fillNodes(readinessCopy["units.empty"], {
+        unit: unitLink(`${base}/units/${finding.unit.unitIds[0]}`, finding.unit),
+      });
+    case "combinationShort":
+      return fillNodes(readinessCopy["units.combinationShort"], {
+        unit: unitLink(where.measurement(base), finding.unit),
+        list: listOf(
+          finding.holds.map((u) => u.name),
+          LIST_WORDS,
+        ),
+        people: peopleCount(finding.n),
+      });
+    case "branchBroken":
+      return fillNodes(readinessCopy["units.branchBroken"], {
+        unit: unitLink(where.measurement(base), finding.unit),
+      });
+    case "groupingUndecided":
+      return fillNodes(readinessCopy["grouping.undecided"], {
+        unit: unitLink(where.measurement(base), finding.unit),
+        n: finding.n,
+      });
     case "noManager":
       return fillNodes(readinessCopy["managers.noManager"], {
         n: finding.people.length,
@@ -119,10 +207,7 @@ export function findingLine(orgId: string, finding: Finding): ReactNode {
       });
     case "noRoleFamily":
       return fillNodes(readinessCopy["roleFamilies.noRoleFamily"], {
-        unit: unitLink(
-          `${base}/directory?unit=${finding.unit.id}&missing=role_family`,
-          finding.unit,
-        ),
+        unit: unitLink(where.directory(base, finding.unit, "role_family"), finding.unit),
         n: finding.n,
       });
     case "familyIncomplete":
@@ -132,7 +217,7 @@ export function findingLine(orgId: string, finding: Finding): ReactNode {
       });
     case "contextIncomplete":
       return fillNodes(readinessCopy["context.blocker"], {
-        unit: unitLink(`${base}/context/units/${finding.unit.id}`, finding.unit),
+        unit: unitLink(where.context(base, finding.unit), finding.unit),
         missing: finding.parts
           .map(({ part, n }) =>
             part === "processes"
@@ -153,26 +238,35 @@ export function findingLine(orgId: string, finding: Finding): ReactNode {
       });
     case "noCriticalDomain":
       return fillNodes(readinessCopy["criticalDomain.warning"], {
-        unit: unitLink(`${base}/context/units/${finding.unit.id}#domains`, finding.unit),
+        unit: unitLink(where.context(base, finding.unit, "#domains"), finding.unit),
       });
     case "leadershipTeam":
       return fillNodes(readinessCopy["leadershipTeam.warning"], {
-        unit: unitLink(`${base}/directory?unit=${finding.unit.id}`, finding.unit),
+        unit: unitLink(where.directory(base, finding.unit), finding.unit),
         n: finding.n,
       });
     case "noTeamLeaders":
       return fillNodes(readinessCopy["teamLeaders.warning"], {
-        unit: unitLink(`${base}/directory?unit=${finding.unit.id}`, finding.unit),
+        unit: unitLink(where.directory(base, finding.unit), finding.unit),
       });
     case "noUnitLeader":
       return finding.candidates > 1
         ? fillNodes(readinessCopy["unitLeader.ambiguous"], {
-            unit: unitLink(`${base}/units/${finding.unit.id}#leader`, finding.unit),
+            unit: unitLink(where.leader(base, finding.unit), finding.unit),
             n: finding.candidates,
           })
         : fillNodes(readinessCopy["unitLeader.none"], {
-            unit: unitLink(`${base}/units/${finding.unit.id}#leader`, finding.unit),
+            unit: unitLink(where.leader(base, finding.unit), finding.unit),
           });
+    case "leaderNotFlagged":
+      return fillNodes(readinessCopy["unitLeader.notFlagged"], {
+        leader: (
+          <Link className={LINK} href={`${base}/directory/people/${finding.leader.id}`}>
+            {finding.leader.name}
+          </Link>
+        ),
+        unit: unitLink(where.leader(base, finding.unit), finding.unit),
+      });
     case "ratingsUndecided":
       return readinessCopy["formalRatings.undecided"];
     case "labelsUnmapped":
@@ -190,22 +284,21 @@ export function findingLine(orgId: string, finding: Finding): ReactNode {
 /** A check's line when it passed or was skipped. */
 export function passLine(orgId: string, check: Check): ReactNode {
   const pass = check.pass;
+  if (pass.key === "waiting") return readinessCopy["waiting.pass"];
   if (check.level === "skipped") return readinessCopy["formalRatings.skipped"];
   switch (pass.key) {
-    case "units": {
-      const line = fill(readinessCopy["units.pass"], { n: pass.n });
-      if (pass.grouping.length === 0) return line;
-      const grouping =
-        pass.grouping.length === 1
-          ? fill(readinessCopy["units.groupingOne"], { unit: pass.grouping[0]!.name })
-          : fill(readinessCopy["units.groupingMany"], {
-              list: listOf(
-                pass.grouping.map((u) => u.name),
-                { and: commonCopy["list.and"], more: (n) => fill(commonCopy["list.more"], { n }) },
-              ),
-            });
-      return `${line} ${grouping}`;
-    }
+    case "units":
+      return fill(readinessCopy["units.pass"], { n: pass.n });
+    case "grouping":
+      if (pass.kept.length === 0) return readinessCopy["grouping.none"];
+      return pass.kept.length === 1
+        ? fill(readinessCopy["grouping.keptOne"], { unit: pass.kept[0]!.name })
+        : fill(readinessCopy["grouping.keptMany"], {
+            list: listOf(
+              pass.kept.map((u) => u.name),
+              LIST_WORDS,
+            ),
+          });
     case "unitForEveryone":
       return fill(readinessCopy["unitForEveryone.pass"], { n: pass.n });
     case "managers":
@@ -258,7 +351,8 @@ export function passLine(orgId: string, check: Check): ReactNode {
 }
 
 const FIX: Partial<Record<CheckKey, { href: string; label: keyof typeof readinessCopy }>> = {
-  units: { href: "units", label: "fix.units" },
+  units: { href: "units#measurement", label: "fix.units" },
+  grouping: { href: "units#measurement", label: "fix.units" },
   managers: { href: "directory?missing=manager", label: "fix.directory" },
   leadershipTeam: { href: "directory", label: "fix.directory" },
   teamLeaders: { href: "directory", label: "fix.directory" },
@@ -307,7 +401,12 @@ export function ReadinessRows({ orgId, checks }: { orgId: string; checks: readon
             </span>
             <div className="space-y-1 text-sm text-slate">
               {open ? (
-                check.findings.map((finding, i) => <p key={i}>{findingLine(orgId, finding)}</p>)
+                check.findings.map((finding, i) => (
+                  <div key={i}>
+                    <p>{findingLine(orgId, finding)}</p>
+                    {findingCandidates(finding)}
+                  </div>
+                ))
               ) : (
                 <p className="text-grey">{passLine(orgId, check)}</p>
               )}

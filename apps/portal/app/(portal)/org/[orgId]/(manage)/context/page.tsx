@@ -14,6 +14,7 @@ import {
   loadActivePeople,
   loadRoleFamilies,
   loadSkills,
+  loadMeasurementUnits,
   loadTemplates,
   loadUnitContext,
   loadUnits,
@@ -54,14 +55,20 @@ export default async function ContextPage({ params }: PageProps<"/org/[orgId]/co
   const { orgId } = await params;
   const org = await requireOrgManager(orgId);
   const supabase = await createClient();
-  const [families, skills, people, units, context, templates] = await Promise.all([
+  const [families, skills, people, units, context, templates, measurement] = await Promise.all([
     loadRoleFamilies(supabase, orgId),
     loadSkills(supabase, orgId),
     loadActivePeople(supabase, orgId),
     loadUnits(supabase, orgId),
     loadUnitContext(supabase, orgId),
     loadTemplates(supabase),
+    loadMeasurementUnits(supabase, orgId),
   ]);
+  // Each unit's own measurement unit, until this screen lists measurement units (Milestone 4b,
+  // step 4).
+  const singleOf = new Map(
+    measurement.measurementUnits.map((mu) => [mu.single_unit_id ?? "", mu.id]),
+  );
   const active = families
     .filter((f) => f.status === "active")
     .sort((a, b) => a.name.localeCompare(b.name, "en-AU"));
@@ -202,7 +209,7 @@ export default async function ContextPage({ params }: PageProps<"/org/[orgId]/co
             </Head>
             <tbody>
               {measured.map(({ unit }) => {
-                const c = contextCounts(unit.id, context);
+                const c = contextCounts(singleOf.get(unit.id) ?? "", context);
                 const complete = incompleteParts(c).length === 0;
                 return (
                   <Row key={unit.id} testId={`context-${unit.unit_code}`}>

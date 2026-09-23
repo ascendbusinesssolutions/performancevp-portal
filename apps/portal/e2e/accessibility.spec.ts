@@ -139,6 +139,6 @@ test("the readiness check's links are reached and followed by keyboard, with the
   const outline = await target.evaluate((el) => getComputedStyle(el).outlineStyle);
   expect(outline).not.toBe("none");
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(new RegExp(`/org/${orgId}/units$`));
+  await expect(page).toHaveURL(new RegExp(`/org/${orgId}/units#measurement$`));
   await expect(page.getByRole("heading", { name: "Units", level: 1 })).toBeVisible();
 });

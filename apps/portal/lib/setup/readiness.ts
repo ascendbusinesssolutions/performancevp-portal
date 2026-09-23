@@ -9,19 +9,32 @@ import {
   lacksCriticalDomain,
   type SkillRow,
 } from "./frameworks";
+import {
+  branchOk,
+  candidates,
+  type Direction,
+  isGroupingState,
+  measurementLeader,
+  measurementModel,
+  type MeasurementUnitRow,
+  type MeasurementView,
+  type MemberRow,
+} from "./measurement";
 import type { FormalRatingRow, SnapshotPerson } from "./snapshot";
-import { unitSnapshot } from "./snapshot";
-import { isGroupingUnit, isMeasuredUnit, leaderState, type UnitRow } from "./units";
+import { measurementSnapshot } from "./snapshot";
+import type { UnitRow } from "./units";
 
 /**
  * The readiness check (PORTAL_BUILD_PLAN.md 7; PORTAL_COPY_SPEC.md S2; Milestone 4 plan, Section 7,
- * decisions D1 to D11 and the unit leader). Pure: it takes the live directory and context and
- * returns each check's level and findings, with no copy; the page words them. The setup counts and
- * the formal-ratings rule are the intake package's own, run over the intake's own snapshot shape,
- * so the check says what the campaign close will find. Milestone 5's launch reruns it on the server.
+ * decisions D1 to D11 and the unit leader; Milestone 4b plan, Section 3). Pure: it takes the live
+ * directory, the measurement units and the context, and returns each check's level and findings,
+ * with no copy; the page words them. It judges measurement units, never org units (Online
+ * Measurement Specification 6.2): a unit under 10 lists the units it could combine with and blocks
+ * until the administrator chooses. The setup counts and the formal-ratings rule are the intake
+ * package's own, run over the intake's own snapshot shape, so the check says what the campaign
+ * close will find. Milestone 5's launch reruns it on the server.
  */
 
-const SETUP = constants.SETUP;
 const LEADERSHIP_MIN = constants.THRESHOLDS.leadershipMinimumRespondents;
 
 export interface ReadinessPerson extends SnapshotPerson {
@@ -35,9 +48,28 @@ export interface Ref {
   name: string;
 }
 
+/** A measurement unit in a finding, with the org units it holds (for links to where it is fixed). */
+export interface UnitRef extends Ref {
+  unitIds: string[];
+  combined: boolean;
+}
+
+export interface CandidateRef {
+  target: UnitRef;
+  direction: Direction;
+  /** For a candidate above a grouping parent, the grouping unit passed over. */
+  via: Ref | null;
+  n: number;
+  total: number;
+  short: boolean;
+}
+
 export interface ReadinessInput {
   today: string;
   units: readonly UnitRow[];
+  measurementUnits: readonly MeasurementUnitRow[];
+  /** Current memberships. */
+  members: readonly MemberRow[];
   /** Active people only. */
   people: readonly ReadinessPerson[];
   families: ReadonlyArray<{ id: string; name: string; status: string }>;
@@ -53,23 +85,29 @@ export interface ReadinessInput {
 }
 
 export type Finding =
-  | { kind: "unitSize"; unit: Ref; n: number }
+  | { kind: "unitShort"; unit: UnitRef; n: number; candidates: CandidateRef[] }
+  | { kind: "unitEmpty"; unit: UnitRef }
+  | { kind: "combinationShort"; unit: UnitRef; n: number; holds: Ref[]; candidates: CandidateRef[] }
+  | { kind: "branchBroken"; unit: UnitRef; holds: Ref[] }
+  | { kind: "groupingUndecided"; unit: UnitRef; n: number; candidates: CandidateRef[] }
   | { kind: "noManager"; people: Ref[] }
   | { kind: "managerLeft"; people: Ref[] }
   | { kind: "noEmail"; people: Ref[] }
-  | { kind: "noRoleFamily"; unit: Ref; n: number }
+  | { kind: "noRoleFamily"; unit: UnitRef; n: number }
   | { kind: "familyIncomplete"; family: Ref; problems: FamilyProblem[] }
-  | { kind: "contextIncomplete"; unit: Ref; parts: Array<{ part: ContextPart; n: number }> }
-  | { kind: "noCriticalDomain"; unit: Ref }
-  | { kind: "leadershipTeam"; unit: Ref; n: number }
-  | { kind: "noTeamLeaders"; unit: Ref }
-  | { kind: "noUnitLeader"; unit: Ref; candidates: number }
+  | { kind: "contextIncomplete"; unit: UnitRef; parts: Array<{ part: ContextPart; n: number }> }
+  | { kind: "noCriticalDomain"; unit: UnitRef }
+  | { kind: "leadershipTeam"; unit: UnitRef; n: number }
+  | { kind: "noTeamLeaders"; unit: UnitRef }
+  | { kind: "noUnitLeader"; unit: UnitRef; candidates: number }
+  | { kind: "leaderNotFlagged"; unit: UnitRef; leader: Ref }
   | { kind: "ratingsUndecided" }
   | { kind: "labelsUnmapped"; labels: string[] }
   | { kind: "uploadAwaiting"; uploadId: string };
 
 export type CheckKey =
   | "units"
+  | "grouping"
   | "unitForEveryone"
   | "managers"
   | "workEmails"
@@ -85,13 +123,16 @@ export type CheckKey =
 export type Level = "passed" | "warning" | "blocker" | "skipped";
 
 export type PassDetail =
-  | { key: "units"; n: number; grouping: Ref[] }
+  | { key: "units"; n: number }
+  | { key: "grouping"; kept: UnitRef[] }
   | { key: "unitForEveryone"; n: number }
   | { key: "managers"; n: number; head: Ref | null }
   | { key: "workEmails"; n: number }
   | { key: "roleFamilies"; units: number; families: number; min: number; max: number }
   | { key: "context"; units: number }
-  | { key: "formalRatings"; current: number; below: Ref[] }
+  | { key: "formalRatings"; current: number; below: UnitRef[] }
+  /** A check of measured units, with none measured yet. */
+  | { key: "waiting" }
   | { key: "none" };
 
 export interface Check {
@@ -108,8 +149,8 @@ export interface Readiness {
   passed: number;
   /** Every check passed, was skipped or only warns: a first campaign may launch. */
   ready: boolean;
-  /** Units a campaign would measure: active units with people of their own, less grouping units. */
-  measured: Ref[];
+  /** The measurement units a campaign would measure: those of 10 or more. */
+  measured: UnitRef[];
 }
 
 const NONE: PassDetail = { key: "none" };
@@ -122,36 +163,95 @@ function byName<T extends Ref>(list: T[]): T[] {
   return list.sort((a, b) => a.name.localeCompare(b.name, "en-AU"));
 }
 
+export function unitRef(view: MeasurementView): UnitRef {
+  return {
+    id: view.row.id,
+    name: view.row.name,
+    unitIds: view.units.map((u) => u.id),
+    combined: view.combined,
+  };
+}
+
 export function evaluateReadiness(input: ReadinessInput): Readiness {
-  const active = input.units.filter((u) => u.status === "active");
-  const staffOf = new Map<string, ReadinessPerson[]>();
-  for (const p of input.people) staffOf.set(p.unit_id, [...(staffOf.get(p.unit_id) ?? []), p]);
-  const unitRef = (u: UnitRow): Ref => ({ id: u.id, name: u.name });
-  const ownStaff = (u: UnitRow) => (staffOf.get(u.id) ?? []).length;
-  const sorted = [...active].sort((a, b) => a.name.localeCompare(b.name, "en-AU"));
-  const grouping = sorted.filter((u) => isGroupingUnit(input.units, u.id, ownStaff(u)));
-  const measuredUnits = sorted.filter((u) => isMeasuredUnit(input.units, u.id, ownStaff(u)));
-  // The staff of measured units: the people a campaign surveys and managers rate. The staff of a
-  // grouping unit are neither, though they still manage the people below them.
-  const members = measuredUnits.flatMap((u) => staffOf.get(u.id) ?? []);
+  const model = measurementModel({
+    units: input.units,
+    measurementUnits: input.measurementUnits,
+    members: input.members,
+    people: input.people,
+  });
+  const staffIn = (view: MeasurementView) => {
+    const inside = new Set(view.units.map((u) => u.id));
+    return input.people.filter((p) => inside.has(p.unit_id));
+  };
+  const candidateRefs = (view: MeasurementView, only?: readonly Direction[]): CandidateRef[] =>
+    candidates(model, view, only).map((c) => ({
+      target: unitRef(c.view),
+      direction: c.direction,
+      via: c.via ? { id: c.via.id, name: c.via.name } : null,
+      n: c.view.staff,
+      total: c.total,
+      short: c.short,
+    }));
+  const holds = (view: MeasurementView): Ref[] =>
+    view.units.map((u) => ({ id: u.id, name: u.name }));
+  const measured = model.views.filter((v) => v.state === "measured");
   const checks: Check[] = [];
 
-  // Units of 10 (D1; Online Measurement Specification 6.2): a unit's own staff count. A grouping
-  // unit (units below it, fewer than 10 of its own) is not measured and does not block; a unit of
-  // 1 to 9 people with nothing below it, or an empty one, blocks.
+  // Units of 10 or more (Online Measurement Specification 6.2): a measurement unit's own staff
+  // count. Nothing under 10 is measured. A unit under 10 with nothing below it blocks until it is
+  // combined, grown or retired; a combination still under 10, or whose units no longer share a
+  // branch, blocks too.
   {
-    const findings: Finding[] = sorted
-      .filter((u) => !isGroupingUnit(input.units, u.id, ownStaff(u)))
-      .flatMap((u): Finding[] =>
-        ownStaff(u) < SETUP.minUnitStaff
-          ? [{ kind: "unitSize", unit: unitRef(u), n: ownStaff(u) }]
-          : [],
-      );
+    const findings: Finding[] = [];
+    for (const view of model.views) {
+      if (view.combined && !branchOk(model, view)) {
+        findings.push({ kind: "branchBroken", unit: unitRef(view), holds: holds(view) });
+      } else if (view.combined && view.state === "short") {
+        findings.push({
+          kind: "combinationShort",
+          unit: unitRef(view),
+          n: view.staff,
+          holds: holds(view),
+          candidates: candidateRefs(view),
+        });
+      } else if (view.state === "short") {
+        findings.push({
+          kind: "unitShort",
+          unit: unitRef(view),
+          n: view.staff,
+          candidates: candidateRefs(view),
+        });
+      } else if (view.state === "empty") {
+        findings.push({ kind: "unitEmpty", unit: unitRef(view) });
+      }
+    }
     checks.push({
       key: "units",
-      level: findings.length > 0 || measuredUnits.length === 0 ? "blocker" : "passed",
+      level: findings.length > 0 || measured.length === 0 ? "blocker" : "passed",
       findings,
-      pass: { key: "units", n: measuredUnits.length, grouping: grouping.map(unitRef) },
+      pass: { key: "units", n: measured.length },
+    });
+  }
+
+  // Grouping units: a unit under 10 with units below it is combined downward or kept as a grouping
+  // unit, and nothing is chosen for the administrator. Undecided, it warns; it never blocks.
+  {
+    // A grouping unit with nobody of its own has nothing to measure, so there is no choice to make.
+    const undecided = (v: MeasurementView) => v.state === "grouping" && v.staff > 0;
+    const findings: Finding[] = model.views.filter(undecided).map((v) => ({
+      kind: "groupingUndecided",
+      unit: unitRef(v),
+      n: v.staff,
+      candidates: candidateRefs(v, ["below"]),
+    }));
+    checks.push({
+      key: "grouping",
+      level: findings.length > 0 ? "warning" : "passed",
+      findings,
+      pass: {
+        key: "grouping",
+        kept: model.views.filter((v) => isGroupingState(v.state) && !undecided(v)).map(unitRef),
+      },
     });
   }
 
@@ -217,12 +317,13 @@ export function evaluateReadiness(input: ReadinessInput): Readiness {
   }
 
   // Role families and skills (D3): everyone in a measured unit has a role family, and every family
-  // in use has 8 to 15 skills of both kinds with at least one critical.
+  // in use there has 8 to 15 skills of both kinds with at least one critical.
   {
     const findings: Finding[] = [];
-    for (const u of measuredUnits) {
-      const n = (staffOf.get(u.id) ?? []).filter((p) => !p.role_family_id).length;
-      if (n > 0) findings.push({ kind: "noRoleFamily", unit: unitRef(u), n });
+    const members = measured.flatMap(staffIn);
+    for (const view of measured) {
+      const n = staffIn(view).filter((p) => !p.role_family_id).length;
+      if (n > 0) findings.push({ kind: "noRoleFamily", unit: unitRef(view), n });
     }
     const inUse = new Set(members.map((p) => p.role_family_id).filter(Boolean) as string[]);
     const families = input.families
@@ -243,7 +344,7 @@ export function evaluateReadiness(input: ReadinessInput): Readiness {
       findings,
       pass: {
         key: "roleFamilies",
-        units: measuredUnits.length,
+        units: measured.length,
         families: families.length,
         min: sizes.length > 0 ? Math.min(...sizes) : 0,
         max: sizes.length > 0 ? Math.max(...sizes) : 0,
@@ -251,28 +352,29 @@ export function evaluateReadiness(input: ReadinessInput): Readiness {
     });
   }
 
-  // Context (D3), and the warning when no knowledge domain is critical.
+  // Context (D3), defined once for each measurement unit, and the warning when no knowledge domain
+  // is critical.
   {
     const findings: Finding[] = [];
     const warnings: Finding[] = [];
-    for (const u of measuredUnits) {
-      const counts = contextCounts(u.id, input.context);
+    for (const view of measured) {
+      const counts = contextCounts(view.row.id, input.context);
       const parts = incompleteParts(counts);
       if (parts.length > 0) {
         findings.push({
           kind: "contextIncomplete",
-          unit: unitRef(u),
+          unit: unitRef(view),
           parts: parts.map((part) => ({ part, n: counts[part] })),
         });
       }
       if (lacksCriticalDomain(counts))
-        warnings.push({ kind: "noCriticalDomain", unit: unitRef(u) });
+        warnings.push({ kind: "noCriticalDomain", unit: unitRef(view) });
     }
     checks.push({
       key: "context",
       level: findings.length > 0 ? "blocker" : "passed",
       findings,
-      pass: { key: "context", units: measuredUnits.length },
+      pass: { key: "context", units: measured.length },
     });
     checks.push({
       key: "criticalDomain",
@@ -282,24 +384,40 @@ export function evaluateReadiness(input: ReadinessInput): Readiness {
     });
   }
 
-  // Leadership team of 3, team leaders, and the unit leader: warnings.
+  // Leadership team of 3, team leaders, and the unit leader: warnings. The leadership team is the
+  // people flagged across the units a measurement unit holds, and its leader where they sit above
+  // them and are flagged (E9). The unit leader is expected to be among the flagged (Online
+  // Measurement Specification 6.1).
   {
     const leadership: Finding[] = [];
     const teamLeaders: Finding[] = [];
     const unitLeaders: Finding[] = [];
-    for (const u of measuredUnits) {
-      const staff = staffOf.get(u.id) ?? [];
-      const flagged = staff.filter((p) => p.is_leadership_team).length;
-      if (flagged < LEADERSHIP_MIN)
-        leadership.push({ kind: "leadershipTeam", unit: unitRef(u), n: flagged });
-      if (!staff.some((p) => p.is_team_leader))
-        teamLeaders.push({ kind: "noTeamLeaders", unit: unitRef(u) });
-      const leader = leaderState(u, input.people);
+    for (const view of measured) {
+      const staff = staffIn(view);
+      const leader = measurementLeader(view, input.people);
+      const person =
+        leader.kind === "designated" || leader.kind === "proposed" ? leader.person : undefined;
+      const leaderAbove = person !== undefined && !staff.some((p) => p.id === person.id);
+      const flagged =
+        staff.filter((p) => p.is_leadership_team).length +
+        (leaderAbove && person.is_leadership_team ? 1 : 0);
+      if (flagged < LEADERSHIP_MIN) {
+        leadership.push({ kind: "leadershipTeam", unit: unitRef(view), n: flagged });
+      }
+      if (!staff.some((p) => p.is_team_leader)) {
+        teamLeaders.push({ kind: "noTeamLeaders", unit: unitRef(view) });
+      }
       if (leader.kind === "none" || leader.kind === "ambiguous") {
         unitLeaders.push({
           kind: "noUnitLeader",
-          unit: unitRef(u),
+          unit: unitRef(view),
           candidates: leader.kind === "ambiguous" ? leader.candidates.length : 0,
+        });
+      } else if (person && !person.is_leadership_team) {
+        unitLeaders.push({
+          kind: "leaderNotFlagged",
+          unit: unitRef(view),
+          leader: { id: person.id, name: nameOf(person) },
         });
       }
     }
@@ -324,7 +442,8 @@ export function evaluateReadiness(input: ReadinessInput): Readiness {
   }
 
   // Formal ratings (D4): skipped unless the directory holds them; then mapped or skipped, with
-  // every label mapped. The pass line previews each unit's route with the intake's own rule.
+  // every label mapped. The pass line previews each measurement unit's route with the intake's own
+  // rule, over 80% of the measurement unit's FTE.
   {
     const activeIds = new Set(input.people.map((p) => p.id));
     const held = input.formalRatings.filter((r) => activeIds.has(r.employee_id));
@@ -354,15 +473,20 @@ export function evaluateReadiness(input: ReadinessInput): Readiness {
       } else {
         const formal = { scaleMap: [...map.entries], calibrated: map.calibrated === true };
         let current = 0;
-        const below: Ref[] = [];
-        for (const u of measuredUnits) {
+        const below: UnitRef[] = [];
+        for (const view of measured) {
           const result = evaluateFormalRatings(
             formal,
-            unitSnapshot(u.id, input.people, held),
+            measurementSnapshot(
+              view.units.map((u) => u.id),
+              view.combined,
+              input.people,
+              held,
+            ),
             input.today,
           );
           current += result?.ratedCount ?? 0;
-          if (!result?.qualifies) below.push(unitRef(u));
+          if (!result?.qualifies) below.push(unitRef(view));
         }
         check = {
           key: "formalRatings",
@@ -385,6 +509,26 @@ export function evaluateReadiness(input: ReadinessInput): Readiness {
     pass: NONE,
   });
 
+  // Until a measurement unit has 10 or more, the checks made of measured units have nothing to
+  // judge: they wait rather than pass.
+  const perUnit: readonly CheckKey[] = [
+    "roleFamilies",
+    "context",
+    "criticalDomain",
+    "leadershipTeam",
+    "teamLeaders",
+    "unitLeader",
+    "formalRatings",
+  ];
+  if (measured.length === 0) {
+    for (const c of checks) {
+      if (perUnit.includes(c.key) && c.level === "passed") {
+        c.level = "skipped";
+        c.pass = { key: "waiting" };
+      }
+    }
+  }
+
   const blockers = checks.filter((c) => c.level === "blocker").length;
   const warnings = checks.filter((c) => c.level === "warning").length;
   const passed = checks.filter((c) => c.level === "passed" || c.level === "skipped").length;
@@ -394,6 +538,6 @@ export function evaluateReadiness(input: ReadinessInput): Readiness {
     warnings,
     passed,
     ready: blockers === 0,
-    measured: measuredUnits.map(unitRef),
+    measured: measured.map(unitRef),
   };
 }

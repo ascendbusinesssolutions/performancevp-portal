@@ -1,7 +1,7 @@
 import { evaluateFormalRatings } from "@performancevp/intake";
 import { describe, expect, it } from "vitest";
 
-import { type SnapshotPerson, unitSnapshot } from "./snapshot";
+import { measurementSnapshot, type SnapshotPerson, unitSnapshot } from "./snapshot";
 
 function person(id: string, unit: string, extra: Partial<SnapshotPerson> = {}): SnapshotPerson {
   return {
@@ -63,5 +63,37 @@ describe("unitSnapshot", () => {
     );
     expect(result?.coverage).toBe(1);
     expect(result?.qualifies).toBe(true);
+  });
+});
+
+describe("measurementSnapshot", () => {
+  // P (a parent with two teams, and one person in neither) combined with C below it (no teams).
+  const people = [
+    person("p1", "P", { team_id: "t1" }),
+    person("p2", "P", { team_id: "t2" }),
+    person("p3", "P"),
+    person("c1", "C", { manager_employee_id: "p1" }),
+    person("c2", "C", { manager_employee_id: "p1" }),
+    person("x", "X"),
+  ];
+  const teams = (snapshot: ReturnType<typeof measurementSnapshot>) =>
+    snapshot.members.map((m) => [m.employeeRef, m.teamId ?? null]);
+
+  it("inside a combination keeps each unit's own teams, and makes a unit without teams one team", () => {
+    expect(teams(measurementSnapshot(["P", "C"], true, people))).toEqual([
+      ["P1", "t1"],
+      ["P2", "t2"],
+      ["P3", "P"],
+      ["C1", "C"],
+      ["C2", "C"],
+    ]);
+  });
+
+  it("leaves a single's people with their teams as they are", () => {
+    expect(teams(measurementSnapshot(["P"], false, people))).toEqual([
+      ["P1", "t1"],
+      ["P2", "t2"],
+      ["P3", null],
+    ]);
   });
 });

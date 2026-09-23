@@ -42,7 +42,11 @@ function statusLine(step: Step, state: SetupState): string {
           })
         : fill(setupCopy["status.peopleNoUpload"], { n: state.people.length });
     case "context":
-      if (measured === 0) return setupCopy["status.contextWaiting"];
+      if (measured === 0) {
+        return state.people.length === 0
+          ? setupCopy["status.contextWaiting"]
+          : setupCopy["status.contextWaitingUnits"];
+      }
       return state.contextRemaining.length > 0
         ? fill(setupCopy["status.context"], {
             done: state.contextDone,

@@ -39,7 +39,7 @@ export function familyProblems(familyId: string, skills: readonly SkillRow[]): F
 
 export interface NamedRow {
   id: string;
-  unit_id: string;
+  measurement_unit_id: string;
   name: string;
   status: string;
 }
@@ -56,8 +56,9 @@ export interface UnitContextCounts {
   systems: number;
 }
 
+/** A measurement unit's context against the setup counts (context belongs to measurement units). */
 export function contextCounts(
-  unitId: string,
+  measurementUnitId: string,
   rows: {
     domains: readonly DomainRow[];
     decisions: readonly NamedRow[];
@@ -66,7 +67,7 @@ export function contextCounts(
   },
 ): UnitContextCounts {
   const active = <R extends NamedRow>(list: readonly R[]) =>
-    list.filter((r) => r.unit_id === unitId && r.status === "active");
+    list.filter((r) => r.measurement_unit_id === measurementUnitId && r.status === "active");
   const domains = active(rows.domains);
   return {
     domains: domains.length,

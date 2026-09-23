@@ -433,11 +433,19 @@ test("a new organisation reaches a passing readiness check through the screens a
   await expect(page.getByTestId("route-CLM")).toContainText("Formal ratings");
   await expect(page.getByTestId("route-SAL")).toContainText("Managers' ratings");
 
-  // Step 5: the readiness check names the three faults in the file.
+  // Step 5: the readiness check names the three faults in the file, and offers Sales the units it
+  // could be measured with. Harbour Freight, holding the head, waits for the grouping choice.
   await go(page, "Readiness");
   await expect(page.getByTestId("check-units")).toHaveAttribute("data-level", "blocker");
   await expect(page.getByTestId("check-units")).toContainText(
-    "Sales has 9. A unit below 10 cannot be measured.",
+    "Sales has 9. Nothing under 10 is measured. Combine it with a unit in its branch.",
+  );
+  await expect(page.getByTestId("check-units")).toContainText(
+    "Claims, beside it: 12 people, 21 together.",
+  );
+  await expect(page.getByTestId("check-grouping")).toHaveAttribute("data-level", "warning");
+  await expect(page.getByTestId("check-grouping")).toContainText(
+    "Harbour Freight has 1 of its own and units below it.",
   );
   await expect(page.getByTestId("check-managers")).toHaveAttribute("data-level", "blocker");
   await expect(page.getByTestId("check-managers")).toContainText(
@@ -449,7 +457,7 @@ test("a new organisation reaches a passing readiness check through the screens a
   await expect(page.getByTestId("check-context")).toHaveAttribute("data-level", "passed");
   await expect(page.getByTestId("check-formalRatings")).toHaveAttribute("data-level", "passed");
   await expect(page.getByTestId("readiness-summary")).toHaveText(
-    "Blockers 3 · Warnings 1 · Passed 8",
+    "Blockers 3 · Warnings 2 · Passed 8",
   );
   await shot(page, info, "04-readiness-blocked");
 
@@ -479,11 +487,9 @@ test("a new organisation reaches a passing readiness check through the screens a
   // The check passes.
   await go(page, "Readiness");
   await expect(page.getByTestId("readiness-passed")).toBeVisible();
-  await expect(page.getByTestId("check-units")).toContainText(
-    "All 3 units. Harbour Freight groups the units below it and is not measured.",
-  );
+  await expect(page.getByTestId("check-units")).toContainText("All 3 units.");
   await expect(page.getByTestId("readiness-summary")).toHaveText(
-    "Blockers 0 · Warnings 1 · Passed 11",
+    "Blockers 0 · Warnings 2 · Passed 11",
   );
   await shot(page, info, "05-readiness-passed");
   await go(page, "Setup");

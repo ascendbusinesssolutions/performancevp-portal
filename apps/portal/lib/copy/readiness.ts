@@ -23,6 +23,7 @@ export const readinessCopy = {
   "level.skipped": "Skipped",
 
   "check.units": "Units of 10 or more",
+  "check.grouping": "Grouping units",
   "check.managers": "A manager for everyone",
   "check.leadershipTeam": "Leadership team of 3",
   "check.teamLeaders": "Team leaders",
@@ -43,8 +44,9 @@ export const readinessCopy = {
 
   // Pass lines.
   "units.pass": "All {n} units.",
-  "units.groupingOne": "{unit} groups the units below it and is not measured.",
-  "units.groupingMany": "{list} group the units below them and are not measured.",
+  "grouping.none": "No unit under 10 has units below it.",
+  "grouping.keptOne": "{unit} groups the units below it and is not measured.",
+  "grouping.keptMany": "{list} group the units below them and are not measured.",
   "managers.pass": "{n} of {n}.",
   "managers.passHead": "{n} of {n}, with {head} at the head of the organisation.",
   "unitForEveryone.pass": "{n} of {n}.",
@@ -60,9 +62,25 @@ export const readinessCopy = {
   "formalRatings.skipped": "Skipped. Managers rate.",
   "workEmails.pass": "{n} of {n} valid. Invitations can be sent.",
   "uploadAwaiting.pass": "No upload is awaiting review.",
+  "waiting.pass": "Checked once a unit has 10 or more.",
 
   // Blocker and warning lines.
-  "units.blocker": "{unit} has {n}. A unit below 10 cannot be measured.",
+  // S2 reads "A unit below 10 cannot be measured."; units under 10 are now combined for
+  // measurement (Online Measurement Specification 6.2), so the line says what to do.
+  "units.blocker":
+    "{unit} has {n}. Nothing under 10 is measured. Combine it with a unit in its branch.",
+  "units.combinationShort": "{unit} holds {list}: {people}, still short of 10.",
+  "units.branchBroken":
+    "{unit} holds units that no longer share a branch. Undo it and choose again.",
+  "grouping.undecided":
+    "{unit} has {n} of its own and units below it. Unless it is combined with a unit below, it is not measured and its people are not surveyed as members.",
+  // The units a unit under 10 could be measured with, each with the total together.
+  "candidate.beside": "{candidate}, beside it: {people}, {together}.",
+  "candidate.above": "{candidate}, above it: {people}, {together}.",
+  "candidate.aboveGrouping": "{candidate}, above {parent}: {people}, {together}.",
+  "candidate.below": "{candidate}, below it: {people}, {together}.",
+  "candidate.together": "{total} together",
+  "candidate.togetherShort": "{total} together, still short of 10",
   "units.empty": "{unit} has no one in it. Retire it, or record the merge or split it was part of.",
   "managers.noManager":
     "{n} without: {list}. Manager ratings and skill coverage need the reporting line. Only the head of the organisation may have none.",
@@ -83,6 +101,7 @@ export const readinessCopy = {
   "teamLeaders.warning": "{unit} has none. The learning module goes to its unit leader instead.",
   "unitLeader.none": "{unit} has no unit leader.",
   "unitLeader.ambiguous": "{unit} has no unit leader: {n} people could lead it. Choose one.",
+  "unitLeader.notFlagged": "{leader}, who leads {unit}, is not flagged as leadership team.",
   "formalRatings.undecided":
     "The directory holds formal ratings. Map them to the five talent bands, or skip them.",
   "formalRatings.unmapped": "Not mapped to a band: {list}.",

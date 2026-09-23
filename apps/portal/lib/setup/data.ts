@@ -4,6 +4,7 @@ import { allRows } from "@/lib/supabase/all-rows";
 import type { createClient } from "@/lib/supabase/server";
 
 import type { DomainRow, NamedRow, SkillRow } from "./frameworks";
+import type { MeasurementUnitRow, MemberRow } from "./measurement";
 import type { UnitRow } from "./units";
 
 /**
@@ -143,21 +144,11 @@ export interface UnitContextRows {
 }
 
 /**
- * The unit context of every unit: knowledge domains, decision types, processes and systems. Context
- * belongs to measurement units (Milestone 4b). Until the context screens are keyed on them (step 4),
- * each unit's rows are those of its single measurement unit, reported under the unit's id.
+ * The unit context of every measurement unit: knowledge domains, decision types, processes and
+ * systems (Milestone 4b: context belongs to measurement units).
  */
 export async function loadUnitContext(supabase: Client, orgId: string): Promise<UnitContextRows> {
-  const [singles, domains, decisions, processes, systems] = await Promise.all([
-    allRows((from, to) =>
-      supabase
-        .from("measurement_units")
-        .select("id, single_unit_id")
-        .eq("organisation_id", orgId)
-        .eq("kind", "single")
-        .order("id")
-        .range(from, to),
-    ),
+  const [domains, decisions, processes, systems] = await Promise.all([
     allRows((from, to) =>
       supabase
         .from("knowledge_domains")
@@ -191,18 +182,36 @@ export async function loadUnitContext(supabase: Client, orgId: string): Promise<
         .range(from, to),
     ),
   ]);
-  const unitOf = new Map(singles.map((s) => [s.id, s.single_unit_id]));
-  const asUnit = <R extends { measurement_unit_id: string }>(rows: R[]) =>
-    rows.flatMap(({ measurement_unit_id, ...row }) => {
-      const unit_id = unitOf.get(measurement_unit_id);
-      return unit_id ? [{ ...row, unit_id }] : [];
-    });
-  return {
-    domains: asUnit(domains),
-    decisions: asUnit(decisions),
-    processes: asUnit(processes),
-    systems: asUnit(systems),
-  };
+  return { domains, decisions, processes, systems };
+}
+
+/** The organisation's measurement units and which units each holds now (Milestone 4b). */
+export async function loadMeasurementUnits(
+  supabase: Client,
+  orgId: string,
+): Promise<{ measurementUnits: MeasurementUnitRow[]; members: MemberRow[] }> {
+  const [measurementUnits, members] = await Promise.all([
+    allRows((from, to) =>
+      supabase
+        .from("measurement_units")
+        .select(
+          "id, code, name, kind, status, single_unit_id, unit_leader_employee_id, grouping_kept_at",
+        )
+        .eq("organisation_id", orgId)
+        .order("id")
+        .range(from, to),
+    ),
+    allRows((from, to) =>
+      supabase
+        .from("measurement_unit_members")
+        .select("measurement_unit_id, business_unit_id")
+        .eq("organisation_id", orgId)
+        .is("ended_at", null)
+        .order("id")
+        .range(from, to),
+    ),
+  ]);
+  return { measurementUnits, members };
 }
 
 /**

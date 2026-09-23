@@ -62,6 +62,8 @@ export const setupCopy = {
   "status.context": "{done} of {total} units. {remaining} to go.",
   "status.contextDone": "{done} of {total} units.",
   "status.contextWaiting": "Waiting for people in the directory.",
+  "status.contextWaitingUnits":
+    "Waiting for a unit of 10 or more. Combine the units under 10 first.",
   "status.formalSkipped": "Skipped. Managers rate talent density.",
   "status.formalNone": "No formal ratings in the directory. Managers rate talent density.",
   "status.formalMapped": "Mapped. {n} people within 12 months.",

@@ -3,6 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { directoryCopy } from "@/lib/copy/directory";
+import { sydneyToday } from "@/lib/dates";
 import { DIRECTORY_UPLOAD_MAX_BYTES } from "@/lib/directory/columns";
 import { DIRECTORY_BUCKET, removeUploadFile, XLSX_TYPE } from "@/lib/directory/storage";
 import { parseErrors, type UploadError } from "@/lib/directory/errors";
@@ -70,10 +71,6 @@ function uploadName(header: string | null): string {
     .trim()
     .slice(0, 255);
   return name || "directory.xlsx";
-}
-
-function sydneyToday(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Australia/Sydney" }).format(new Date());
 }
 
 export async function POST(

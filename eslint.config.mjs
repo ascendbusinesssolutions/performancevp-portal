@@ -209,6 +209,11 @@ const eslintConfig = defineConfig([
             "JSXAttribute[name.name=/^(aria-label|aria-description|title|placeholder|alt)$/] > Literal[value!='']",
           message: "Take this text from the copy module (apps/portal/lib/copy).",
         },
+        {
+          selector: "JSXAttribute[name.name='style']",
+          message:
+            "The content security policy allows styles by nonce only, so a style attribute is dropped in production. Use classes.",
+        },
       ],
     },
   },

@@ -2,7 +2,9 @@ import { authCopy } from "./auth";
 import { commonCopy } from "./common";
 import { consoleCopy } from "./console";
 import { directoryCopy } from "./directory";
+import { setupCopy } from "./setup";
 import { shellCopy } from "./shell";
+import { unitsCopy } from "./units";
 
 /**
  * Every copy table, by module name. The copy check (copy.test.ts) lints each one and requires a
@@ -17,5 +19,7 @@ export const COPY_TABLES: Readonly<
   common: { table: commonCopy },
   console: { table: consoleCopy },
   directory: { table: directoryCopy },
+  setup: { table: setupCopy },
   shell: { table: shellCopy },
+  units: { table: unitsCopy },
 };

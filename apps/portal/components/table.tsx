@@ -71,3 +71,11 @@ export function Td({
     </td>
   );
 }
+
+// Indentation for a tree in a table. Classes, not a style attribute: the content security policy
+// allows styles by nonce only, so inline style attributes are dropped in production.
+const INDENTS = ["pl-0", "pl-5", "pl-10", "pl-15", "pl-20", "pl-25", "pl-30"] as const;
+
+export function indentClass(depth: number): string {
+  return INDENTS[Math.min(Math.max(depth, 0), INDENTS.length - 1)]!;
+}

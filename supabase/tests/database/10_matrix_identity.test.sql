@@ -3,7 +3,8 @@
 -- Each row is one table in one organisation; each column is a persona; each cell is the number of
 -- that organisation's rows the persona sees (-1: the role holds no privilege at all). Personas are
 -- signed in with a live password session completed with TOTP. support_a holds an open session on
--- Alpha and an ended one on Beta; support_b holds none.
+-- Alpha and an ended one on Beta; support_b holds none. Alpha has seven memberships (four client
+-- roles and three managers) and Beta five; managers are covered in 12_matrix_directory.
 begin;
 \ir helpers/tests.psql
 \ir helpers/fixture.psql
@@ -23,8 +24,8 @@ insert into visibility values
   ('organisations',          'beta',    0,  0,  0,  0,   1,  1,  1,  1,  0,  -1),
   ('subscriptions',          'alpha',   1,  0,  0,  0,   0,  1,  1,  1,  0,  -1),
   ('subscriptions',          'beta',    0,  0,  0,  0,   1,  1,  1,  1,  0,  -1),
-  ('org_memberships',        'alpha',   4,  4,  1,  1,   0,  0,  4,  0,  0,  -1),
-  ('org_memberships',        'beta',    0,  0,  0,  0,   4,  0,  0,  0,  0,  -1),
+  ('org_memberships',        'alpha',   7,  7,  1,  1,   0,  0,  7,  0,  0,  -1),
+  ('org_memberships',        'beta',    0,  0,  0,  0,   5,  0,  0,  0,  0,  -1),
   ('membership_invitations', 'alpha',   1,  1,  0,  0,   0,  0,  1,  0,  0,  -1),
   ('membership_invitations', 'beta',    0,  0,  0,  0,   1,  0,  0,  0,  0,  -1),
   ('support_sessions',       'alpha',   1,  1,  0,  0,   0,  1,  1,  0,  0,  -1),
@@ -54,8 +55,8 @@ select is_empty(
 -- Profiles are not organisation-scoped: count the fixture profiles each persona can see.
 create temp table profile_visibility (persona text, expected integer);
 insert into profile_visibility values
-  ('alpha_ao', 4), ('alpha_admin', 4), ('alpha_exec', 1), ('alpha_uv', 1), ('beta_ao', 4),
-  ('owner', 3), ('support_a', 5), ('support_b', 1), ('outsider', 1), ('anon', -1);
+  ('alpha_ao', 7), ('alpha_admin', 7), ('alpha_exec', 1), ('alpha_uv', 1), ('beta_ao', 5),
+  ('owner', 3), ('support_a', 8), ('support_b', 1), ('outsider', 1), ('anon', -1);
 
 select is_empty(
   $$

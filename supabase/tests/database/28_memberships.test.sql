@@ -18,8 +18,8 @@ select is(
   'false',
   'granting access to an existing account needs no new account'
 );
-select is(tests.visible_rows('outsider', 'org_memberships', tests.id('alpha')), 5,
-  'and the membership is live at once: the outsider now administers Alpha and sees its five memberships');
+select is(tests.visible_rows('outsider', 'org_memberships', tests.id('alpha')), 8,
+  'and the membership is live at once: the outsider now administers Alpha and sees its eight memberships');
 
 -- An address without an account.
 select is(

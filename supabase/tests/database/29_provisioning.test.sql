@@ -66,7 +66,7 @@ select results_eq(
   $$ values ('support'::text, 'Sasha Support'::text, true) $$,
   'staff open a named, time-limited session'
 );
-select is(tests.visible_rows('support_b', 'org_memberships', tests.id('beta')), 4, 'which gives access to that organisation');
+select is(tests.visible_rows('support_b', 'org_memberships', tests.id('beta')), 5, 'which gives access to that organisation');
 select alike(tests.attempt('support_b', $$select public.open_support_session(tests.id('beta'), 'Opening a second one')$$),
   'error: 22023%', 'one open session per organisation at a time');
 select alike(tests.attempt('support_b', $$select public.open_support_session(tests.id('alpha'), 'short')$$),

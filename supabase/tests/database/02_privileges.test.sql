@@ -163,6 +163,42 @@ insert into expected_grants values
   ('record_unit_lineage(uuid,text,uuid[],uuid[],date)', 'authenticated', 'EXECUTE'),
   ('set_unit_access(uuid,uuid[])', 'authenticated', 'EXECUTE');
 
+-- Step 5: the directory, uploads, snapshots and the purge.
+insert into expected_grants values
+  ('public.employees', 'authenticated', 'SELECT'),
+  ('public.employees', 'authenticated', 'INSERT'),
+  ('public.employees(first_name)', 'authenticated', 'UPDATE'),
+  ('public.employees(last_name)', 'authenticated', 'UPDATE'),
+  ('public.employees(work_email)', 'authenticated', 'UPDATE'),
+  ('public.employees(unit_id)', 'authenticated', 'UPDATE'),
+  ('public.employees(team_id)', 'authenticated', 'UPDATE'),
+  ('public.employees(manager_employee_id)', 'authenticated', 'UPDATE'),
+  ('public.employees(role_title)', 'authenticated', 'UPDATE'),
+  ('public.employees(role_family_id)', 'authenticated', 'UPDATE'),
+  ('public.employees(start_date)', 'authenticated', 'UPDATE'),
+  ('public.employees(fte)', 'authenticated', 'UPDATE'),
+  ('public.employees(is_team_leader)', 'authenticated', 'UPDATE'),
+  ('public.employees(is_leadership_team)', 'authenticated', 'UPDATE'),
+  ('public.employees(employment_status)', 'authenticated', 'UPDATE'),
+  ('public.employees(status)', 'authenticated', 'UPDATE'),
+  ('public.directory_uploads', 'authenticated', 'SELECT'),
+  ('public.campaigns', 'authenticated', 'SELECT'),
+  ('public.campaign_units', 'authenticated', 'SELECT'),
+  ('public.directory_snapshots', 'authenticated', 'SELECT'),
+  ('public.snapshot_members', 'authenticated', 'SELECT'),
+  ('private.my_employee_ids()', 'authenticated', 'EXECUTE'),
+  ('private.my_rated_campaign_ids()', 'authenticated', 'EXECUTE'),
+  ('directory_upload_preview(uuid)', 'authenticated', 'EXECUTE'),
+  ('apply_directory_upload(uuid,text,boolean)', 'authenticated', 'EXECUTE'),
+  ('discard_directory_upload(uuid)', 'authenticated', 'EXECUTE'),
+  ('set_formal_rating(uuid,text,date)', 'authenticated', 'EXECUTE'),
+  ('read_formal_ratings(uuid,uuid,text)', 'authenticated', 'EXECUTE'),
+  ('stage_directory_upload(uuid,uuid,uuid,text,integer,text,text,text,jsonb,jsonb)', 'service_role', 'EXECUTE'),
+  ('purge_deactivated_employees(date)', 'service_role', 'EXECUTE'),
+  ('expire_directory_uploads()', 'service_role', 'EXECUTE'),
+  ('uploads_awaiting_file_removal()', 'service_role', 'EXECUTE'),
+  ('mark_upload_file_removed(uuid)', 'service_role', 'EXECUTE');
+
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,
          a.privilege_type as privilege

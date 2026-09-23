@@ -32,7 +32,7 @@ select is(tests.visible_rows('support_b', 'org_memberships', tests.id('alpha')),
 create temp table staff_sessions (key text primary key, id uuid);
 insert into staff_sessions select 'support_b', pg_temp.open_session('support_b', 'alpha');
 
-select is(tests.visible_rows('support_b', 'org_memberships', tests.id('alpha')), 4,
+select is(tests.visible_rows('support_b', 'org_memberships', tests.id('alpha')), 7,
   'an open session gives support staff the organisation''s data');
 select is(tests.visible_rows('support_b', 'org_memberships', tests.id('beta')), 0,
   'a session reaches only its own organisation');
@@ -50,12 +50,12 @@ select is(tests.visible_rows('support_b', 'org_memberships', tests.id('alpha')),
 select is(tests.visible_rows('owner', 'org_memberships', tests.id('alpha')), 0,
   'the Owner has no standing access to client data');
 insert into staff_sessions select 'owner', pg_temp.open_session('owner', 'alpha', 'owner');
-select is(tests.visible_rows('owner', 'org_memberships', tests.id('alpha')), 4,
+select is(tests.visible_rows('owner', 'org_memberships', tests.id('alpha')), 7,
   'the Owner reaches client data through a session, like support staff');
 
 -- Never locked out.
 select tests.set_state('alpha', 'suspended');
-select is(tests.visible_rows('support_a', 'org_memberships', tests.id('alpha')), 4,
+select is(tests.visible_rows('support_a', 'org_memberships', tests.id('alpha')), 7,
   'staff keep access through a session when the organisation is suspended');
 select is(tests.visible_rows('alpha_admin', 'org_memberships', tests.id('alpha')), 1,
   'while the organisation''s administrators do not (only their own membership row)');

@@ -2,7 +2,7 @@
 
 This register records the settled decisions behind the portal build and the reasoning behind the consequential ones, so they are not reopened from scratch later. The build plan (`PORTAL_BUILD_PLAN.md`) holds the detail; the corrected source documents and the Diagnostic Workbook hold the calculation truth; `CLAUDE.md` holds the standing principles and guardrails. This file is the why and the what, not a substitute for those.
 
-**Last updated:** 22 September 2026 (sales-led subscriptions, lapse and retention; see 5.5)
+**Last updated:** 23 September 2026 (Milestone 3: staff access, sign-in and the tenancy decisions; see 5.6)
 **Owner of record:** Michael, PerformanceVP
 
 ---
@@ -83,7 +83,7 @@ Ranked by Priority, descending, with a deterministic row-fraction tiebreak, pres
 | Subdomain | `app.performancevp.com.au`. Marketing site provides the login entry point. | 10 Jun 2026 |
 | Supabase environments | Not production-only. Separate staging and production at minimum, ideally local as well. Migrations and RLS policy changes tested against staging, never production. | 10 Jun 2026 |
 | MFA | Mandatory for the Owner, support staff, account owners and administrators, because those roles can see identified ratings. Offered to executive and unit viewers. Managers sign in with a one-time email code. Supersedes the analyst-only rule of 10 Jun 2026. | 21 Sep 2026 |
-| Owner role | A distinct owner role defined in the schema now, held by one account. Least privilege: the owner administers the system (support-staff accounts, organisations, reference-data deployments, audit review) without automatic read access to client survey responses or results. Access to a client's data follows the support-access rule in 5.4, with an explicit, audited break-glass. No broader hierarchy in v1. | 10 Jun 2026; wording aligned 21 Sep 2026 |
+| Owner role | A distinct owner role defined in the schema now, held by one account. Least privilege: the owner administers the system (support-staff accounts, organisations, reference-data deployments, audit review) without automatic read access to client survey responses or results. Access to a client's data follows the support-session rule in 5.4 and 5.6: the Owner opens a logged session like support staff, labelled as the Owner's, which is what the break-glass became once there was no switch to break. No broader hierarchy in v1. | 10 Jun 2026; wording aligned 21 Sep 2026 and 23 Sep 2026 |
 | Repository layout | A dedicated portal repo, separate from the marketing site, with the calculation engine as its own internal package so it stays pure and independently testable, alongside the Supabase migrations and `docs/source-ip`. | 10 Jun 2026 |
 
 ### 2.5 Retention
@@ -132,7 +132,7 @@ These are document or configuration tasks, not build tasks, but the build assume
 
 ### 5.2 Identified manager ratings, retained
 
-**Resolution.** Ratings that managers enter for named direct reports are retained, identified, and visible to the rating manager, to the client's administrators and account owner, and to enabled PerformanceVP support staff. They are never visible to executive or unit viewers. Every view and export is logged. When a directory record is purged, the employee link on that person's rating rows is removed and the rows are kept.
+**Resolution.** Ratings that managers enter for named direct reports are retained, identified, and visible to the rating manager, to the client's administrators and account owner, and to PerformanceVP support staff under a support session. They are never visible to executive or unit viewers. Every view and export is logged. When a directory record is purged, the employee link on that person's rating rows is removed and the rows are kept.
 
 **Reasoning.** Traceability. A client must be able to see what produced a C1, C2, C3 or S1 score and to review what its managers entered, and managers should start each annual cycle from their previous ratings. An aggregates-only design was adopted earlier the same day and then set aside, because it made scores unreproducible below the aggregate. The consequence is accepted: the platform holds performance data about identifiable employees and is built to the standard that implies (role-restricted access in the database, access logging, mandatory MFA for roles that can see ratings, subscription terms to match).
 
@@ -149,7 +149,7 @@ These are document or configuration tasks, not build tasks, but the build assume
 | The analyst remains the gate: nothing scores or publishes without an analyst | Scoring runs automatically at campaign close behind the validity gates. A client administrator reviews and releases results. |
 | No self-service sign-up | Sales-led provisioning by the Owner or support staff; no self-serve sign-up in v1, flag or otherwise (22 Sep 2026, superseding the flag decided 21 Sep 2026). |
 | Clients never see raw inputs | Administrators see the ratings managers entered. Raw anonymous survey responses remain unreadable by every role. |
-| Analyst access scoped by assignment | Designated support staff can access an organisation where its support-access switch is on (the default). Every access is logged and visible to the client. The Owner role and its break-glass are unchanged. |
+| Analyst access scoped by assignment | Designated support staff, and the Owner, access an organisation through a logged, time-limited support session opened with a written reason. The client always sees the sessions and cannot switch them off (23 Sep 2026, 5.6, superseding the switch of 21 Sep 2026). |
 | Survey contact data purged within 30 days of campaign close | A persistent directory (2.5). |
 | Analyst MFA only | Every role that can see ratings (2.4). |
 | An intervention design module with analyst-authored versions and P-impact | Rule-based suggestions from the online pattern cards, a single-lever what-if simulator and light action tracking. Tailored design remains Intervention Design. |
@@ -162,6 +162,27 @@ These are document or configuration tasks, not build tasks, but the build assume
 **Reasoning.** A simpler build: no payment provider, no checkout, no webhooks and no card data in scope. Annual invoiced agreements are the standard form for B2B contracts of this kind, and invoicing stays in the accounting system where it already lives. Retaining history lets a returning client resume with its trends intact rather than start again, and a manual, audited deletion is a more defensible end to a relationship than an automatic purge on a timer.
 
 **Provenance.** Settled 22 September 2026. Supersedes the 10 June 2026 offboarding rule of export and purge within 30 days of cessation (2.5) and the 21 September 2026 decision to build self-serve sign-up behind a flag (5.4). Stripe Invoicing is deferred as a possible later addition. Recorded in `PORTAL_BUILD_PLAN.md` Section 11 and `CLAUDE.md` Sections 3, 4 and 6.
+
+### 5.6 The tenancy, roles and directory decisions of 23 September 2026
+
+Settled with the Milestone 3 plan and its checkpoint. The plan and the migrations hold the detail.
+
+| Decision | Resolution | Reasoning |
+|---|---|---|
+| Staff access | No client switch. Support staff and the Owner reach a client's data only through a support session: written reason, two hours, any subscription state, listed for the account owner and administrators with the staff member's name and a full trail. Staff never hold client memberships. | PerformanceVP staff must never be locked out of a client's account. What the client relies on instead is that every session is visible to it. Online Measurement Specification v0.9 Part 7 records the rule. |
+| Sign-in | Passwords for account owners, administrators, viewers and staff; a one-time email code for managers; TOTP mandatory for the Owner, support staff, account owners and administrators, and for anyone who has enrolled. The database enforces all three and treats a signed-out session as dead. | Two paths chosen deliberately. Enforcing them in the database means a token alone, or an email code alone, never unlocks a role that needs more. |
+| Auth email | From `portal@performancevp.com.au` through Resend SMTP. | Keeps account email distinct from survey invitations. |
+| Directory spreadsheet | Our own reader and writer over `fflate` and `saxes`, accepting only the portal's template. | The input is untrusted; a narrow parser we own is a smaller surface than a general library. |
+| RLS not forced | Every table is owned by `postgres`; the suite asserts ownership, the grant list and that `anon` and `authenticated` cannot bypass RLS. | Forcing RLS would either change nothing (the owner has BYPASSRLS) or break the definer helpers. |
+| Ratings read through logged functions | Administrators and staff have no direct read on ratings or formal ratings; the functions they use write a view or export entry every time. Exports need TOTP within 15 minutes. | "Every view is logged" becomes a property of the database rather than of the application. |
+| Audit image allowlist | Values are copied into audit images only for allowlisted columns. Rating values, names and emails are recorded as changed but never copied. | The log stays immutable without outliving the directory purge, and cannot become an unlogged way to read ratings. |
+| Subscription state computed | The band and the term live on `subscriptions`, one row per term. The state is computed from the governing term on the Sydney calendar and never stored. | A job that fails cannot lock a paying client out or keep a lapsed one in. |
+| Formal ratings in their own table | Not columns on `employees`. | A manager reads their direct reports' records; they must never see a formal rating. |
+| Staff write the directory | Under a support session, as they do structure and context. | Guided Setup means PerformanceVP does the upload with the client. |
+| Suspension | The account owner keeps read access to the organisation, the subscription, staff session history and the audit log. | The client can always see what PerformanceVP did with its data. |
+| Keys | The publishable and secret keys, all Supabase calls server-side. | The legacy anon and service-role keys are deprecated by the end of 2026. |
+| Job runner | Vercel Cron, calling authenticated job routes; one daily route from Milestone 3 (upload expiry, file removal, the purge). | One runner for every scheduled job; file removal needs the Storage API. |
+| Placeholders | `EMPLOYEE_BANDS` (band codes and ceilings), `SESSION_LIMITS` (recommended 8 hours inactivity and 24 hours absolute), `EMPLOYMENT_STATUS_VALUES` (informational text until defined). | Commercial or source decisions not yet made. |
 
 ---
 

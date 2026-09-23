@@ -198,7 +198,7 @@ test("a file whose IDs lost their leading zeros is rejected by row and column, a
 test("a unit viewer cannot reach the directory, its template or its upload route", async ({
   page,
 }) => {
-  await page.goto("/login", { waitUntil: "networkidle" });
+  await page.goto("/login");
   await page.getByLabel("Work email").fill(UNIT_VIEWER);
   await page.getByLabel("Password").fill(PASSWORD);
   await page.getByRole("button", { name: "Sign in" }).click();

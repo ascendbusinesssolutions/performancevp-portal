@@ -112,17 +112,13 @@ export async function latestLink(email: string, type: "recovery" | "invite"): Pr
   throw new Error(`no ${type} link arrived for ${email}`);
 }
 
-/**
- * Signs in with a password and enrols TOTP (every persona here needs it); returns the secret. The
- * sign-in pages are loaded to network idle, so a first test against a freshly started server does
- * not click before the form is hydrated.
- */
+/** Signs in with a password and enrols TOTP (every persona here needs it); returns the secret. */
 export async function signInAndEnrol(
   page: Page,
   email: string,
   password = PASSWORD,
 ): Promise<string> {
-  await page.goto("/login", { waitUntil: "networkidle" });
+  await page.goto("/login");
   await page.getByLabel("Work email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();

@@ -25,14 +25,14 @@ test.beforeEach(async () => {
 });
 
 async function signInWithPassword(page: Page, email: string) {
-  await page.goto("/login", { waitUntil: "networkidle" });
+  await page.goto("/login");
   await page.getByLabel("Work email").fill(email);
   await page.getByLabel("Password").fill(PASSWORD);
   await page.getByRole("button", { name: "Sign in" }).click();
 }
 
 async function signInWithCode(page: Page, email: string) {
-  await page.goto("/login/code", { waitUntil: "networkidle" });
+  await page.goto("/login/code");
   await page.getByLabel("Work email").fill(email);
   await page.getByRole("button", { name: "Send code" }).click();
   await expect(
@@ -98,7 +98,7 @@ test("a manager signs in with an email code", async ({ page }) => {
 });
 
 test("the code page answers the same for an address with no account", async ({ page }) => {
-  await page.goto("/login/code", { waitUntil: "networkidle" });
+  await page.goto("/login/code");
   await page.getByLabel("Work email").fill("nobody@nowhere.test");
   await page.getByRole("button", { name: "Send code" }).click();
   await expect(

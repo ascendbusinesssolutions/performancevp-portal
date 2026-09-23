@@ -114,18 +114,20 @@ $$;
 -- Signs a persona in: a live auth.sessions row at the given assurance level, the JWT claims
 -- (sub, email, aal, amr, session_id) and the `authenticated` role. By default a password
 -- session, completed with TOTP at aal2. Pass p_methods => array['otp'] for an email-code session.
--- Returns the session id, so a test can revoke it.
+-- Returns the session id, so a test can revoke it; pass it back as p_session to present the same
+-- token again (no new session row is created then).
 create function tests.authenticate_as(
   p_key text,
   p_aal text default 'aal2',
-  p_methods text[] default null
+  p_methods text[] default null,
+  p_session uuid default null
 )
 returns uuid
 language plpgsql
 as $$
 declare
   v_user tests.personas;
-  v_session uuid := gen_random_uuid();
+  v_session uuid := coalesce(p_session, gen_random_uuid());
   v_now bigint := extract(epoch from now())::bigint;
   v_methods text[] := coalesce(
     p_methods,
@@ -134,8 +136,10 @@ declare
 begin
   perform tests.as_postgres();
   select * into strict v_user from tests.personas where key = p_key;
-  insert into auth.sessions (id, user_id, created_at, updated_at, aal)
-  values (v_session, v_user.user_id, now(), now(), p_aal::auth.aal_level);
+  if p_session is null then
+    insert into auth.sessions (id, user_id, created_at, updated_at, aal)
+    values (v_session, v_user.user_id, now(), now(), p_aal::auth.aal_level);
+  end if;
   perform set_config(
     'request.jwt.claims',
     jsonb_build_object(
@@ -231,6 +235,92 @@ begin
   end;
   perform tests.as_postgres();
   return v_result;
+end
+$$;
+
+-- Runs a counting query as a persona and returns the count, or -1 on a privilege refusal.
+create function tests.count_as(
+  p_key text,
+  p_sql text,
+  p_aal text default 'aal2',
+  p_methods text[] default null
+)
+returns integer
+language plpgsql
+as $$
+declare
+  v_n integer;
+begin
+  if p_key = 'anon' then
+    perform tests.as_anon();
+  elsif p_key = 'service' then
+    perform tests.as_service();
+  else
+    perform tests.authenticate_as(p_key, p_aal, p_methods);
+  end if;
+  begin
+    execute p_sql into v_n;
+  exception when insufficient_privilege then
+    v_n := -1;
+  end;
+  perform tests.as_postgres();
+  return v_n;
+end
+$$;
+
+-- Evaluates a visibility matrix. p_matrix names a table whose rows are (tbl, org, then one integer
+-- column per persona key) and says how many of that organisation's rows each persona should see
+-- (-1: no privilege at all). Returns every cell that differs, so an assertion that this is empty
+-- reads as the matrix itself and a failure names the cell.
+create function tests.visibility_mismatches(p_matrix text)
+returns table (tbl text, org text, persona text, expected integer, actual integer)
+language plpgsql
+as $$
+declare
+  r record;
+begin
+  for r in execute format(
+    'select m.tbl, m.org, e.key as persona, e.value::integer as expected
+     from %s m, jsonb_each_text(to_jsonb(m) - ''tbl'' - ''org'') e
+     order by 1, 2, 3',
+    p_matrix
+  ) loop
+    tbl := r.tbl;
+    org := r.org;
+    persona := r.persona;
+    expected := r.expected;
+    actual := tests.visible_rows(r.persona, r.tbl, tests.id(r.org));
+    if actual is distinct from expected then
+      return next;
+    end if;
+  end loop;
+end
+$$;
+
+-- Evaluates a write matrix. p_matrix names a table whose rows are (label, stmt, then one text
+-- column per persona key) giving the expected outcome of tests.attempt: a row count, or 'denied'.
+-- Returns every cell that differs.
+create function tests.write_mismatches(p_matrix text)
+returns table (label text, persona text, expected text, actual text)
+language plpgsql
+as $$
+declare
+  r record;
+begin
+  for r in execute format(
+    'select m.label, m.stmt, e.key as persona, e.value as expected
+     from %s m, jsonb_each_text(to_jsonb(m) - ''label'' - ''stmt'') e
+     order by 1, 3',
+    p_matrix
+  ) loop
+    label := r.label;
+    persona := r.persona;
+    expected := r.expected;
+    actual := tests.attempt(r.persona, r.stmt);
+    if actual is distinct from expected then
+      return next;
+    end if;
+  end loop;
 end
 $$;
 

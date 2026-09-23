@@ -87,6 +87,31 @@ create temp table expected_grants (object text, grantee text, privilege text);
 -- Each step of Milestone 3 adds its rows here beside the tables it creates.
 -- (Step 1 creates no object that any Data API role may use.)
 
+-- Step 2: identity, tenancy, plan and staff access.
+insert into expected_grants values
+  ('public.organisations', 'authenticated', 'SELECT'),
+  ('public.organisations(name)', 'authenticated', 'UPDATE'),
+  ('public.organisations(anzsic_division)', 'authenticated', 'UPDATE'),
+  ('public.organisations(anzsic_class)', 'authenticated', 'UPDATE'),
+  ('public.organisations(size_band)', 'authenticated', 'UPDATE'),
+  ('public.ref_employee_bands', 'authenticated', 'SELECT'),
+  ('public.subscriptions', 'authenticated', 'SELECT'),
+  ('public.profiles', 'authenticated', 'SELECT'),
+  ('public.profiles(full_name)', 'authenticated', 'UPDATE'),
+  ('public.org_memberships', 'authenticated', 'SELECT'),
+  ('public.membership_invitations', 'authenticated', 'SELECT'),
+  ('public.support_sessions', 'authenticated', 'SELECT'),
+  ('private.org_ids(text[])', 'authenticated', 'EXECUTE'),
+  ('private.writable_org_ids(text[])', 'authenticated', 'EXECUTE'),
+  ('private.account_owner_org_ids()', 'authenticated', 'EXECUTE'),
+  ('private.support_org_ids()', 'authenticated', 'EXECUTE'),
+  ('private.support_writable_org_ids()', 'authenticated', 'EXECUTE'),
+  ('private.is_staff()', 'authenticated', 'EXECUTE'),
+  ('private.is_owner()', 'authenticated', 'EXECUTE'),
+  ('private.is_support_staff()', 'authenticated', 'EXECUTE'),
+  ('private.visible_profile_ids()', 'authenticated', 'EXECUTE'),
+  ('my_access()', 'authenticated', 'EXECUTE');
+
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,
          a.privilege_type as privilege

@@ -67,6 +67,7 @@ export type Database = {
           retired_on: string | null
           status: string
           unit_code: string
+          unit_leader_employee_id: string | null
           unit_type: string | null
         }
         Insert: {
@@ -78,6 +79,7 @@ export type Database = {
           retired_on?: string | null
           status?: string
           unit_code: string
+          unit_leader_employee_id?: string | null
           unit_type?: string | null
         }
         Update: {
@@ -89,6 +91,7 @@ export type Database = {
           retired_on?: string | null
           status?: string
           unit_code?: string
+          unit_leader_employee_id?: string | null
           unit_type?: string | null
         }
         Relationships: [
@@ -104,6 +107,13 @@ export type Database = {
             columns: ["organisation_id", "parent_unit_id"]
             isOneToOne: false
             referencedRelation: "business_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "business_units_organisation_id_unit_leader_employee_id_fkey"
+            columns: ["organisation_id", "unit_leader_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["organisation_id", "id"]
           },
         ]
@@ -195,6 +205,93 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organisations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      critical_processes: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          organisation_id: string
+          status: string
+          unit_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          organisation_id: string
+          status?: string
+          unit_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          organisation_id?: string
+          status?: string
+          unit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "critical_processes_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "critical_processes_organisation_id_unit_id_fkey"
+            columns: ["organisation_id", "unit_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+        ]
+      }
+      decision_types: {
+        Row: {
+          created_at: string
+          from_starter_list: boolean
+          id: string
+          name: string
+          organisation_id: string
+          status: string
+          unit_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_starter_list?: boolean
+          id?: string
+          name: string
+          organisation_id: string
+          status?: string
+          unit_id: string
+        }
+        Update: {
+          created_at?: string
+          from_starter_list?: boolean
+          id?: string
+          name?: string
+          organisation_id?: string
+          status?: string
+          unit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decision_types_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decision_types_organisation_id_unit_id_fkey"
+            columns: ["organisation_id", "unit_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
+            referencedColumns: ["organisation_id", "id"]
           },
         ]
       }
@@ -879,7 +976,57 @@ export type Database = {
           name?: string
           size_band?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "organisations_anzsic_division_fkey"
+            columns: ["anzsic_division"]
+            isOneToOne: false
+            referencedRelation: "ref_anzsic_divisions"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      primary_systems: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          organisation_id: string
+          status: string
+          unit_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          organisation_id: string
+          status?: string
+          unit_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          organisation_id?: string
+          status?: string
+          unit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "primary_systems_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "primary_systems_organisation_id_unit_id_fkey"
+            columns: ["organisation_id", "unit_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -907,6 +1054,70 @@ export type Database = {
           is_support_staff?: boolean
         }
         Relationships: []
+      }
+      rating_scale_map_entries: {
+        Row: {
+          band: number
+          id: string
+          label: string
+          organisation_id: string
+        }
+        Insert: {
+          band: number
+          id?: string
+          label: string
+          organisation_id: string
+        }
+        Update: {
+          band?: number
+          id?: string
+          label?: string
+          organisation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rating_scale_map_entries_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rating_scale_maps: {
+        Row: {
+          calibrated: boolean | null
+          decided_at: string
+          decided_by: string | null
+          decision: string
+          id: string
+          organisation_id: string
+        }
+        Insert: {
+          calibrated?: boolean | null
+          decided_at?: string
+          decided_by?: string | null
+          decision: string
+          id?: string
+          organisation_id: string
+        }
+        Update: {
+          calibrated?: boolean | null
+          decided_at?: string
+          decided_by?: string | null
+          decision?: string
+          id?: string
+          organisation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rating_scale_maps_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: true
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rating_sessions: {
         Row: {
@@ -970,6 +1181,24 @@ export type Database = {
           },
         ]
       }
+      ref_anzsic_divisions: {
+        Row: {
+          code: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          name: string
+          sort_order: number
+        }
+        Update: {
+          code?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       ref_employee_bands: {
         Row: {
           code: string
@@ -991,6 +1220,71 @@ export type Database = {
         }
         Relationships: []
       }
+      ref_template_items: {
+        Row: {
+          is_critical: boolean | null
+          name: string
+          position: number
+          skill_kind: string | null
+          template_code: string
+        }
+        Insert: {
+          is_critical?: boolean | null
+          name: string
+          position: number
+          skill_kind?: string | null
+          template_code: string
+        }
+        Update: {
+          is_critical?: boolean | null
+          name?: string
+          position?: number
+          skill_kind?: string | null
+          template_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ref_template_items_template_code_fkey"
+            columns: ["template_code"]
+            isOneToOne: false
+            referencedRelation: "ref_templates"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      ref_templates: {
+        Row: {
+          code: string
+          is_people_leader: boolean
+          is_placeholder: boolean
+          kind: string
+          name: string
+          sort_order: number
+          unit_type: string | null
+          version: number
+        }
+        Insert: {
+          code: string
+          is_people_leader?: boolean
+          is_placeholder: boolean
+          kind: string
+          name: string
+          sort_order: number
+          unit_type?: string | null
+          version?: number
+        }
+        Update: {
+          code?: string
+          is_people_leader?: boolean
+          is_placeholder?: boolean
+          kind?: string
+          name?: string
+          sort_order?: number
+          unit_type?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       role_families: {
         Row: {
           created_at: string
@@ -999,6 +1293,8 @@ export type Database = {
           name: string
           organisation_id: string
           status: string
+          template_code: string | null
+          template_version: number | null
         }
         Insert: {
           created_at?: string
@@ -1007,6 +1303,8 @@ export type Database = {
           name: string
           organisation_id: string
           status?: string
+          template_code?: string | null
+          template_version?: number | null
         }
         Update: {
           created_at?: string
@@ -1015,6 +1313,8 @@ export type Database = {
           name?: string
           organisation_id?: string
           status?: string
+          template_code?: string | null
+          template_version?: number | null
         }
         Relationships: [
           {
@@ -1023,6 +1323,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organisations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_families_template_code_fkey"
+            columns: ["template_code"]
+            isOneToOne: false
+            referencedRelation: "ref_templates"
+            referencedColumns: ["code"]
           },
         ]
       }
@@ -1779,6 +2086,7 @@ export type Database = {
         Returns: undefined
       }
       my_access: { Args: never; Returns: Json }
+      new_link_kind: { Args: { p_email: string }; Returns: string }
       open_support_session: {
         Args: { p_organisation_id: string; p_reason: string }
         Returns: string
@@ -1801,6 +2109,7 @@ export type Database = {
       purge_deactivated_employees: { Args: { p_as_of?: string }; Returns: Json }
       read_formal_ratings: {
         Args: {
+          p_employee_id?: string
           p_organisation_id: string
           p_purpose?: string
           p_unit_id?: string

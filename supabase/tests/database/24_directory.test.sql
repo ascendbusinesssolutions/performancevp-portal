@@ -9,7 +9,7 @@ begin;
 \ir helpers/tests.psql
 \ir helpers/fixture.psql
 
-select plan(47);
+select plan(53);
 
 select tests.seed_fixture();
 
@@ -276,6 +276,35 @@ select tests.authenticate_as('alpha_admin', 'aal2', null, null, interval '20 min
 select throws_ok($$select * from public.read_formal_ratings(tests.id('alpha'), null, 'export')$$, '42501', null,
   'an export needs TOTP verified within the last 15 minutes');
 select tests.as_postgres();
+
+-- Milestone 4: one person's rating, and the readiness check's read.
+select is(tests.count_as('alpha_admin',
+  $$select count(*) from public.read_formal_ratings(tests.id('alpha'), null, 'view', tests.id('alpha_E003'))$$), 1,
+  'the edit page reads one person''s formal rating');
+select ok(
+  exists (select 1 from public.audit_logs where action = 'ratings.viewed' and actor_user_id = tests.user_id('alpha_admin')
+          and (detail ->> 'employee_id')::uuid = tests.id('alpha_E003') and (detail ->> 'rows')::integer = 1),
+  'and the view is logged as that person''s, with one row'
+);
+create temp table views_before as
+  select count(*)::integer as n from public.audit_logs
+  where action = 'ratings.viewed' and actor_user_id = tests.user_id('alpha_admin');
+select is(tests.count_as('alpha_admin',
+  $$select count(*) from public.read_formal_ratings(tests.id('alpha'), null, 'check')$$), 4,
+  'the readiness check reads the formal ratings through the same function');
+select ok(
+  exists (select 1 from public.audit_logs where action = 'ratings.checked' and actor_user_id = tests.user_id('alpha_admin')
+          and (detail ->> 'rows')::integer = 4),
+  'and that read is logged as ratings.checked'
+);
+select is(
+  (select count(*)::integer from public.audit_logs
+   where action = 'ratings.viewed' and actor_user_id = tests.user_id('alpha_admin')),
+  (select n from views_before),
+  'and not as a view, so the ratings area''s count of views stays true'
+);
+select is(tests.attempt('alpha_exec', $$select * from public.read_formal_ratings(tests.id('alpha'), null, 'check')$$), 'denied',
+  'an executive viewer cannot read formal ratings for a check either');
 
 -- Snapshots never change ----------------------------------------------------------------------------
 

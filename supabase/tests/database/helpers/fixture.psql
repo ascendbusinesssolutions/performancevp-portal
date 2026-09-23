@@ -154,6 +154,23 @@ begin
     select v_org_id, m.id, tests.id(v_org || '_C1')
     from public.org_memberships m
     where m.organisation_id = v_org_id and m.user_id = tests.user_id(v_org || '_uv');
+
+    -- Milestone 4: the rest of the unit context and the scale map. Per organisation: 2 decision
+    -- types, 1 critical process and 1 primary system in C1; a mapped, calibrated scale map with 2
+    -- entries.
+    insert into public.decision_types (organisation_id, unit_id, name, from_starter_list) values
+      (v_org_id, tests.id(v_org || '_C1'), 'Changing the roster', true),
+      (v_org_id, tests.id(v_org || '_C1'), 'Approving overtime', false);
+    insert into public.critical_processes (organisation_id, unit_id, name)
+    values (v_org_id, tests.id(v_org || '_C1'), 'Claims intake') returning id into v_id;
+    perform tests.remember(v_org || '_process', v_id);
+    insert into public.primary_systems (organisation_id, unit_id, name)
+    values (v_org_id, tests.id(v_org || '_C1'), 'Claims system') returning id into v_id;
+    perform tests.remember(v_org || '_system', v_id);
+    insert into public.rating_scale_maps (organisation_id, decision, calibrated) values (v_org_id, 'mapped', true);
+    insert into public.rating_scale_map_entries (organisation_id, label, band) values
+      (v_org_id, 'Exceeds', 4),
+      (v_org_id, 'Meets', 3);
   end loop;
 end
 $$;

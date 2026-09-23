@@ -1,5 +1,7 @@
+import { TextLink } from "@/components/ui";
 import { requireAccess } from "@/lib/auth/access";
 import { authCopy } from "@/lib/copy/auth";
+import { consoleCopy } from "@/lib/copy/console";
 
 /**
  * The landing page: the organisations and roles the person holds, and for PerformanceVP staff
@@ -25,6 +27,13 @@ export default async function PortalHome() {
                 <td className="py-3 text-slate">{m.organisationName}</td>
                 <td className="py-3 text-grey">{authCopy[`role.${m.role}`]}</td>
                 <td className="py-3 text-grey">{authCopy[`state.${m.state}`]}</td>
+                <td className="py-3 text-right">
+                  {m.role === "account_owner" || m.role === "administrator" ? (
+                    <TextLink href={`/org/${m.organisationId}/access`}>
+                      {consoleCopy["nav.access"]}
+                    </TextLink>
+                  ) : null}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -42,7 +51,7 @@ export default async function PortalHome() {
             <ul className="mt-3">
               {access.openSupportSessions.map((s) => (
                 <li key={s.sessionId} className="border-b border-grey-20 py-3 text-slate">
-                  {s.organisationName}{" "}
+                  <TextLink href={`/org/${s.organisationId}/access`}>{s.organisationName}</TextLink>{" "}
                   <span className="text-sm text-grey">
                     {authCopy["portal.expires"]} {new Date(s.expiresAt).toLocaleTimeString("en-AU")}
                   </span>
@@ -50,7 +59,9 @@ export default async function PortalHome() {
               ))}
             </ul>
           )}
-          <p className="mt-6 text-sm text-grey">{authCopy["portal.staffNote"]}</p>
+          <p className="mt-6">
+            <TextLink href="/pvp">{consoleCopy["nav.console"]}</TextLink>
+          </p>
         </section>
       ) : null}
     </main>

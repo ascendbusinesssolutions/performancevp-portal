@@ -1741,6 +1741,7 @@ export type Database = {
         Args: { p_session_id: string }
         Returns: undefined
       }
+      designate_support_staff: { Args: { p_email: string }; Returns: string }
       directory_upload_preview: { Args: { p_upload_id: string }; Returns: Json }
       discard_directory_upload: {
         Args: { p_upload_id: string }
@@ -1939,6 +1940,18 @@ export type Database = {
       set_unit_access: {
         Args: { p_membership_id: string; p_unit_ids: string[] }
         Returns: undefined
+      }
+      staff_organisations: {
+        Args: never
+        Returns: {
+          employee_band: string
+          name: string
+          open_session_id: string
+          organisation_id: string
+          period_end: string
+          period_start: string
+          state: string
+        }[]
       }
       stage_directory_upload: {
         Args: {

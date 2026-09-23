@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import { authCopy } from "./auth";
+import { consoleCopy } from "./console";
 import { lintCopy, lintString } from "./lint";
 
 describe("the copy module", () => {
   it("passes the copy lint", () => {
     expect(lintCopy(authCopy)).toEqual([]);
+    expect(lintCopy(consoleCopy)).toEqual([]);
   });
 });
 

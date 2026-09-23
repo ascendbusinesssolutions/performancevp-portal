@@ -73,7 +73,6 @@ export const authCopy = {
   "portal.noStaffSessions": "No open support sessions.",
   "portal.expires": "Ends",
   "portal.managerNote": "Your rating forms open here when a campaign starts.",
-  "portal.staffNote": "The PerformanceVP console opens from here.",
 
   "role.account_owner": "Account owner",
   "role.administrator": "Administrator",

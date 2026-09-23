@@ -239,6 +239,11 @@ insert into expected_grants values
   ('read_talent_bands(uuid,uuid,uuid,uuid,text)', 'authenticated', 'EXECUTE'),
   ('invitation_status_counts(uuid)', 'authenticated', 'EXECUTE');
 
+-- Step 8: the consoles.
+insert into expected_grants values
+  ('staff_organisations()', 'authenticated', 'EXECUTE'),
+  ('designate_support_staff(text)', 'authenticated', 'EXECUTE');
+
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,
          a.privilege_type as privilege

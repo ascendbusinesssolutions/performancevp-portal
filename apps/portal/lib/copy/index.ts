@@ -4,6 +4,7 @@ import { consoleCopy } from "./console";
 import { contextCopy } from "./context";
 import { directoryCopy } from "./directory";
 import { ratingsMapCopy } from "./ratings-map";
+import { readinessCopy } from "./readiness";
 import { setupCopy } from "./setup";
 import { shellCopy } from "./shell";
 import { unitsCopy } from "./units";
@@ -23,6 +24,7 @@ export const COPY_TABLES: Readonly<
   context: { table: contextCopy },
   directory: { table: directoryCopy },
   "ratings-map": { table: ratingsMapCopy },
+  readiness: { table: readinessCopy },
   setup: { table: setupCopy },
   shell: { table: shellCopy },
   units: { table: unitsCopy },

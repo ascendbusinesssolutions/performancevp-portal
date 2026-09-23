@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Spectral } from "next/font/google";
 
+import { HydrationMark } from "@/components/hydration-mark";
+
 import "./globals.css";
 
 // The same three families as the marketing site, self-hosted by next/font at build time
@@ -39,7 +41,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en-AU" className={`${spectral.variable} ${plexSans.variable} ${plexMono.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <HydrationMark />
+      </body>
     </html>
   );
 }

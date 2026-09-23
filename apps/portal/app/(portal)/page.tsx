@@ -5,6 +5,7 @@ import { requireAccess } from "@/lib/auth/access";
 import { authCopy } from "@/lib/copy/auth";
 import { consoleCopy } from "@/lib/copy/console";
 import { directoryCopy } from "@/lib/copy/directory";
+import { shellCopy } from "@/lib/copy/shell";
 
 /**
  * The landing page: the organisations and roles the person holds, and for PerformanceVP staff
@@ -40,6 +41,9 @@ export default async function PortalHome() {
                   <Td align="right">
                     {m.role === "account_owner" || m.role === "administrator" ? (
                       <span className="space-x-6">
+                        <TextLink href={`/org/${m.organisationId}/setup`}>
+                          {shellCopy["nav.setup"]}
+                        </TextLink>
                         <TextLink href={`/org/${m.organisationId}/directory`}>
                           {directoryCopy["page.nav"]}
                         </TextLink>

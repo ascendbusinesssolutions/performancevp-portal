@@ -25,7 +25,9 @@ export function AppHeader({ person, manageable }: { person: string; manageable: 
           <OrgNav manageable={manageable} />
         </div>
         <div className="flex shrink-0 items-center gap-6 text-sm">
-          <span className="hidden text-slate-20 md:inline">{person}</span>
+          <span className="hidden max-w-56 truncate text-slate-20 xl:inline" title={person}>
+            {person}
+          </span>
           <SignOutButton onDark />
         </div>
       </div>

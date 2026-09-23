@@ -42,9 +42,11 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
     },
   ],
   "context.family.count": [{ slots: { n: 11 }, expected: "11 skills" }],
-  "context.family.problem.tooFew": [{ slots: { n: 5, min: 8 }, expected: "5 skills; 8 needed" }],
+  "context.family.problem.tooFew": [
+    { slots: { n: 5, min: 8 }, expected: "skills 5 (at least 8 needed)" },
+  ],
   "context.family.problem.tooMany": [
-    { slots: { n: 17, max: 15 }, expected: "17 skills; at most 15" },
+    { slots: { n: 17, max: 15 }, expected: "skills 17 (at most 15)" },
   ],
   "context.family.retire.blocked": [
     { slots: { n: 42 }, expected: "42 people have this role family. Give them another first." },
@@ -117,6 +119,152 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
     { slots: { calibration: "not calibrated" }, expected: "Mapped, and declared not calibrated." },
   ],
   "ratings-map.units.coverage": [{ slots: { pct: 85 }, expected: "85% of FTE" }],
+  "readiness.summary": [
+    { slots: { b: 2, w: 1, p: 9 }, expected: "Blockers 2 \u00b7 Warnings 1 \u00b7 Passed 9" },
+  ],
+  "readiness.units.pass": [{ slots: { n: 4 }, expected: "All 4 units." }],
+  "readiness.managers.pass": [{ slots: { n: 120 }, expected: "120 of 120." }],
+  "readiness.managers.passHead": [
+    {
+      slots: { n: 119, head: "Ruth Root" },
+      expected: "119 of 119, with Ruth Root at the head of the organisation.",
+    },
+  ],
+  "readiness.unitForEveryone.pass": [{ slots: { n: 120 }, expected: "120 of 120." }],
+  "readiness.roleFamilies.pass": [
+    {
+      slots: { units: 4, families: 3, min: 9, max: 12 },
+      expected: "4 of 4 units. 3 role families, 9 to 12 skills each, critical skills marked.",
+    },
+  ],
+  "readiness.context.pass": [
+    { slots: { units: 4, processes: 3 }, expected: "4 of 4 units. 3 processes named in each." },
+  ],
+  "readiness.formalRatings.pass": [
+    {
+      slots: { n: 88 },
+      expected: "Mapped to the five bands. Dated within 12 months for 88 people.",
+    },
+  ],
+  "readiness.formalRatings.below": [
+    {
+      slots: { list: "Sales and Service" },
+      expected: "Below 80% in Sales and Service, where managers rate instead.",
+    },
+  ],
+  "readiness.workEmails.pass": [
+    { slots: { n: 120 }, expected: "120 of 120 valid. Invitations can be sent." },
+  ],
+  "readiness.units.blocker": [
+    {
+      slots: { unit: "Claims", n: 9 },
+      expected: "Claims has 9. A unit below 10 cannot be measured.",
+    },
+  ],
+  "readiness.units.empty": [
+    {
+      slots: { unit: "Former Sales" },
+      expected:
+        "Former Sales has no one in it. Retire it, or record the merge or split it was part of.",
+    },
+  ],
+  "readiness.managers.noManager": [
+    {
+      slots: { n: 2, list: "Ruth Root and Sol Saleslead" },
+      expected:
+        "2 without: Ruth Root and Sol Saleslead. Manager ratings and skill coverage need the reporting line. Only the head of the organisation may have none.",
+    },
+  ],
+  "readiness.managers.left": [
+    {
+      slots: { n: 3, list: "A, B and C" },
+      expected: "3 report to someone who has left: A, B and C.",
+    },
+  ],
+  "readiness.workEmails.blocker": [
+    { slots: { n: 1, list: "Nina New" }, expected: "1 invalid or missing: Nina New." },
+  ],
+  "readiness.roleFamilies.noRoleFamily": [
+    { slots: { unit: "Claims", n: 4 }, expected: "Claims: 4 without a role family." },
+  ],
+  "readiness.roleFamilies.family": [
+    {
+      slots: {
+        family: "Analysts",
+        problems: "skills 5 (at least 8 needed); no critical skill marked",
+      },
+      expected: "Analysts: skills 5 (at least 8 needed); no critical skill marked.",
+    },
+  ],
+  "readiness.context.blocker": [
+    {
+      slots: { unit: "Claims", missing: "critical processes 1 (3 needed)" },
+      expected: "Claims: critical processes 1 (3 needed).",
+    },
+  ],
+  "readiness.context.part.domains": [
+    { slots: { n: 2, min: 3, max: 6 }, expected: "knowledge domains 2 (3 to 6 needed)" },
+  ],
+  "readiness.context.part.decisions": [
+    { slots: { n: 5, min: 8, max: 12 }, expected: "decision types 5 (8 to 12 needed)" },
+  ],
+  "readiness.context.part.processes": [
+    { slots: { n: 1, needed: 3 }, expected: "critical processes 1 (3 needed)" },
+  ],
+  "readiness.context.part.systems": [
+    { slots: { n: 0, min: 3, max: 8 }, expected: "primary systems 0 (3 to 8 needed)" },
+  ],
+  "readiness.criticalDomain.warning": [
+    {
+      slots: { unit: "Claims" },
+      expected:
+        "Claims has no knowledge domain marked critical. Knowledge will be insufficient for Claims until one is.",
+    },
+  ],
+  "readiness.leadershipTeam.warning": [
+    {
+      slots: { unit: "Claims", n: 2 },
+      expected:
+        "Claims has 2 flagged. Clarity & decision rights will be insufficient for Claims until 3 are flagged.",
+    },
+  ],
+  "readiness.teamLeaders.warning": [
+    {
+      slots: { unit: "Claims" },
+      expected: "Claims has none. The learning module goes to its unit leader instead.",
+    },
+  ],
+  "readiness.unitLeader.none": [
+    { slots: { unit: "Claims" }, expected: "Claims has no unit leader." },
+  ],
+  "readiness.unitLeader.ambiguous": [
+    {
+      slots: { unit: "Claims", n: 2 },
+      expected: "Claims has no unit leader: 2 people could lead it. Choose one.",
+    },
+  ],
+  "readiness.formalRatings.unmapped": [
+    {
+      slots: { list: "Outstanding and Needs work" },
+      expected: "Not mapped to a band: Outstanding and Needs work.",
+    },
+  ],
+  "setup.status.units": [{ slots: { count: 4 }, expected: "4 units" }],
+  "setup.status.people": [
+    { slots: { n: 1240, date: "23 Sept 2026" }, expected: "1,240 people, uploaded 23 Sept 2026" },
+  ],
+  "setup.status.peopleNoUpload": [{ slots: { n: 41 }, expected: "41 people" }],
+  "setup.status.context": [
+    {
+      slots: { done: 2, total: 4, remaining: "Claims and Sales" },
+      expected: "2 of 4 units. Claims and Sales to go.",
+    },
+  ],
+  "setup.status.contextDone": [{ slots: { done: 4, total: 4 }, expected: "4 of 4 units." }],
+  "setup.status.formalMapped": [
+    { slots: { n: 88 }, expected: "Mapped. 88 people within 12 months." },
+  ],
+  "setup.status.blockers": [{ slots: { n: 3 }, expected: "3 blockers" }],
   "directory.preview.newUnitLine": [
     {
       slots: { code: "CLM", name: "Claims", n: 34 },

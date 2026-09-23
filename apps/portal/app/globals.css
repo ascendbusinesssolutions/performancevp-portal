@@ -99,3 +99,28 @@
     @apply bg-white font-sans text-slate antialiased;
   }
 }
+
+/*
+  The one transition on the setup screens (PORTAL_UX_BRIEF.md 6: "the only transitions are the
+  readiness check passing and a campaign releasing"): a gold rule draws across the top of the
+  passed banner. Nothing moves for anyone who prefers reduced motion.
+*/
+@keyframes readiness-rule {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.readiness-rule {
+  transform-origin: left;
+  animation: readiness-rule 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .readiness-rule {
+    animation: none;
+  }
+}

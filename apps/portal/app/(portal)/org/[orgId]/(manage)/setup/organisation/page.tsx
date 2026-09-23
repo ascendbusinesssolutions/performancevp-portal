@@ -1,4 +1,5 @@
 import { ActionForm } from "@/components/action-form";
+import { LinkButton } from "@/components/button";
 import { SelectField } from "@/components/fields";
 import { homeCrumb, PageHeader, Section } from "@/components/page";
 import { Field } from "@/components/ui";
@@ -89,6 +90,11 @@ export default async function OrganisationPage({
             ]}
           />
         </ActionForm>
+        <div className="mt-10">
+          <LinkButton href={`/org/${orgId}/units`} variant="secondary">
+            {setupCopy["organisation.toUnits"]}
+          </LinkButton>
+        </div>
       </Section>
     </main>
   );

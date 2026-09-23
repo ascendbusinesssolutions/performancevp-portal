@@ -27,8 +27,8 @@ export const contextCopy = {
   "families.own": "Add a role family of your own",
 
   "family.count": "{n} skills",
-  "family.problem.tooFew": "{n} skills; {min} needed",
-  "family.problem.tooMany": "{n} skills; at most {max}",
+  "family.problem.tooFew": "skills {n} (at least {min} needed)",
+  "family.problem.tooMany": "skills {n} (at most {max})",
   "family.problem.noCritical": "no critical skill marked",
   "family.problem.noTechnical": "no technical skill",
   "family.problem.noBehavioural": "no behavioural skill",

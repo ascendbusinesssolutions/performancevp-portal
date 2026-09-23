@@ -29,6 +29,48 @@ export const setupCopy = {
   "organisation.sizeBand.over_1000": "More than 1,000",
   "organisation.save": "Save the organisation",
   "organisation.crumb": "Setup",
+  "organisation.toUnits": "Continue to the units",
+
+  // The hub (UX brief 4.1; PORTAL_COPY_SPEC.md S1).
+  "hub.title": "Setup",
+  "hub.intro":
+    "Six steps take the organisation from empty to ready for its first campaign. They can be done in any order, everything saves as you go, and you can leave and come back at any point.",
+  "hub.continue": "Continue setup",
+  "hub.open": "Open",
+  "hub.stepsLabel": "Setup steps",
+  "hub.blockers.title": "What stands in the way",
+  "hub.blockers.more": "See the readiness check",
+  "hub.state.done": "Done",
+  "hub.state.next": "Next",
+  "hub.state.todo": "To do",
+  "hub.state.skipped": "Skipped",
+  "hub.state.locked": "Not yet",
+
+  "step.organisation": "Organisation and units",
+  "step.directory": "Directory",
+  "step.context": "Unit context",
+  "step.formalRatings": "Formal ratings (optional)",
+  "step.readiness": "Readiness check",
+  "step.campaign": "First campaign",
+
+  // S1 status lines.
+  "status.units": "{count} units",
+  "status.noUnits": "No units yet.",
+  "status.people": "{n} people, uploaded {date}",
+  "status.peopleNoUpload": "{n} people",
+  "status.noPeople": "No one yet.",
+  "status.context": "{done} of {total} units. {remaining} to go.",
+  "status.contextDone": "{done} of {total} units.",
+  "status.contextWaiting": "Waiting for people in the directory.",
+  "status.formalSkipped": "Skipped. Managers rate talent density.",
+  "status.formalNone": "No formal ratings in the directory. Managers rate talent density.",
+  "status.formalMapped": "Mapped. {n} people within 12 months.",
+  "status.formalUndecided": "Formal ratings found. Map them or skip them.",
+  "status.blockers": "{n} blockers",
+  "status.oneBlocker": "1 blocker",
+  "status.passed": "Passed.",
+  "status.campaignLocked": "Opens when the readiness check passes",
+  "status.campaignReady": "Ready. The readiness check has passed.",
 
   // Errors the setup forms report, from the database's refusals.
   "error.readOnly":

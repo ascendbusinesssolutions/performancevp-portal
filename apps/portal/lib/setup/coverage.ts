@@ -5,7 +5,9 @@ import { constants, isCurrent } from "@performancevp/intake";
  * the database returns. The 12-month rule and the 80% test are the intake package's own
  * (Online Measurement Specification 6.4), so the preview says what the campaign close will do.
  * Here currency is judged against today; at launch it is judged against the launch date. Labels are
- * not considered: they are mapped to bands on the formal ratings screen.
+ * not considered: they are mapped to bands on the formal ratings screen. Grouping units are counted
+ * in the totals but given no coverage line: they are not measured (Online Measurement
+ * Specification 6.2).
  */
 export interface UnitRatingSums {
   unit_code: string;
@@ -28,7 +30,12 @@ export interface CoveragePreview {
   units: UnitCoverage[];
 }
 
-export function previewCoverage(units: readonly UnitRatingSums[], today: string): CoveragePreview {
+export function previewCoverage(
+  units: readonly UnitRatingSums[],
+  today: string,
+  /** Unit codes, lower case, of the units that would be grouping units after the upload. */
+  grouping: ReadonlySet<string> = new Set(),
+): CoveragePreview {
   let total = 0;
   let withRating = 0;
   let current = 0;
@@ -43,6 +50,7 @@ export function previewCoverage(units: readonly UnitRatingSums[], today: string)
         currentFte += d.fte;
       }
     }
+    if (grouping.has(unit.unit_code.toLowerCase())) continue;
     const share = unit.fte > 0 ? currentFte / unit.fte : undefined;
     out.push({
       unit_code: unit.unit_code,

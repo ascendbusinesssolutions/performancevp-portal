@@ -37,6 +37,24 @@ describe("previewCoverage", () => {
     ]);
   });
 
+  it("gives a grouping unit no coverage line, and still counts its people in the totals", () => {
+    const result = previewCoverage(
+      [
+        { unit_code: "GRP", people: 2, fte: 2, dates: [] },
+        {
+          unit_code: "OPS",
+          people: 10,
+          fte: 10,
+          dates: [{ date: "2026-06-30", people: 9, fte: 9 }],
+        },
+      ],
+      today,
+      new Set(["grp"]),
+    );
+    expect(result.total).toBe(12);
+    expect(result.units).toEqual([{ unit_code: "OPS", share: 0.9, qualifies: true }]);
+  });
+
   it("applies the intake's 12-month rule: the same day a year earlier counts, the day before does not", () => {
     const unit = (date: string) => ({
       unit_code: "U",

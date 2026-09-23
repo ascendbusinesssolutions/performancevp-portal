@@ -33,6 +33,9 @@ export interface UnitRow {
   unit_leader_employee_id: string | null;
 }
 
+/** The part of a unit the hierarchy rules read. */
+export type UnitLink = Pick<UnitRow, "id" | "parent_unit_id" | "status">;
+
 export interface PersonRef {
   id: string;
   unit_id: string;
@@ -93,7 +96,7 @@ export function descendantIds(units: readonly UnitRow[], unitId: string): Set<st
 }
 
 /** Whether a unit has active units below it. */
-export function hasChildren(units: readonly UnitRow[], unitId: string): boolean {
+export function hasChildren(units: readonly UnitLink[], unitId: string): boolean {
   return units.some((u) => u.status === "active" && u.parent_unit_id === unitId);
 }
 
@@ -104,7 +107,7 @@ export function hasChildren(units: readonly UnitRow[], unitId: string): boolean 
  * as members of any unit, though they still manage the people below them.
  */
 export function isGroupingUnit(
-  units: readonly UnitRow[],
+  units: readonly UnitLink[],
   unitId: string,
   ownStaff: number,
 ): boolean {
@@ -117,7 +120,7 @@ export function isGroupingUnit(
  * blocks on its size.
  */
 export function isMeasuredUnit(
-  units: readonly UnitRow[],
+  units: readonly UnitLink[],
   unitId: string,
   ownStaff: number,
 ): boolean {

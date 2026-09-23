@@ -10,6 +10,7 @@ import { fill, listOf } from "@/lib/copy/template";
 import { sydneyToday } from "@/lib/dates";
 import { requireOrgManager } from "@/lib/org/context";
 import { previewCoverage, type UnitRatingSums } from "@/lib/setup/coverage";
+import { isGroupingUnit } from "@/lib/setup/units";
 import { createClient } from "@/lib/supabase/server";
 
 import { applyUpload, discardUpload } from "./actions";
@@ -128,7 +129,10 @@ export default async function UploadPreviewPage({
 
   const [{ data, error }, { data: units }] = await Promise.all([
     supabase.rpc("directory_upload_preview", { p_upload_id: uploadId }),
-    supabase.from("business_units").select("unit_code, name").eq("organisation_id", orgId),
+    supabase
+      .from("business_units")
+      .select("id, unit_code, name, parent_unit_id, status")
+      .eq("organisation_id", orgId),
   ]);
   if (error || !data) redirect(`/org/${orgId}/directory`);
   const preview = data as unknown as Preview;
@@ -143,7 +147,16 @@ export default async function UploadPreviewPage({
   const peopleInCode = new Map(
     preview.formal_rating_coverage.map((u) => [u.unit_code.toLowerCase(), u.people]),
   );
-  const coverage = previewCoverage(preview.formal_rating_coverage, sydneyToday());
+  // An upload creates units at the top level and moves no unit, so the hierarchy after it is the
+  // one now; only the headcounts change.
+  const grouping = new Set(
+    (units ?? [])
+      .filter((u) =>
+        isGroupingUnit(units ?? [], u.id, peopleInCode.get(u.unit_code.toLowerCase()) ?? 0),
+      )
+      .map((u) => u.unit_code.toLowerCase()),
+  );
+  const coverage = previewCoverage(preview.formal_rating_coverage, sydneyToday(), grouping);
   const below = coverage.units.filter((u) => !u.qualifies).map((u) => unitLabel(u.unit_code));
 
   return (

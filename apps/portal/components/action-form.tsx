@@ -29,6 +29,7 @@ export function ActionForm({
   className,
   compact = false,
   variant,
+  submitName,
 }: {
   action: (previous: FormState, formData: FormData) => Promise<FormState>;
   submitLabel: string;
@@ -36,6 +37,8 @@ export function ActionForm({
   className?: string;
   compact?: boolean;
   variant?: ButtonVariant;
+  /** The button's accessible name, where its visible label is shared by many rows ("Remove"). */
+  submitName?: string;
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, {});
   const form = useRef<HTMLFormElement>(null);
@@ -60,6 +63,7 @@ export function ActionForm({
       <button
         type="submit"
         disabled={pending}
+        aria-label={submitName}
         className={style === "quiet" ? buttonClass("quiet") : `mt-4 ${buttonClass(style)}`}
       >
         {submitLabel}

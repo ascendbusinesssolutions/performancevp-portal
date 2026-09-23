@@ -6,7 +6,7 @@
 import * as engine from "@performancevp/engine";
 import { describe, expect, it } from "vitest";
 
-import { CII_GROUPS, CONVERSION, REVERSE_SCORED_ITEMS } from "../src/constants";
+import { CII_GROUPS, CONVERSION, REVERSE_SCORED_ITEMS, SETUP, THRESHOLDS } from "../src/constants";
 import { convertMean, PART_A_ITEMS } from "../src/items";
 import {
   CII_ITEMS,
@@ -63,5 +63,20 @@ describe("constants shared with the engine", () => {
     expect(PART_A_ITEMS[37]).toBe("TW-01");
     expect(PART_A_ITEMS[70]).toBe("TSI3-05");
     expect(new Set(PART_A_ITEMS).size).toBe(71);
+  });
+});
+
+describe("the setup counts", () => {
+  it("are the Online Measurement Specification's", () => {
+    expect(SETUP).toEqual({
+      minUnitStaff: 10,
+      skillsPerRoleFamily: { min: 8, max: 15 },
+      knowledgeDomainsPerUnit: { min: 3, max: 6 },
+      criticalDomainCriticality: 3,
+      decisionTypesPerUnit: { min: 8, max: 12 },
+      criticalProcessesPerUnit: 3,
+      primarySystemsPerUnit: { min: 3, max: 8 },
+    });
+    expect(THRESHOLDS.leadershipMinimumRespondents).toBe(3);
   });
 });

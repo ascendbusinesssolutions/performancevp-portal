@@ -30,10 +30,13 @@ export function AuthShell({ title, children }: { title: string; children: ReactN
   );
 }
 
-export const INPUT_CLASS =
-  "mt-1 block w-full rounded-control border border-grey-80 bg-white px-3 py-2 text-slate " +
+/** A text input, select or textarea, without the gap below its label (for use in tables). */
+export const CONTROL_CLASS =
+  "block w-full rounded-control border border-grey-80 bg-white px-3 py-2 text-slate " +
   "focus:border-slate focus:outline-2 focus:outline-offset-2 focus:outline-slate " +
   "disabled:bg-grey-10 disabled:text-grey";
+
+export const INPUT_CLASS = `mt-1 ${CONTROL_CLASS}`;
 
 export function Field({
   label,

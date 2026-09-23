@@ -3,6 +3,7 @@ import "server-only";
 import { allRows } from "@/lib/supabase/all-rows";
 import type { createClient } from "@/lib/supabase/server";
 
+import type { DomainRow, NamedRow, SkillRow } from "./frameworks";
 import type { UnitRow } from "./units";
 
 /**
@@ -121,4 +122,110 @@ export async function loadPerson(
   if (!data) return null;
   const person = data as unknown as Person;
   return { ...person, fte: Number(person.fte) };
+}
+
+export async function loadSkills(supabase: Client, orgId: string): Promise<SkillRow[]> {
+  return allRows((from, to) =>
+    supabase
+      .from("skills")
+      .select("id, role_family_id, name, is_critical, kind, status")
+      .eq("organisation_id", orgId)
+      .order("id")
+      .range(from, to),
+  );
+}
+
+export interface UnitContextRows {
+  domains: DomainRow[];
+  decisions: Array<NamedRow & { from_starter_list: boolean }>;
+  processes: NamedRow[];
+  systems: NamedRow[];
+}
+
+/** The unit context of every unit: knowledge domains, decision types, processes and systems. */
+export async function loadUnitContext(supabase: Client, orgId: string): Promise<UnitContextRows> {
+  const [domains, decisions, processes, systems] = await Promise.all([
+    allRows((from, to) =>
+      supabase
+        .from("knowledge_domains")
+        .select("id, unit_id, name, status, criticality")
+        .eq("organisation_id", orgId)
+        .order("id")
+        .range(from, to),
+    ),
+    allRows((from, to) =>
+      supabase
+        .from("decision_types")
+        .select("id, unit_id, name, status, from_starter_list")
+        .eq("organisation_id", orgId)
+        .order("id")
+        .range(from, to),
+    ),
+    allRows((from, to) =>
+      supabase
+        .from("critical_processes")
+        .select("id, unit_id, name, status")
+        .eq("organisation_id", orgId)
+        .order("id")
+        .range(from, to),
+    ),
+    allRows((from, to) =>
+      supabase
+        .from("primary_systems")
+        .select("id, unit_id, name, status")
+        .eq("organisation_id", orgId)
+        .order("id")
+        .range(from, to),
+    ),
+  ]);
+  return { domains, decisions, processes, systems };
+}
+
+export interface Template {
+  code: string;
+  kind: string;
+  name: string;
+  unit_type: string | null;
+  is_people_leader: boolean;
+  version: number;
+  is_placeholder: boolean;
+  items: Array<{
+    position: number;
+    name: string;
+    skill_kind: string | null;
+    is_critical: boolean | null;
+  }>;
+}
+
+/** The template library and starter lists (reference data), with their items in order. */
+export async function loadTemplates(supabase: Client): Promise<Template[]> {
+  const [{ data: templates }, { data: items }] = await Promise.all([
+    supabase
+      .from("ref_templates")
+      .select("code, kind, name, unit_type, is_people_leader, version, is_placeholder, sort_order")
+      .order("kind")
+      .order("sort_order"),
+    supabase
+      .from("ref_template_items")
+      .select("template_code, position, name, skill_kind, is_critical")
+      .order("template_code")
+      .order("position"),
+  ]);
+  return (templates ?? []).map((t) => ({
+    code: t.code,
+    kind: t.kind,
+    name: t.name,
+    unit_type: t.unit_type,
+    is_people_leader: t.is_people_leader,
+    version: t.version,
+    is_placeholder: t.is_placeholder,
+    items: (items ?? [])
+      .filter((i) => i.template_code === t.code)
+      .map((i) => ({
+        position: i.position,
+        name: i.name,
+        skill_kind: i.skill_kind,
+        is_critical: i.is_critical,
+      })),
+  }));
 }

@@ -1,6 +1,7 @@
 import { authCopy } from "./auth";
 import { commonCopy } from "./common";
 import { consoleCopy } from "./console";
+import { contextCopy } from "./context";
 import { directoryCopy } from "./directory";
 import { setupCopy } from "./setup";
 import { shellCopy } from "./shell";
@@ -18,6 +19,7 @@ export const COPY_TABLES: Readonly<
   auth: { table: authCopy },
   common: { table: commonCopy },
   console: { table: consoleCopy },
+  context: { table: contextCopy },
   directory: { table: directoryCopy },
   setup: { table: setupCopy },
   shell: { table: shellCopy },

@@ -42,9 +42,21 @@ export function Th({
   );
 }
 
-export function Row({ children, testId }: { children: ReactNode; testId?: string }) {
+export function Row({
+  children,
+  testId,
+  middle = false,
+}: {
+  children: ReactNode;
+  testId?: string;
+  /** Centre the cells vertically, for rows of form controls. */
+  middle?: boolean;
+}) {
   return (
-    <tr className="border-b border-grey-20 align-top" data-testid={testId}>
+    <tr
+      className={`border-b border-grey-20 ${middle ? "align-middle" : "align-top"}`}
+      data-testid={testId}
+    >
       {children}
     </tr>
   );

@@ -34,6 +34,78 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
       expected: "Sam Support, 23 Sept 2026, 9:05 am to open now, Guided setup of the directory",
     },
   ],
+  "context.families.intro": [
+    {
+      slots: { min: 8, max: 15 },
+      expected:
+        "Managers rate each person on the skills of their role family. A role family needs 8 to 15 skills, both technical and behavioural, with the critical ones marked.",
+    },
+  ],
+  "context.family.count": [{ slots: { n: 11 }, expected: "11 skills" }],
+  "context.family.problem.tooFew": [{ slots: { n: 5, min: 8 }, expected: "5 skills; 8 needed" }],
+  "context.family.problem.tooMany": [
+    { slots: { n: 17, max: 15 }, expected: "17 skills; at most 15" },
+  ],
+  "context.family.retire.blocked": [
+    { slots: { n: 42 }, expected: "42 people have this role family. Give them another first." },
+  ],
+  "context.family.addFromTemplateTitle": [
+    {
+      slots: { family: "Claims officers" },
+      expected: "Add skills to Claims officers from a template",
+    },
+  ],
+  "context.units.intro": [
+    {
+      slots: { domains: "3 to 6", decisions: "8 to 12", processes: 3, systems: "3 to 8" },
+      expected:
+        "For every unit with people in it: 3 to 6 knowledge domains, 8 to 12 decision types, 3 critical processes and 3 to 8 primary systems.",
+    },
+  ],
+  "context.unit.meta": [
+    { slots: { people: 34, type: "Operations" }, expected: "34 people. Unit type: Operations." },
+  ],
+  "context.unit.count": [
+    { slots: { n: 2, needed: "3 to 6 needed" }, expected: "2 named; 3 to 6 needed." },
+    { slots: { n: 3, needed: "complete" }, expected: "3 named; complete." },
+  ],
+  "context.domains.intro": [
+    {
+      slots: { min: 3, max: 6 },
+      expected:
+        "The areas of knowledge the unit's work depends on, each with how critical it is. Managers rate each person's working knowledge of each domain. Name 3 to 6.",
+    },
+  ],
+  "context.decisions.intro": [
+    {
+      slots: { min: 8, max: 12 },
+      expected:
+        "The decisions the unit's leadership team is asked about: who proposes, who decides, who must agree. Choose 8 to 12 from the list for this kind of unit, and add any of your own.",
+    },
+  ],
+  "context.decisions.starter": [
+    { slots: { type: "Operations" }, expected: "Suggested for Operations units" },
+  ],
+  "context.processes.intro": [
+    {
+      slots: { n: 3 },
+      expected:
+        "The processes most of the unit's work flows through. Members are asked where each one creates friction. Name exactly 3.",
+    },
+  ],
+  "context.processes.full": [
+    { slots: { n: 3 }, expected: "3 are named. Remove one to name another." },
+  ],
+  "context.systems.intro": [
+    {
+      slots: { min: 3, max: 8 },
+      expected:
+        "The systems the unit relies on. The administrator checklist asks about each one's ownership, currency and fit. Name 3 to 8.",
+    },
+  ],
+  "context.range": [{ slots: { min: 3, max: 6 }, expected: "3 to 6" }],
+  "context.need.range": [{ slots: { min: 8, max: 12 }, expected: "8 to 12 needed" }],
+  "context.need.exact": [{ slots: { n: 3 }, expected: "exactly 3 needed" }],
   "directory.preview.newUnitLine": [
     {
       slots: { code: "CLM", name: "Claims", n: 34 },

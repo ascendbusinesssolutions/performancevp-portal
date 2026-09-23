@@ -3,7 +3,7 @@
 
 **Author:** Michael, PerformanceVP
 **Status:** Working draft v0.9, for review. Proposed new source document. All decisions raised in drafting were settled on 21 September 2026 and are recorded in Part 11.1; three further decisions of 22 September 2026, raised by the intake package build, are recorded there too. Later decisions supersede earlier ones where noted.
-**Last updated:** 23 September 2026
+**Last updated:** 24 September 2026
 **Companion documents:** Performance Equation Strategy; Sub-Dimension × Cadence Master Reference; Measurement Reference Parts 1 and 2; Survey Blueprint; Tier 3 Module Library; Survey Processing and Scoring Workbook Spec; Diagnostic Workbook Spec; Intervention Design Library; PORTAL_BUILD_PLAN.md, CLAUDE.md and DECISIONS.md (all three revised on 21 September 2026 to implement this document).
 
 ---
@@ -299,13 +299,15 @@ The directory persists for the life of the subscription so that campaigns can be
 
 **Template fields.** Employee ID (required; the stable key); first name; last name; work email; unit code and unit name; team; manager's employee ID; role title; role family; start date; FTE fraction; team leader flag; leadership team flag; employment status; formal performance rating and formal rating date (both optional; see Part 6.4). Required at upload: employee ID, first and last name, unit code and unit name, and FTE fraction; the rest may be blank at upload and are checked by the readiness check before the first campaign. Employee IDs and unit codes match without regard to case, so an HRIS export that changes case does not read as leavers (decided 23 September 2026). People-manager status is derived from reporting lines.
 
+**Unit leader.** Each unit carries a unit-leader designation, set on the units screen. At the readiness check it defaults to the single active person in the unit whose manager sits outside the unit or who has no manager; where a unit has no such person or more than one and no designation, the readiness check warns. The leadership-team module (M-O1-LT) treats the unit leader and their direct reports inside the unit as the leadership team, and the team-leader module (M-C5-TL) falls back to the unit leader where a unit has no team leaders flagged (decided 24 September 2026).
+
 **Upload behaviour.** Records are matched on employee ID. New IDs are added, missing IDs are deactivated, changed attributes are updated. The platform shows a preview of the differences (joiners, leavers, moves between units and teams, manager changes) and applies nothing until the administrator confirms.
 
 **Campaign snapshot.** Launching a campaign freezes a snapshot of the directory for that campaign. Later edits do not alter a campaign in progress.
 
 ## 6.2 Unit continuity
 
-Trends are held against units, so unit identity has to survive a rebuild. Units carry a stable unit code. Renaming a unit keeps its history. Merging or splitting units creates new units with a recorded lineage to their predecessors; predecessor history remains viewable, and the trend line is shown as broken at that point with an annotation. A unit needs 10 or more staff, consistent with the consultancy line's definition.
+Trends are held against units, so unit identity has to survive a rebuild. Units carry a stable unit code. Renaming a unit keeps its history. Merging or splitting units creates new units with a recorded lineage to their predecessors; predecessor history remains viewable, and the trend line is shown as broken at that point with an annotation. A unit needs 10 or more staff, consistent with the consultancy line's definition; the minimum is not a client setting. The rule applies to the units that are measured. A unit that has units below it and fewer than 10 staff of its own (typically the top of the organisation: the head and a small executive group) is a grouping unit: it is not measured, it does not block the first campaign, and its own staff are not surveyed as members of any unit, though they still act as managers and unit leaders for the people who report to them in the units below. A unit with 1 to 9 people and nothing below it blocks the first campaign until it is merged, grown or retired (decided with the Milestone 4 build).
 
 ## 6.3 Event triggers detected from the directory
 

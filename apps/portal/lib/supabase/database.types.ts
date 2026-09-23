@@ -122,20 +122,20 @@ export type Database = {
         Row: {
           campaign_id: string
           id: string
+          measurement_unit_id: string
           organisation_id: string
-          unit_id: string
         }
         Insert: {
           campaign_id: string
           id?: string
+          measurement_unit_id: string
           organisation_id: string
-          unit_id: string
         }
         Update: {
           campaign_id?: string
           id?: string
+          measurement_unit_id?: string
           organisation_id?: string
-          unit_id?: string
         }
         Relationships: [
           {
@@ -153,10 +153,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "campaign_units_organisation_id_unit_id_fkey"
-            columns: ["organisation_id", "unit_id"]
+            foreignKeyName: "campaign_units_organisation_id_measurement_unit_id_fkey"
+            columns: ["organisation_id", "measurement_unit_id"]
             isOneToOne: false
-            referencedRelation: "business_units"
+            referencedRelation: "measurement_units"
             referencedColumns: ["organisation_id", "id"]
           },
         ]
@@ -212,26 +212,26 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          measurement_unit_id: string
           name: string
           organisation_id: string
           status: string
-          unit_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          measurement_unit_id: string
           name: string
           organisation_id: string
           status?: string
-          unit_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          measurement_unit_id?: string
           name?: string
           organisation_id?: string
           status?: string
-          unit_id?: string
         }
         Relationships: [
           {
@@ -242,10 +242,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "critical_processes_organisation_id_unit_id_fkey"
-            columns: ["organisation_id", "unit_id"]
+            foreignKeyName: "critical_processes_organisation_id_measurement_unit_id_fkey"
+            columns: ["organisation_id", "measurement_unit_id"]
             isOneToOne: false
-            referencedRelation: "business_units"
+            referencedRelation: "measurement_units"
             referencedColumns: ["organisation_id", "id"]
           },
         ]
@@ -255,28 +255,28 @@ export type Database = {
           created_at: string
           from_starter_list: boolean
           id: string
+          measurement_unit_id: string
           name: string
           organisation_id: string
           status: string
-          unit_id: string
         }
         Insert: {
           created_at?: string
           from_starter_list?: boolean
           id?: string
+          measurement_unit_id: string
           name: string
           organisation_id: string
           status?: string
-          unit_id: string
         }
         Update: {
           created_at?: string
           from_starter_list?: boolean
           id?: string
+          measurement_unit_id?: string
           name?: string
           organisation_id?: string
           status?: string
-          unit_id?: string
         }
         Relationships: [
           {
@@ -287,10 +287,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "decision_types_organisation_id_unit_id_fkey"
-            columns: ["organisation_id", "unit_id"]
+            foreignKeyName: "decision_types_organisation_id_measurement_unit_id_fkey"
+            columns: ["organisation_id", "measurement_unit_id"]
             isOneToOne: false
-            referencedRelation: "business_units"
+            referencedRelation: "measurement_units"
             referencedColumns: ["organisation_id", "id"]
           },
         ]
@@ -718,28 +718,28 @@ export type Database = {
           created_at: string
           criticality: number
           id: string
+          measurement_unit_id: string
           name: string
           organisation_id: string
           status: string
-          unit_id: string
         }
         Insert: {
           created_at?: string
           criticality: number
           id?: string
+          measurement_unit_id: string
           name: string
           organisation_id: string
           status?: string
-          unit_id: string
         }
         Update: {
           created_at?: string
           criticality?: number
           id?: string
+          measurement_unit_id?: string
           name?: string
           organisation_id?: string
           status?: string
-          unit_id?: string
         }
         Relationships: [
           {
@@ -750,10 +750,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "knowledge_domains_organisation_id_unit_id_fkey"
-            columns: ["organisation_id", "unit_id"]
+            foreignKeyName: "knowledge_domains_organisation_id_measurement_unit_id_fkey"
+            columns: ["organisation_id", "measurement_unit_id"]
             isOneToOne: false
-            referencedRelation: "business_units"
+            referencedRelation: "measurement_units"
             referencedColumns: ["organisation_id", "id"]
           },
         ]
@@ -829,6 +829,177 @@ export type Database = {
             columns: ["organisation_id", "subject_snapshot_member_id"]
             isOneToOne: false
             referencedRelation: "snapshot_members"
+            referencedColumns: ["organisation_id", "id"]
+          },
+        ]
+      }
+      measurement_unit_lineage: {
+        Row: {
+          effective_date: string
+          id: string
+          kind: string
+          organisation_id: string
+          predecessor_id: string
+          recorded_at: string
+          recorded_by: string | null
+          successor_id: string
+        }
+        Insert: {
+          effective_date: string
+          id?: string
+          kind: string
+          organisation_id: string
+          predecessor_id: string
+          recorded_at?: string
+          recorded_by?: string | null
+          successor_id: string
+        }
+        Update: {
+          effective_date?: string
+          id?: string
+          kind?: string
+          organisation_id?: string
+          predecessor_id?: string
+          recorded_at?: string
+          recorded_by?: string | null
+          successor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "measurement_unit_lineage_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "measurement_unit_lineage_organisation_id_predecessor_id_fkey"
+            columns: ["organisation_id", "predecessor_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "measurement_unit_lineage_organisation_id_successor_id_fkey"
+            columns: ["organisation_id", "successor_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+        ]
+      }
+      measurement_unit_members: {
+        Row: {
+          business_unit_id: string
+          ended_at: string | null
+          id: string
+          measurement_unit_id: string
+          organisation_id: string
+          started_at: string
+        }
+        Insert: {
+          business_unit_id: string
+          ended_at?: string | null
+          id?: string
+          measurement_unit_id: string
+          organisation_id: string
+          started_at?: string
+        }
+        Update: {
+          business_unit_id?: string
+          ended_at?: string | null
+          id?: string
+          measurement_unit_id?: string
+          organisation_id?: string
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "measurement_unit_members_organisation_id_business_unit_id_fkey"
+            columns: ["organisation_id", "business_unit_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "measurement_unit_members_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "measurement_unit_members_organisation_id_measurement_unit__fkey"
+            columns: ["organisation_id", "measurement_unit_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+        ]
+      }
+      measurement_units: {
+        Row: {
+          code: string
+          created_at: string
+          grouping_kept_at: string | null
+          grouping_kept_by: string | null
+          id: string
+          kind: string
+          name: string
+          organisation_id: string
+          retired_on: string | null
+          single_unit_id: string | null
+          status: string
+          unit_leader_employee_id: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          grouping_kept_at?: string | null
+          grouping_kept_by?: string | null
+          id?: string
+          kind: string
+          name: string
+          organisation_id: string
+          retired_on?: string | null
+          single_unit_id?: string | null
+          status?: string
+          unit_leader_employee_id?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          grouping_kept_at?: string | null
+          grouping_kept_by?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          organisation_id?: string
+          retired_on?: string | null
+          single_unit_id?: string | null
+          status?: string
+          unit_leader_employee_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "measurement_units_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "measurement_units_organisation_id_single_unit_id_fkey"
+            columns: ["organisation_id", "single_unit_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "measurement_units_organisation_id_unit_leader_employee_id_fkey"
+            columns: ["organisation_id", "unit_leader_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["organisation_id", "id"]
           },
         ]
@@ -990,26 +1161,26 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          measurement_unit_id: string
           name: string
           organisation_id: string
           status: string
-          unit_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          measurement_unit_id: string
           name: string
           organisation_id: string
           status?: string
-          unit_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          measurement_unit_id?: string
           name?: string
           organisation_id?: string
           status?: string
-          unit_id?: string
         }
         Relationships: [
           {
@@ -1020,10 +1191,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "primary_systems_organisation_id_unit_id_fkey"
-            columns: ["organisation_id", "unit_id"]
+            foreignKeyName: "primary_systems_organisation_id_measurement_unit_id_fkey"
+            columns: ["organisation_id", "measurement_unit_id"]
             isOneToOne: false
-            referencedRelation: "business_units"
+            referencedRelation: "measurement_units"
             referencedColumns: ["organisation_id", "id"]
           },
         ]
@@ -2052,6 +2223,14 @@ export type Database = {
         Args: { p_session_id: string }
         Returns: undefined
       }
+      combine_measurement_units: {
+        Args: {
+          p_measurement_unit_ids: string[]
+          p_name: string
+          p_organisation_id: string
+        }
+        Returns: string
+      }
       designate_support_staff: { Args: { p_email: string }; Returns: string }
       directory_upload_preview: { Args: { p_upload_id: string }; Returns: Json }
       discard_directory_upload: {
@@ -2067,9 +2246,9 @@ export type Database = {
           campaign_unit_id: string
           expired: number
           issued: number
+          measurement_unit_id: string
           responded: number
           sent: number
-          unit_id: string
         }[]
       }
       invite_member: {
@@ -2080,6 +2259,14 @@ export type Database = {
           p_unit_ids?: string[]
         }
         Returns: boolean
+      }
+      keep_grouping_unit: {
+        Args: {
+          p_keep: boolean
+          p_measurement_unit_id: string
+          p_organisation_id: string
+        }
+        Returns: undefined
       }
       mark_upload_file_removed: {
         Args: { p_upload_id: string }
@@ -2284,6 +2471,10 @@ export type Database = {
           p_upload_id: string
         }
         Returns: Json
+      }
+      undo_measurement_unit: {
+        Args: { p_measurement_unit_id: string; p_organisation_id: string }
+        Returns: undefined
       }
       uploads_awaiting_file_removal: {
         Args: never

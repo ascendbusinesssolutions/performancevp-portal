@@ -7,6 +7,7 @@ import type { FormState } from "@/lib/auth/form-state";
 import { contextCopy, type ContextCopyKey } from "@/lib/copy/context";
 import { setupCopy } from "@/lib/copy/setup";
 import { requireOrgManager } from "@/lib/org/context";
+import { singleMeasurementUnitId } from "@/lib/setup/data";
 import { type DbError, errorKey, type ErrorRule } from "@/lib/setup/db-errors";
 import { createClient } from "@/lib/supabase/server";
 
@@ -46,9 +47,9 @@ function escapeLike(value: string): string {
 }
 
 /**
- * Adds a named row to a unit, or brings back a retired row of the same name (names are unique per
- * unit, case aside, retired rows included). onUpdate may set only columns the database lets a
- * client update. Returns the database's refusal, if any.
+ * Adds a named row to a unit's measurement unit, or brings back a retired row of the same name
+ * (names are unique per measurement unit, case aside, retired rows included). onUpdate may set only
+ * columns the database lets a client update. Returns the database's refusal, if any.
  */
 async function addNamed(
   supabase: Client,
@@ -59,11 +60,13 @@ async function addNamed(
   onInsert: Record<string, unknown> = {},
   onUpdate: Record<string, unknown> = {},
 ): Promise<DbError | null> {
+  const measurementUnitId = await singleMeasurementUnitId(supabase, orgId, unitId);
+  if (!measurementUnitId) return { code: "42501" };
   const { data: existing } = await supabase
     .from(table)
     .select("id, name, status")
     .eq("organisation_id", orgId)
-    .eq("unit_id", unitId)
+    .eq("measurement_unit_id", measurementUnitId)
     .ilike("name", escapeLike(name));
   const same = (existing ?? []).find((r) => r.name.toLowerCase() === name.toLowerCase());
   if (same?.status === "active") return { code: "23505", message: "name in use" };
@@ -77,7 +80,12 @@ async function addNamed(
   }
   const { data, error } = await supabase
     .from(table)
-    .insert({ organisation_id: orgId, unit_id: unitId, name, ...onInsert } as never)
+    .insert({
+      organisation_id: orgId,
+      measurement_unit_id: measurementUnitId,
+      name,
+      ...onInsert,
+    } as never)
     .select("id");
   return error ?? (data?.length ? null : { code: "42501" });
 }
@@ -349,12 +357,14 @@ export async function addUnitItem(_previous: FormState, formData: FormData): Pro
   if (!table || table === "knowledge_domains") return { error: setupCopy["error.generic"] };
   const unitId = text(formData, "unitId");
   const supabase = await createClient();
+  const measurementUnitId = await singleMeasurementUnitId(supabase, orgId, unitId);
+  if (!measurementUnitId) return { error: setupCopy["error.generic"] };
   if (table === "critical_processes") {
     const { count } = await supabase
       .from("critical_processes")
       .select("id", { count: "exact", head: true })
       .eq("organisation_id", orgId)
-      .eq("unit_id", unitId)
+      .eq("measurement_unit_id", measurementUnitId)
       .eq("status", "active");
     if ((count ?? 0) >= 3) return { error: contextCopy["error.processesFull"] };
   }
@@ -391,11 +401,13 @@ export async function saveDecisionSelection(
       .map((v) => v.toLowerCase()),
   );
   const supabase = await createClient();
+  const measurementUnitId = await singleMeasurementUnitId(supabase, orgId, unitId);
+  if (!measurementUnitId) return { error: setupCopy["error.generic"] };
   const { data: existing } = await supabase
     .from("decision_types")
     .select("id, name, status")
     .eq("organisation_id", orgId)
-    .eq("unit_id", unitId);
+    .eq("measurement_unit_id", measurementUnitId);
   const byName = new Map((existing ?? []).map((r) => [r.name.toLowerCase(), r]));
   for (const name of offered) {
     const row = byName.get(name.toLowerCase());

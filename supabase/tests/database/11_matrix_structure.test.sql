@@ -59,7 +59,7 @@ insert into writes values
    $$insert into public.skills (organisation_id, role_family_id, name, kind) values (tests.id('alpha'), tests.id('alpha_analyst'), 'Forecasting', 'technical')$$,
    '1', '1', 'denied', 'denied', 'denied', 'denied', '1', 'denied', 'denied', 'denied'),
   ('add a knowledge domain in beta',
-   $$insert into public.knowledge_domains (organisation_id, unit_id, name, criticality) values (tests.id('beta'), tests.id('beta_C1'), 'Pricing', 2)$$,
+   $$insert into public.knowledge_domains (organisation_id, measurement_unit_id, name, criticality) values (tests.id('beta'), tests.mu('beta_C1'), 'Pricing', 2)$$,
    'denied', 'denied', 'denied', 'denied', '1', 'denied', 'denied', 'denied', 'denied', 'denied'),
   ('move a unit to another organisation',
    $$update public.business_units set organisation_id = tests.id('beta') where id = tests.id('alpha_C1')$$,

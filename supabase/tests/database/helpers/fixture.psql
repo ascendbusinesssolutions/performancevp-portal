@@ -144,11 +144,11 @@ begin
       (v_org_id, tests.id(v_org || '_lead'), 'Planning', false, 'technical');
     perform tests.remember(v_org || '_skill_modelling',
       (select id from public.skills where organisation_id = v_org_id and name = 'Modelling'));
-    insert into public.knowledge_domains (organisation_id, unit_id, name, criticality) values
-      (v_org_id, tests.id(v_org || '_C1'), 'Regulatory reporting', 3),
-      (v_org_id, tests.id(v_org || '_C2'), 'Product range', 2);
+    insert into public.knowledge_domains (organisation_id, measurement_unit_id, name, criticality) values
+      (v_org_id, tests.mu(v_org || '_C1'), 'Regulatory reporting', 3),
+      (v_org_id, tests.mu(v_org || '_C2'), 'Product range', 2);
     perform tests.remember(v_org || '_domain_c1',
-      (select id from public.knowledge_domains where organisation_id = v_org_id and unit_id = tests.id(v_org || '_C1')));
+      (select id from public.knowledge_domains where organisation_id = v_org_id and measurement_unit_id = tests.mu(v_org || '_C1')));
 
     insert into public.unit_access (organisation_id, membership_id, unit_id)
     select v_org_id, m.id, tests.id(v_org || '_C1')
@@ -158,14 +158,14 @@ begin
     -- Milestone 4: the rest of the unit context and the scale map. Per organisation: 2 decision
     -- types, 1 critical process and 1 primary system in C1; a mapped, calibrated scale map with 2
     -- entries.
-    insert into public.decision_types (organisation_id, unit_id, name, from_starter_list) values
-      (v_org_id, tests.id(v_org || '_C1'), 'Changing the roster', true),
-      (v_org_id, tests.id(v_org || '_C1'), 'Approving overtime', false);
-    insert into public.critical_processes (organisation_id, unit_id, name)
-    values (v_org_id, tests.id(v_org || '_C1'), 'Claims intake') returning id into v_id;
+    insert into public.decision_types (organisation_id, measurement_unit_id, name, from_starter_list) values
+      (v_org_id, tests.mu(v_org || '_C1'), 'Changing the roster', true),
+      (v_org_id, tests.mu(v_org || '_C1'), 'Approving overtime', false);
+    insert into public.critical_processes (organisation_id, measurement_unit_id, name)
+    values (v_org_id, tests.mu(v_org || '_C1'), 'Claims intake') returning id into v_id;
     perform tests.remember(v_org || '_process', v_id);
-    insert into public.primary_systems (organisation_id, unit_id, name)
-    values (v_org_id, tests.id(v_org || '_C1'), 'Claims system') returning id into v_id;
+    insert into public.primary_systems (organisation_id, measurement_unit_id, name)
+    values (v_org_id, tests.mu(v_org || '_C1'), 'Claims system') returning id into v_id;
     perform tests.remember(v_org || '_system', v_id);
     insert into public.rating_scale_maps (organisation_id, decision, calibrated) values (v_org_id, 'mapped', true);
     insert into public.rating_scale_map_entries (organisation_id, label, band) values
@@ -251,8 +251,8 @@ begin
             now() - interval '80 days', now() - interval '60 days')
     returning id into v_campaign;
     perform tests.remember(v_org || '_closed', v_campaign);
-    insert into public.campaign_units (organisation_id, campaign_id, unit_id)
-    select v_org_id, v_campaign, tests.id(v_org || '_' || u) from unnest(array['C1', 'C2', 'G1']) as u;
+    insert into public.campaign_units (organisation_id, campaign_id, measurement_unit_id)
+    select v_org_id, v_campaign, tests.mu(v_org || '_' || u) from unnest(array['C1', 'C2', 'G1']) as u;
     perform tests.remember(v_org || '_closed_snapshot', private.take_directory_snapshot(v_campaign));
 
     -- Two leave.
@@ -265,8 +265,8 @@ begin
     values (v_org_id, 'half_yearly', 'open', now() - interval '2 days', now() + interval '5 days', now() - interval '2 days')
     returning id into v_campaign;
     perform tests.remember(v_org || '_open', v_campaign);
-    insert into public.campaign_units (organisation_id, campaign_id, unit_id)
-    select v_org_id, v_campaign, tests.id(v_org || '_' || u) from unnest(array['C1', 'C2', 'G1']) as u;
+    insert into public.campaign_units (organisation_id, campaign_id, measurement_unit_id)
+    select v_org_id, v_campaign, tests.mu(v_org || '_' || u) from unnest(array['C1', 'C2', 'G1']) as u;
     perform tests.remember(v_org || '_open_snapshot', private.take_directory_snapshot(v_campaign));
 
     insert into public.directory_uploads (
@@ -357,7 +357,7 @@ begin
     update public.campaigns set status = 'closed' where id = tests.id(v_org || '_closed');
 
     -- Invitations, members Part A, open campaign.
-    select id into v_cu from public.campaign_units where campaign_id = tests.id(v_org || '_open') and unit_id = tests.id(v_org || '_C1');
+    select id into v_cu from public.campaign_units where campaign_id = tests.id(v_org || '_open') and measurement_unit_id = tests.mu(v_org || '_C1');
     insert into public.invitations (organisation_id, campaign_unit_id, audience, snapshot_member_id, email, token_hash, status, sent_at)
     select v_org_id, v_cu, 'members_part_a', tests.member(v_org, 'open', r), lower(r) || '@' || v_org || '.test',
            encode(sha256(convert_to(v_org || r, 'UTF8')), 'hex'),
@@ -367,7 +367,7 @@ begin
     select v_org_id, cu.id, 'members_part_a', tests.member(v_org, 'open', r), lower(r) || '@' || v_org || '.test',
            encode(sha256(convert_to(v_org || r, 'UTF8')), 'hex'), 'sent', now() - interval '2 days'
     from public.campaign_units cu, unnest(array['E010', 'E011', 'E012', 'E013']) as r
-    where cu.campaign_id = tests.id(v_org || '_open') and cu.unit_id = tests.id(v_org || '_C2');
+    where cu.campaign_id = tests.id(v_org || '_open') and cu.measurement_unit_id = tests.mu(v_org || '_C2');
 
     -- Anonymous responses.
     for i in 1..3 loop
@@ -377,7 +377,7 @@ begin
       insert into public.survey_item_responses (organisation_id, response_id, item_code, value)
       values (v_org_id, v_response, 'CII-01', 4), (v_org_id, v_response, 'MI2-03', 2);
     end loop;
-    select id into v_cu from public.campaign_units where campaign_id = tests.id(v_org || '_closed') and unit_id = tests.id(v_org || '_C1');
+    select id into v_cu from public.campaign_units where campaign_id = tests.id(v_org || '_closed') and measurement_unit_id = tests.mu(v_org || '_C1');
     for i in 1..2 loop
       insert into public.survey_responses (organisation_id, campaign_unit_id, audience, completion_seconds)
       values (v_org_id, v_cu, 'members_part_a', 700)

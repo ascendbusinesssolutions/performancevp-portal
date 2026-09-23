@@ -281,6 +281,20 @@ insert into expected_grants values
   ('public.rating_scale_map_entries(band)', 'authenticated', 'UPDATE'),
   ('new_link_kind(text)', 'service_role', 'EXECUTE');
 
+-- Milestone 4b: measurement units. Written through the three functions, apart from a combined
+-- unit's name and leader. invitation_status_counts was replaced to report measurement units (above).
+insert into expected_grants values
+  ('public.measurement_units', 'authenticated', 'SELECT'),
+  ('public.measurement_units(name)', 'authenticated', 'UPDATE'),
+  ('public.measurement_units(unit_leader_employee_id)', 'authenticated', 'UPDATE'),
+  ('public.measurement_unit_members', 'authenticated', 'SELECT'),
+  ('public.measurement_unit_lineage', 'authenticated', 'SELECT'),
+  ('private.viewable_measurement_unit_ids()', 'authenticated', 'EXECUTE'),
+  ('private.can_view_measurement_unit(uuid)', 'authenticated', 'EXECUTE'),
+  ('combine_measurement_units(uuid,uuid[],text)', 'authenticated', 'EXECUTE'),
+  ('undo_measurement_unit(uuid,uuid)', 'authenticated', 'EXECUTE'),
+  ('keep_grouping_unit(uuid,uuid,boolean)', 'authenticated', 'EXECUTE');
+
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,
          a.privilege_type as privilege

@@ -61,7 +61,7 @@ create temp table writes (
 );
 insert into writes values
   ('add a decision type',
-   $$insert into public.decision_types (organisation_id, unit_id, name) values (tests.id('alpha'), tests.id('alpha_C1'), 'Hiring into the team')$$,
+   $$insert into public.decision_types (organisation_id, measurement_unit_id, name) values (tests.id('alpha'), tests.mu('alpha_C1'), 'Hiring into the team')$$,
    '1', '1', 'denied', 'denied', 'denied', 'denied', '1', 'denied', 'denied', 'denied'),
   ('rename a process',
    $$update public.critical_processes set name = 'Claims triage' where id = tests.id('alpha_process')$$,
@@ -85,7 +85,7 @@ insert into writes values
    $$delete from public.decision_types where organisation_id = tests.id('alpha')$$,
    'denied', 'denied', 'denied', 'denied', 'denied', 'denied', 'denied', 'denied', 'denied', 'denied'),
   ('move a process to another unit',
-   $$update public.critical_processes set unit_id = tests.id('alpha_C2') where id = tests.id('alpha_process')$$,
+   $$update public.critical_processes set measurement_unit_id = tests.mu('alpha_C2') where id = tests.id('alpha_process')$$,
    'denied', 'denied', 'denied', 'denied', 'denied', 'denied', 'denied', 'denied', 'denied', 'denied'),
   ('move a system to another organisation',
    $$update public.primary_systems set organisation_id = tests.id('beta') where id = tests.id('alpha_system')$$,
@@ -130,7 +130,7 @@ select alike(
 select tests.set_state('alpha', 'grace');
 select is(
   array[
-    tests.attempt('alpha_admin', $$insert into public.decision_types (organisation_id, unit_id, name) values (tests.id('alpha'), tests.id('alpha_C1'), 'Hiring into the team')$$),
+    tests.attempt('alpha_admin', $$insert into public.decision_types (organisation_id, measurement_unit_id, name) values (tests.id('alpha'), tests.mu('alpha_C1'), 'Hiring into the team')$$),
     tests.attempt('alpha_admin', $$update public.rating_scale_map_entries set band = 5 where organisation_id = tests.id('alpha')$$),
     tests.count_as('alpha_admin', $$select count(*)::integer from public.decision_types where organisation_id = tests.id('alpha')$$)::text
   ],

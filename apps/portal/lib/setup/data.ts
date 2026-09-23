@@ -142,13 +142,26 @@ export interface UnitContextRows {
   systems: NamedRow[];
 }
 
-/** The unit context of every unit: knowledge domains, decision types, processes and systems. */
+/**
+ * The unit context of every unit: knowledge domains, decision types, processes and systems. Context
+ * belongs to measurement units (Milestone 4b). Until the context screens are keyed on them (step 4),
+ * each unit's rows are those of its single measurement unit, reported under the unit's id.
+ */
 export async function loadUnitContext(supabase: Client, orgId: string): Promise<UnitContextRows> {
-  const [domains, decisions, processes, systems] = await Promise.all([
+  const [singles, domains, decisions, processes, systems] = await Promise.all([
+    allRows((from, to) =>
+      supabase
+        .from("measurement_units")
+        .select("id, single_unit_id")
+        .eq("organisation_id", orgId)
+        .eq("kind", "single")
+        .order("id")
+        .range(from, to),
+    ),
     allRows((from, to) =>
       supabase
         .from("knowledge_domains")
-        .select("id, unit_id, name, status, criticality")
+        .select("id, measurement_unit_id, name, status, criticality")
         .eq("organisation_id", orgId)
         .order("id")
         .range(from, to),
@@ -156,7 +169,7 @@ export async function loadUnitContext(supabase: Client, orgId: string): Promise<
     allRows((from, to) =>
       supabase
         .from("decision_types")
-        .select("id, unit_id, name, status, from_starter_list")
+        .select("id, measurement_unit_id, name, status, from_starter_list")
         .eq("organisation_id", orgId)
         .order("id")
         .range(from, to),
@@ -164,7 +177,7 @@ export async function loadUnitContext(supabase: Client, orgId: string): Promise<
     allRows((from, to) =>
       supabase
         .from("critical_processes")
-        .select("id, unit_id, name, status")
+        .select("id, measurement_unit_id, name, status")
         .eq("organisation_id", orgId)
         .order("id")
         .range(from, to),
@@ -172,13 +185,42 @@ export async function loadUnitContext(supabase: Client, orgId: string): Promise<
     allRows((from, to) =>
       supabase
         .from("primary_systems")
-        .select("id, unit_id, name, status")
+        .select("id, measurement_unit_id, name, status")
         .eq("organisation_id", orgId)
         .order("id")
         .range(from, to),
     ),
   ]);
-  return { domains, decisions, processes, systems };
+  const unitOf = new Map(singles.map((s) => [s.id, s.single_unit_id]));
+  const asUnit = <R extends { measurement_unit_id: string }>(rows: R[]) =>
+    rows.flatMap(({ measurement_unit_id, ...row }) => {
+      const unit_id = unitOf.get(measurement_unit_id);
+      return unit_id ? [{ ...row, unit_id }] : [];
+    });
+  return {
+    domains: asUnit(domains),
+    decisions: asUnit(decisions),
+    processes: asUnit(processes),
+    systems: asUnit(systems),
+  };
+}
+
+/**
+ * A unit's single measurement unit, where its context is written until the context screens are
+ * keyed on measurement units (Milestone 4b, step 4).
+ */
+export async function singleMeasurementUnitId(
+  supabase: Client,
+  orgId: string,
+  unitId: string,
+): Promise<string | null> {
+  const { data } = await supabase
+    .from("measurement_units")
+    .select("id")
+    .eq("organisation_id", orgId)
+    .eq("single_unit_id", unitId)
+    .maybeSingle();
+  return data?.id ?? null;
 }
 
 export interface Template {

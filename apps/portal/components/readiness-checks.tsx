@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { Glyph, type GlyphKind } from "@/components/glyph";
-import { commonCopy, peopleCount } from "@/lib/copy/common";
+import { commonCopy, familyCount, peopleCount, unitCount } from "@/lib/copy/common";
 import { contextCopy } from "@/lib/copy/context";
 import { fillNodes } from "@/lib/copy/nodes";
 import { readinessCopy } from "@/lib/copy/readiness";
@@ -289,7 +289,7 @@ export function passLine(orgId: string, check: Check): ReactNode {
   if (check.level === "skipped") return readinessCopy["formalRatings.skipped"];
   switch (pass.key) {
     case "units":
-      return fill(readinessCopy["units.pass"], { n: pass.n });
+      return fill(readinessCopy["units.pass"], { units: unitCount(pass.n) });
     case "grouping":
       if (pass.kept.length === 0) return readinessCopy["grouping.none"];
       return pass.kept.length === 1
@@ -317,14 +317,16 @@ export function passLine(orgId: string, check: Check): ReactNode {
       return fill(readinessCopy["workEmails.pass"], { n: pass.n });
     case "roleFamilies":
       return fill(readinessCopy["roleFamilies.pass"], {
-        units: pass.units,
-        families: pass.families,
+        n: pass.units,
+        units: unitCount(pass.units),
+        families: familyCount(pass.families),
         min: pass.min,
         max: pass.max,
       });
     case "context":
       return fill(readinessCopy["context.pass"], {
-        units: pass.units,
+        n: pass.units,
+        units: unitCount(pass.units),
         processes: SETUP.criticalProcessesPerUnit,
       });
     case "formalRatings":

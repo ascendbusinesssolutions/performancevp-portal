@@ -379,7 +379,7 @@ test("a new organisation reaches a passing readiness check through the screens a
   // The check passes.
   await go(page, "Readiness");
   await expect(page.getByTestId("readiness-passed")).toBeVisible();
-  await expect(page.getByTestId("check-units")).toContainText("All 3 units.");
+  await expect(page.getByTestId("check-units")).toContainText("3 units of 10 or more.");
   await expect(page.getByTestId("readiness-summary")).toHaveText(
     "Blockers 0 · Warnings 2 · Passed 11",
   );

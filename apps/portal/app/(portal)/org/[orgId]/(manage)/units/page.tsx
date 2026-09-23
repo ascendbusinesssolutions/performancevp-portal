@@ -5,6 +5,7 @@ import { CheckboxField, RadioGroup, SelectField } from "@/components/fields";
 import { homeCrumb, PageHeader, Section } from "@/components/page";
 import { Head, indentClass, Row, Table, Td, Th } from "@/components/table";
 import { Field } from "@/components/ui";
+import { peopleCount, unitCount } from "@/lib/copy/common";
 import { setupCopy } from "@/lib/copy/setup";
 import { fill } from "@/lib/copy/template";
 import { unitsCopy } from "@/lib/copy/units";
@@ -85,7 +86,10 @@ export default async function UnitsPage({ params, searchParams }: PageProps<"/or
           { label: setupCopy["organisation.crumb"], href: `/org/${orgId}/setup` },
         ]}
         title={unitsCopy["page.title"]}
-        meta={fill(unitsCopy["page.meta"], { units: tree.length, people: people.length })}
+        meta={fill(unitsCopy["page.meta"], {
+          units: unitCount(tree.length),
+          people: peopleCount(people.length),
+        })}
       >
         <p className="text-grey">{unitsCopy["page.intro"]}</p>
       </PageHeader>

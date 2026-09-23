@@ -14,14 +14,16 @@ export interface CopyFixture {
 export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
   "common.list.more": [{ slots: { n: 3 }, expected: "3 more" }],
   "common.people.many": [{ slots: { n: 7 }, expected: "7 people" }],
+  "common.units.many": [{ slots: { n: 3 }, expected: "3 units" }],
+  "common.families.many": [{ slots: { n: 2 }, expected: "2 role families" }],
   "setup.status.unitsToSettle": [
     {
-      slots: { count: 3, n: 2 },
+      slots: { units: "3 units", n: 2 },
       expected: "3 units. 2 need a choice of how they are measured.",
     },
   ],
   "setup.status.unitsToSettleOne": [
-    { slots: { count: 4 }, expected: "4 units. 1 needs a choice of how it is measured." },
+    { slots: { units: "4 units" }, expected: "4 units. 1 needs a choice of how it is measured." },
   ],
   "context.unit.metaCombined": [
     {
@@ -185,7 +187,10 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
   "readiness.summary": [
     { slots: { b: 2, w: 1, p: 9 }, expected: "Blockers 2 \u00b7 Warnings 1 \u00b7 Passed 9" },
   ],
-  "readiness.units.pass": [{ slots: { n: 4 }, expected: "All 4 units." }],
+  "readiness.units.pass": [
+    { slots: { units: "4 units" }, expected: "4 units of 10 or more." },
+    { slots: { units: "1 unit" }, expected: "1 unit of 10 or more." },
+  ],
   "readiness.grouping.keptOne": [
     {
       slots: { unit: "Executive" },
@@ -208,12 +213,19 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
   "readiness.unitForEveryone.pass": [{ slots: { n: 120 }, expected: "120 of 120." }],
   "readiness.roleFamilies.pass": [
     {
-      slots: { units: 4, families: 3, min: 9, max: 12 },
+      slots: { n: 4, units: "4 units", families: "3 role families", min: 9, max: 12 },
       expected: "4 of 4 units. 3 role families, 9 to 12 skills each, critical skills marked.",
     },
   ],
   "readiness.context.pass": [
-    { slots: { units: 4, processes: 3 }, expected: "4 of 4 units. 3 processes named in each." },
+    {
+      slots: { n: 4, units: "4 units", processes: 3 },
+      expected: "4 of 4 units. 3 processes named in each.",
+    },
+    {
+      slots: { n: 1, units: "1 unit", processes: 3 },
+      expected: "1 of 1 unit. 3 processes named in each.",
+    },
   ],
   "readiness.formalRatings.pass": [
     {
@@ -383,18 +395,21 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
       expected: "Not mapped to a band: Outstanding and Needs work.",
     },
   ],
-  "setup.status.units": [{ slots: { count: 4 }, expected: "4 units" }],
   "setup.status.people": [
     { slots: { n: 1240, date: "23 Sept 2026" }, expected: "1,240 people, uploaded 23 Sept 2026" },
   ],
   "setup.status.peopleNoUpload": [{ slots: { n: 41 }, expected: "41 people" }],
   "setup.status.context": [
     {
-      slots: { done: 2, total: 4, remaining: "Claims and Sales" },
+      slots: { done: 2, total: "4 units", remaining: "Claims and Sales" },
       expected: "2 of 4 units. Claims and Sales to go.",
     },
+    {
+      slots: { done: 0, total: "1 unit", remaining: "Operations" },
+      expected: "0 of 1 unit. Operations to go.",
+    },
   ],
-  "setup.status.contextDone": [{ slots: { done: 4, total: 4 }, expected: "4 of 4 units." }],
+  "setup.status.contextDone": [{ slots: { done: 4, total: "4 units" }, expected: "4 of 4 units." }],
   "setup.status.formalMapped": [
     { slots: { n: 88 }, expected: "Mapped. 88 people within 12 months." },
   ],
@@ -452,7 +467,9 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
         "You are working in Harbour Freight under a PerformanceVP support session that ends at 11:05 am. Everything you do here is recorded and shown to the organisation.",
     },
   ],
-  "units.page.meta": [{ slots: { units: 4, people: 1240 }, expected: "4 units, 1,240 people" }],
+  "units.page.meta": [
+    { slots: { units: "4 units", people: "1,240 people" }, expected: "4 units, 1,240 people" },
+  ],
   "units.leader.proposed": [{ slots: { name: "Mia Manager" }, expected: "Proposed: Mia Manager" }],
   "units.leader.ambiguous": [{ slots: { n: 2 }, expected: "2 could lead it; choose one" }],
   "units.edit.meta": [{ slots: { code: "OPS", people: 34 }, expected: "Code OPS. 34 people." }],

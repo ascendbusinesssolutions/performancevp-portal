@@ -6,7 +6,7 @@
  */
 export const unitsCopy = {
   "page.title": "Units",
-  "page.meta": "{units} units, {people} people",
+  "page.meta": "{units}, {people}",
   "page.intro":
     "Your units as your HRIS holds them. Add units here, or let a directory upload create them from its unit codes, then arrange them into a hierarchy. Below them, choose how units under 10 are measured.",
 

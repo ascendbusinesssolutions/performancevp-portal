@@ -43,7 +43,8 @@ export const readinessCopy = {
   "fix.upload": "Review the upload",
 
   // Pass lines.
-  "units.pass": "All {n} units.",
+  // S2 reads "All {n} units"; the count is worded, so one unit reads rightly.
+  "units.pass": "{units} of 10 or more.",
   "grouping.none": "No unit under 10 has units below it.",
   "grouping.keptOne": "{unit} groups the units below it and is not measured.",
   "grouping.keptMany": "{list} group the units below them and are not measured.",
@@ -51,8 +52,8 @@ export const readinessCopy = {
   "managers.passHead": "{n} of {n}, with {head} at the head of the organisation.",
   "unitForEveryone.pass": "{n} of {n}.",
   "roleFamilies.pass":
-    "{units} of {units} units. {families} role families, {min} to {max} skills each, critical skills marked.",
-  "context.pass": "{units} of {units} units. {processes} processes named in each.",
+    "{n} of {units}. {families}, {min} to {max} skills each, critical skills marked.",
+  "context.pass": "{n} of {units}. {processes} processes named in each.",
   "criticalDomain.pass": "Every unit has a knowledge domain marked critical.",
   "leadershipTeam.pass": "Every unit has 3 or more flagged.",
   "teamLeaders.pass": "Every unit has team leaders flagged.",

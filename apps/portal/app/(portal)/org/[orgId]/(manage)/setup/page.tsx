@@ -4,7 +4,7 @@ import { LinkButton } from "@/components/button";
 import { Glyph, type GlyphKind } from "@/components/glyph";
 import { homeCrumb, PageHeader, Section } from "@/components/page";
 import { findingLine } from "@/components/readiness-checks";
-import { commonCopy } from "@/lib/copy/common";
+import { commonCopy, unitCount } from "@/lib/copy/common";
 import { setupCopy } from "@/lib/copy/setup";
 import { fill, listOf } from "@/lib/copy/template";
 import { requireOrgManager } from "@/lib/org/context";
@@ -32,10 +32,11 @@ function statusLine(step: Step, state: SetupState): string {
     case "organisation": {
       const count = state.units.filter((u) => u.status === "active").length;
       if (count === 0) return setupCopy["status.noUnits"];
-      if (state.unitsToSettle === 1) return fill(setupCopy["status.unitsToSettleOne"], { count });
+      const units = unitCount(count);
+      if (state.unitsToSettle === 1) return fill(setupCopy["status.unitsToSettleOne"], { units });
       return state.unitsToSettle > 1
-        ? fill(setupCopy["status.unitsToSettle"], { count, n: state.unitsToSettle })
-        : fill(setupCopy["status.units"], { count });
+        ? fill(setupCopy["status.unitsToSettle"], { units, n: state.unitsToSettle })
+        : units;
     }
     case "directory":
       if (state.people.length === 0) return setupCopy["status.noPeople"];
@@ -54,13 +55,16 @@ function statusLine(step: Step, state: SetupState): string {
       return state.contextRemaining.length > 0
         ? fill(setupCopy["status.context"], {
             done: state.contextDone,
-            total: measured,
+            total: unitCount(measured),
             remaining: listOf(state.contextRemaining, {
               and: commonCopy["list.and"],
               more: (n) => fill(commonCopy["list.more"], { n }),
             }),
           })
-        : fill(setupCopy["status.contextDone"], { done: state.contextDone, total: measured });
+        : fill(setupCopy["status.contextDone"], {
+            done: state.contextDone,
+            total: unitCount(measured),
+          });
     case "formalRatings":
       if (state.formal.decision === "skipped") return setupCopy["status.formalSkipped"];
       if (state.formal.held === 0) return setupCopy["status.formalNone"];

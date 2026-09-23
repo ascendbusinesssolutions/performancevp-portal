@@ -310,7 +310,7 @@ test("units under 10 reach a passing readiness check by the administrator's choi
   // The check passes, with no change to the directory since the upload.
   await go(page, "Readiness");
   await expect(page.getByTestId("readiness-passed")).toBeVisible();
-  await expect(page.getByTestId("check-units")).toContainText("All 3 units.");
+  await expect(page.getByTestId("check-units")).toContainText("3 units of 10 or more.");
   await expect(page.getByTestId("check-grouping")).toContainText(
     "Tasman Water groups the units below it and is not measured.",
   );

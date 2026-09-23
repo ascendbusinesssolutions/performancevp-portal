@@ -54,15 +54,14 @@ export const setupCopy = {
   "step.campaign": "First campaign",
 
   // S1 status lines.
-  "status.units": "{count} units",
   "status.noUnits": "No units yet.",
-  "status.unitsToSettle": "{count} units. {n} need a choice of how they are measured.",
-  "status.unitsToSettleOne": "{count} units. 1 needs a choice of how it is measured.",
+  "status.unitsToSettle": "{units}. {n} need a choice of how they are measured.",
+  "status.unitsToSettleOne": "{units}. 1 needs a choice of how it is measured.",
   "status.people": "{n} people, uploaded {date}",
   "status.peopleNoUpload": "{n} people",
   "status.noPeople": "No one yet.",
-  "status.context": "{done} of {total} units. {remaining} to go.",
-  "status.contextDone": "{done} of {total} units.",
+  "status.context": "{done} of {total}. {remaining} to go.",
+  "status.contextDone": "{done} of {total}.",
   "status.contextWaiting": "Waiting for people in the directory.",
   "status.contextWaitingUnits":
     "Waiting for a unit of 10 or more. Combine the units under 10 first.",

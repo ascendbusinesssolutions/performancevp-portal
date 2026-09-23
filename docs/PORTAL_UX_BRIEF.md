@@ -1,6 +1,6 @@
 # PerformanceVP Online Subscription: UX Brief
 
-**Status:** v1.0, settled 23 September 2026. The six decisions in Section 8 were confirmed by Michael the same day. This file lives in the portal repository; the IP folder holds only a pointer to it. It is the reference for the Claude Design mockups and for every interface milestone in `PORTAL_BUILD_PLAN.md` (Milestones 4, 5, 6, 7 and 9). It defers to the Online Measurement Specification and the Online Recommendations Specification for what is measured and shown, and to the build plan for what is built when.
+**Status:** v1.0, settled 23 September 2026, amended the same day to remove the support-access switch after the tenancy decisions. The six decisions in Section 8 were confirmed by Michael the same day. This file lives in the portal repository; the IP folder holds only a pointer to it. It is the reference for the Claude Design mockups and for every interface milestone in `PORTAL_BUILD_PLAN.md` (Milestones 4, 5, 6, 7 and 9). It defers to the Online Measurement Specification and the Online Recommendations Specification for what is measured and shown, and to the build plan for what is built when.
 
 ---
 
@@ -22,7 +22,7 @@ Three journeys decide whether the product is good. If these are right the rest f
 
 | User | Comes to | How often | Device | Notes |
 |---|---|---|---|---|
-| **Account owner** | Everything an administrator does, plus users, the subscription view, the support-access switch, the data-contribution opt-out | Setup, then occasional | Desktop | Usually the HR lead or a chief of staff |
+| **Account owner** | Everything an administrator does, plus users, the subscription view, the record of PerformanceVP support sessions, the data-contribution opt-out | Setup, then occasional | Desktop | Usually the HR lead or a chief of staff |
 | **Administrator** | Set up and maintain the directory and unit context, run campaigns, review and release results, the ratings area, exports | Weekly around a campaign, quarterly otherwise | Desktop | The person the product has to earn trust with. Often the same person as the owner |
 | **Executive viewer** | Read released results across the organisation, trends, suggestions | After each release; a few minutes | Desktop and tablet | Never sees ratings or the directory. Wants the answer first |
 | **Unit viewer** | The same for nominated units | After each release | Desktop and tablet | A unit leader. Never sees ratings; cannot hide a trip-wire |
@@ -100,7 +100,7 @@ These come from the Online Measurement and Recommendations Specifications and fr
 ### 4.4 Two surfaces outside the journeys
 
 - **The ratings area** (administrator and account owner only). A separate area, visibly separate from results, with its own navigation entry, an access-logged banner, browse by unit and manager, and export. It shares no screen with results.
-- **The subscription view** (account owner). Band, period, status, the grace and suspension rules stated plainly, renewal date, and the support-access and data-contribution switches with one sentence each on what they do.
+- **The subscription view** (account owner). Band, period, status, the grace and suspension rules stated plainly, renewal date, the data-contribution switch with one sentence on what it does, and the record of PerformanceVP support sessions: who, when, why, and what was done. There is no switch for support access; staff reach a client's data only through a logged session, and the client can always see the sessions (decided 23 September 2026).
 
 ---
 

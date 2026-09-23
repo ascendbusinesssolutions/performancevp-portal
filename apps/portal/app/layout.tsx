@@ -26,6 +26,10 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
+// Every page renders per request: the content security policy carries a fresh nonce (proxy.ts),
+// which a prerendered page could not include, and every page depends on the signed-in session.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "PerformanceVP",
   description: "The PerformanceVP online subscription portal.",

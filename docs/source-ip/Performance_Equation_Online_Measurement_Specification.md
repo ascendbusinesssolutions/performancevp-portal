@@ -2,8 +2,8 @@
 ## Online Measurement Specification
 
 **Author:** Michael, PerformanceVP
-**Status:** Working draft v0.8, for review. Proposed new source document. All decisions raised in drafting were settled on 21 September 2026 and are recorded in Part 11.1; three further decisions of 22 September 2026, raised by the intake package build, are recorded there too. Later decisions supersede earlier ones where noted.
-**Last updated:** 22 September 2026
+**Status:** Working draft v0.9, for review. Proposed new source document. All decisions raised in drafting were settled on 21 September 2026 and are recorded in Part 11.1; three further decisions of 22 September 2026, raised by the intake package build, are recorded there too. Later decisions supersede earlier ones where noted.
+**Last updated:** 23 September 2026
 **Companion documents:** Performance Equation Strategy; Sub-Dimension × Cadence Master Reference; Measurement Reference Parts 1 and 2; Survey Blueprint; Tier 3 Module Library; Survey Processing and Scoring Workbook Spec; Diagnostic Workbook Spec; Intervention Design Library; PORTAL_BUILD_PLAN.md, CLAUDE.md and DECISIONS.md (all three revised on 21 September 2026 to implement this document).
 
 ---
@@ -297,7 +297,7 @@ The directory persists for the life of the subscription so that campaigns can be
 - **In the portal:** the administrator edits individuals directly (unit, team, manager, role title, role family, flags, status).
 - **By template:** the administrator downloads the HRIS template, populates it from the HRIS, and uploads it to rebuild the structure and directory.
 
-**Template fields.** Employee ID (required; the stable key); first name; last name; work email; unit code and unit name; team; manager's employee ID; role title; role family; start date; FTE fraction; team leader flag; leadership team flag; employment status; formal performance rating and formal rating date (both optional; see Part 6.4). People-manager status is derived from reporting lines.
+**Template fields.** Employee ID (required; the stable key); first name; last name; work email; unit code and unit name; team; manager's employee ID; role title; role family; start date; FTE fraction; team leader flag; leadership team flag; employment status; formal performance rating and formal rating date (both optional; see Part 6.4). Required at upload: employee ID, first and last name, unit code and unit name, and FTE fraction; the rest may be blank at upload and are checked by the readiness check before the first campaign. Employee IDs and unit codes match without regard to case, so an HRIS export that changes case does not read as leavers (decided 23 September 2026). People-manager status is derived from reporting lines.
 
 **Upload behaviour.** Records are matched on employee ID. New IDs are added, missing IDs are deactivated, changed attributes are updated. The platform shows a preview of the differences (joiners, leavers, moves between units and teams, manager changes) and applies nothing until the administrator confirms.
 
@@ -360,10 +360,10 @@ The module's inflation guard (Part 4.4) does not apply to route (a). These rules
 | Manager ratings of named individuals, and evidence notes | Retained, identified, for the life of the subscription. Visible to the manager who entered them (their own direct reports only) and to the client's administrators. Not visible to executive or unit-level viewers, or to other managers. Administrators can export them. Every administrator view and export is recorded in the audit log. |
 | Formal performance ratings uploaded as the C3 input | As for manager ratings. Visible to administrators only. |
 | Ratings of people who leave | When a directory record is purged, that person's rating rows are kept but the link to their identity is removed, so historical scores stay reproducible without holding named ratings on former employees. |
-| PerformanceVP staff access | Designated PerformanceVP support staff can access a client's account, including ratings, to assist with setup and support. Access is granted under the subscription terms, limited to named support staff with mandatory multi-factor authentication, and every access is logged and visible to the client's account owner. The account owner can switch support access off. |
+| PerformanceVP staff access | Designated PerformanceVP support staff, and the Owner, reach a client's data only through a support session: opened with a written reason, time-limited, logged, and listed for the client's account owner and administrators with the staff member's name and the trail of what was done. Sessions work in every subscription state, suspension included, so staff are never locked out, and there is no client control that turns support access off (decided 23 September 2026, replacing the switch drafted earlier). Staff hold mandatory multi-factor authentication. |
 | Research dataset | Individual ratings never enter it. Only unit-level aggregates do, subject to the client's opt-out. |
 | Directory records | Retained while the person is active. Deactivated records purged 30 days after deactivation. |
-| Organisation offboarding | Export, then purge within 30 days of cessation, as already decided. |
+| Organisation offboarding | On expiry, a 30-day read-only grace period, then suspension. A suspended organisation's data is retained until the Owner deletes the organisation, a manual, audited action that exports first and then purges (decided 22 September 2026, superseding the earlier rule of export and purge within 30 days of cessation). The legal review may set a maximum retention period. |
 
 **Consequences of retaining identified ratings (decided 21 September 2026, superseding the earlier aggregates-only decision).** Every C1, C2, C3 and S1 score can be traced to the ratings behind it. Administrators can review what managers entered. Managers start each annual cycle from their previous ratings and adjust them. An event-triggered S1 refresh can be recomputed from stored ratings after a directory change. In return the platform holds performance data about identifiable employees, so it is built to the standard that implies: role-restricted access enforced where the data is stored, access logging, encryption, breach response, and subscription terms that make the client responsible for the data with PerformanceVP as its service provider. The legal review covers those terms and the handling of access requests.
 
@@ -423,7 +423,7 @@ A separate pure package converts responses into these inputs. It mirrors the Sur
 6. **Band values accepted as defaults** for ADM-O4 and the response values in ADM-O2, to be calibrated in pilots.
 7. **Identified manager ratings are retained and visible to administrators** (Part 7), for traceability. Supersedes decision 1.
 8. **Formal performance ratings as an optional C3 input** (Part 6.4). Where uploaded, dated within the last 12 months (aligned with the Measurement Reference) and covering 80% of the unit, they are the C3 input and managers do not rate for C3. Where blank, managers rate. The switch is per unit, and the Measurement Reference's acceptance rules apply mechanically. The 12-month limit is communicated to the client. This replaces the comparison feature and the six-month limit drafted earlier the same day.
-9. **PerformanceVP support staff have access** to client accounts, including ratings, to assist (Part 7). Logged and visible to the client.
+9. **PerformanceVP support staff have access** to client accounts, including ratings, to assist (Part 7). Logged and visible to the client. Refined by decision 14.
 10. **Aligned with the workbook's blank-input rule** (settled 21 September 2026 in the workbook maintenance pass): a composite computes only when every component it requires is numeric, and there is no reallocation inside a composite. The engine mirrors the workbook, so the online route cannot do otherwise. Two provisions of earlier drafts are withdrawn: the O4 fallback to perception alone, and the proportional reallocation of the O1 structural layer for small leadership teams. Both cases now report the sub-dimension as insufficient.
 
 No decisions remain open in this document.
@@ -433,6 +433,11 @@ No decisions remain open in this document.
 11. **C3 skew adjustment takes the workbook's form.** The Survey Processing Workbook already implements the Module Library's 0.2 adjustment as a transfer of 20% of each band's count down one band. The online route adopts it (Part 4.4), replacing the 5-point deduction, so both routes apply one rule and discrepancy 3 is closed.
 12. **Speed check defined** (Part 7): nearest-rank 5th percentile per audience per campaign, applied only with at least 20 received responses, reported either way.
 13. **Where the guard deductions and the confidence cap land** (Part 9): C1 and C2 point deductions through adjustment cells added to the Diagnostic Workbook and mirrored by the engine; the C3 confidence cap through a per-row cap on Tier Assignment; both workbook first. The intake records deductions as not applied until then.
+
+**Decided 23 September 2026, from the tenancy build**
+
+14. **Staff are never locked out, and there is no support switch.** Staff access is through logged, time-limited support sessions visible to the client (Part 7). Replaces the switch in decision 9.
+15. **Offboarding follows the retention rule** of 22 September 2026 (Part 7), not the earlier 30-day purge.
 
 ## 11.2 Questions for pilot validation
 1. Two-part member baseline against a single sitting: completion and drop-off.

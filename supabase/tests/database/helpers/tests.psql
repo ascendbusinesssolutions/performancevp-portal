@@ -1,0 +1,368 @@
+-- Shared pgTAP helpers.
+--
+-- Included with \ir at the top of each test file, inside that file's transaction, so everything
+-- defined here rolls back with the test and nothing persists: not locally, not in CI, and not on
+-- staging when the suite runs with --linked. The .psql extension keeps pg_prove from running this
+-- file on its own.
+--
+-- Personas are real rows in auth.users, and authenticate_as gives each one a live row in
+-- auth.sessions and the JWT claims PostgREST would set, then becomes `authenticated`. Everything
+-- that follows runs under row level security exactly as an API request would.
+
+create schema tests;
+grant usage on schema tests to anon, authenticated, service_role;
+
+-- Every persona the fixture creates, by key.
+create table tests.personas (
+  key text primary key,
+  user_id uuid not null unique,
+  email text not null
+);
+grant select on tests.personas to anon, authenticated, service_role;
+
+-- Fixture identifiers (organisations, units, employees and so on), by key, so assertions can be
+-- scoped to the fixture and read by name.
+create table tests.ids (
+  key text primary key,
+  id uuid not null
+);
+grant select on tests.ids to anon, authenticated, service_role;
+
+create function tests.id(p_key text)
+returns uuid
+language sql
+stable
+as $$
+  select id from tests.ids where key = p_key
+$$;
+
+create function tests.remember(p_key text, p_id uuid)
+returns uuid
+language sql
+as $$
+  insert into tests.ids (key, id) values (p_key, p_id) returning id
+$$;
+
+create function tests.user_id(p_key text)
+returns uuid
+language sql
+stable
+as $$
+  select user_id from tests.personas where key = p_key
+$$;
+
+-- Creates a confirmed email user. The profile row comes from the auth.users trigger once that
+-- trigger exists (step 2). On staging an existing Owner is adopted rather than duplicated; see
+-- tests.adopt_or_create_owner in the fixture.
+create function tests.create_user(p_key text, p_email text, p_full_name text default null)
+returns uuid
+language plpgsql
+as $$
+declare
+  v_id uuid := gen_random_uuid();
+begin
+  insert into auth.users (
+    instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+    raw_app_meta_data, raw_user_meta_data, created_at, updated_at, is_sso_user, is_anonymous
+  ) values (
+    '00000000-0000-0000-0000-000000000000', v_id, 'authenticated', 'authenticated', p_email, '',
+    now(), '{"provider": "email", "providers": ["email"]}',
+    jsonb_strip_nulls(jsonb_build_object('full_name', p_full_name)), now(), now(), false, false
+  );
+  insert into tests.personas (key, user_id, email) values (p_key, v_id, p_email);
+  return v_id;
+end
+$$;
+
+-- The Sydney calendar date, callable from a statement run as a persona (who holds no execute
+-- right on private.today()).
+create function tests.today()
+returns date
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select private.today()
+$$;
+
+-- Returns to the owner role with no JWT claims.
+create function tests.as_postgres()
+returns void
+language plpgsql
+as $$
+begin
+  perform set_config('role', 'postgres', true);
+  perform set_config('request.jwt.claim', '', true);
+  perform set_config('request.jwt.claim.sub', '', true);
+  perform set_config('request.jwt.claims', '', true);
+end
+$$;
+
+-- Becomes the anonymous API role.
+create function tests.as_anon()
+returns void
+language plpgsql
+as $$
+begin
+  perform tests.as_postgres();
+  perform set_config('request.jwt.claims', '{"role": "anon"}', true);
+  perform set_config('role', 'anon', true);
+end
+$$;
+
+-- Becomes the service role, as server code with the secret key would.
+create function tests.as_service()
+returns void
+language plpgsql
+as $$
+begin
+  perform tests.as_postgres();
+  perform set_config('request.jwt.claims', '{"role": "service_role"}', true);
+  perform set_config('role', 'service_role', true);
+end
+$$;
+
+-- Signs a persona in: a live auth.sessions row at the given assurance level, the JWT claims
+-- (sub, email, aal, amr, session_id) and the `authenticated` role. By default a password
+-- session, completed with TOTP at aal2. Pass p_methods => array['otp'] for an email-code session.
+-- Returns the session id, so a test can revoke it; pass it back as p_session to present the same
+-- token again (no new session row is created then). p_factor_age backdates the amr timestamps,
+-- for the step-up checks.
+create function tests.authenticate_as(
+  p_key text,
+  p_aal text default 'aal2',
+  p_methods text[] default null,
+  p_session uuid default null,
+  p_factor_age interval default interval '0 seconds'
+)
+returns uuid
+language plpgsql
+as $$
+declare
+  v_user tests.personas;
+  v_session uuid := coalesce(p_session, gen_random_uuid());
+  v_now bigint := extract(epoch from now() - p_factor_age)::bigint;
+  v_methods text[] := coalesce(
+    p_methods,
+    case when p_aal = 'aal2' then array['password', 'totp'] else array['password'] end
+  );
+begin
+  perform tests.as_postgres();
+  select * into strict v_user from tests.personas where key = p_key;
+  if p_session is null then
+    insert into auth.sessions (id, user_id, created_at, updated_at, aal)
+    values (v_session, v_user.user_id, now(), now(), p_aal::auth.aal_level);
+  end if;
+  perform set_config(
+    'request.jwt.claims',
+    jsonb_build_object(
+      'sub', v_user.user_id,
+      'role', 'authenticated',
+      'aud', 'authenticated',
+      'email', v_user.email,
+      'aal', p_aal,
+      'session_id', v_session,
+      'amr', (
+        select jsonb_agg(jsonb_build_object('method', m, 'timestamp', v_now))
+        from unnest(v_methods) as m
+      )
+    )::text,
+    true
+  );
+  perform set_config('role', 'authenticated', true);
+  return v_session;
+end
+$$;
+
+-- How many rows of one organisation a persona can see in a table, or -1 when the role holds no
+-- privilege on the table at all. 'anon' is the anonymous role; any other key is a persona.
+create function tests.visible_rows(
+  p_key text,
+  p_table text,
+  p_org uuid,
+  p_aal text default 'aal2',
+  p_methods text[] default null
+)
+returns integer
+language plpgsql
+as $$
+declare
+  v_n integer;
+  v_column text := case when p_table = 'organisations' then 'id' else 'organisation_id' end;
+begin
+  if p_key = 'anon' then
+    perform tests.as_anon();
+  else
+    perform tests.authenticate_as(p_key, p_aal, p_methods);
+  end if;
+  begin
+    execute format('select count(*) from public.%I where %I = $1', p_table, v_column)
+      into v_n using p_org;
+  exception when insufficient_privilege then
+    v_n := -1;
+  end;
+  perform tests.as_postgres();
+  return v_n;
+end
+$$;
+
+-- Runs one statement as a persona and reports the outcome: the number of rows affected, 'denied'
+-- for a privilege or row-security refusal (SQLSTATE 42501), or 'error: <state> <message>' for
+-- anything else. The statement's effect is always rolled back, so attempts never disturb the
+-- fixture unless p_keep is true.
+create function tests.attempt(
+  p_key text,
+  p_sql text,
+  p_aal text default 'aal2',
+  p_methods text[] default null,
+  p_keep boolean default false
+)
+returns text
+language plpgsql
+as $$
+declare
+  v_n integer;
+  v_result text;
+begin
+  if p_key = 'anon' then
+    perform tests.as_anon();
+  elsif p_key = 'service' then
+    perform tests.as_service();
+  else
+    perform tests.authenticate_as(p_key, p_aal, p_methods);
+  end if;
+  begin
+    execute p_sql;
+    get diagnostics v_n = row_count;
+    v_result := v_n::text;
+    if not p_keep then
+      raise exception using errcode = '99T01', message = 'tests: undo attempt';
+    end if;
+  exception
+    when sqlstate '99T01' then
+      null;
+    when insufficient_privilege then
+      v_result := 'denied';
+    when others then
+      v_result := 'error: ' || sqlstate || ' ' || sqlerrm;
+  end;
+  perform tests.as_postgres();
+  return v_result;
+end
+$$;
+
+-- Runs a counting query as a persona and returns the count, or -1 on a privilege refusal.
+create function tests.count_as(
+  p_key text,
+  p_sql text,
+  p_aal text default 'aal2',
+  p_methods text[] default null
+)
+returns integer
+language plpgsql
+as $$
+declare
+  v_n integer;
+begin
+  if p_key = 'anon' then
+    perform tests.as_anon();
+  elsif p_key = 'service' then
+    perform tests.as_service();
+  else
+    perform tests.authenticate_as(p_key, p_aal, p_methods);
+  end if;
+  begin
+    execute p_sql into v_n;
+  exception when insufficient_privilege then
+    v_n := -1;
+  end;
+  perform tests.as_postgres();
+  return v_n;
+end
+$$;
+
+-- Runs a query as a persona and returns its first column as text (null when it returns no row).
+-- Errors propagate, so throws_ok can wrap it.
+create function tests.value_as(
+  p_key text,
+  p_sql text,
+  p_aal text default 'aal2',
+  p_methods text[] default null
+)
+returns text
+language plpgsql
+as $$
+declare
+  v_value text;
+begin
+  if p_key = 'anon' then
+    perform tests.as_anon();
+  elsif p_key = 'service' then
+    perform tests.as_service();
+  else
+    perform tests.authenticate_as(p_key, p_aal, p_methods);
+  end if;
+  execute p_sql into v_value;
+  perform tests.as_postgres();
+  return v_value;
+end
+$$;
+
+-- Evaluates a visibility matrix. p_matrix names a table whose rows are (tbl, org, then one integer
+-- column per persona key) and says how many of that organisation's rows each persona should see
+-- (-1: no privilege at all). Returns every cell that differs, so an assertion that this is empty
+-- reads as the matrix itself and a failure names the cell.
+create function tests.visibility_mismatches(p_matrix text)
+returns table (tbl text, org text, persona text, expected integer, actual integer)
+language plpgsql
+as $$
+declare
+  r record;
+begin
+  for r in execute format(
+    'select m.tbl, m.org, e.key as persona, e.value::integer as expected
+     from %s m, jsonb_each_text(to_jsonb(m) - ''tbl'' - ''org'') e
+     order by 1, 2, 3',
+    p_matrix
+  ) loop
+    tbl := r.tbl;
+    org := r.org;
+    persona := r.persona;
+    expected := r.expected;
+    actual := tests.visible_rows(r.persona, r.tbl, tests.id(r.org));
+    if actual is distinct from expected then
+      return next;
+    end if;
+  end loop;
+end
+$$;
+
+-- Evaluates a write matrix. p_matrix names a table whose rows are (label, stmt, then one text
+-- column per persona key) giving the expected outcome of tests.attempt: a row count, or 'denied'.
+-- Returns every cell that differs.
+create function tests.write_mismatches(p_matrix text)
+returns table (label text, persona text, expected text, actual text)
+language plpgsql
+as $$
+declare
+  r record;
+begin
+  for r in execute format(
+    'select m.label, m.stmt, e.key as persona, e.value as expected
+     from %s m, jsonb_each_text(to_jsonb(m) - ''label'' - ''stmt'') e
+     order by 1, 3',
+    p_matrix
+  ) loop
+    label := r.label;
+    persona := r.persona;
+    expected := r.expected;
+    actual := tests.attempt(r.persona, r.stmt);
+    if actual is distinct from expected then
+      return next;
+    end if;
+  end loop;
+end
+$$;
+
+grant execute on all functions in schema tests to anon, authenticated, service_role;

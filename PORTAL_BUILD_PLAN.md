@@ -1,6 +1,6 @@
 # PerformanceVP Online Subscription: Build Plan (v2)
 
-**Status:** Approved by Michael on 21 September 2026. Amended 22 September 2026: subscriptions are sales-led with no online payment (Sections 0, 1, 2.8, 4, 11, 12, 13 and 15). This plan supersedes the June 2026 plan, which is archived at `archive/PORTAL_BUILD_PLAN_v1.md` for history only. The engine specification from that plan is preserved verbatim in `docs/ENGINE_SPEC.md`.
+**Status:** Approved by Michael on 21 September 2026. Amended 22 September 2026: subscriptions are sales-led with no online payment (Sections 0, 1, 2.8, 4, 11, 12, 13 and 15). Amended 23 September 2026, with the Milestone 3 plan: staff reach client data through logged support sessions with no client switch, passwords for every role except managers, and the schema refinements Milestone 3 settled (Sections 1.2, 2.1, 2.2, 2.8, 3, 4, 12, 13, 14 and 15). This plan supersedes the June 2026 plan, which is archived at `archive/PORTAL_BUILD_PLAN_v1.md` for history only. The engine specification from that plan is preserved verbatim in `docs/ENGINE_SPEC.md`.
 **Read with:** `Performance_Equation_Online_Measurement_Specification.md` and `Performance_Equation_Online_Recommendations_Specification.md`. Those two documents are the source for every online-specific rule in this plan. This plan says how to build what they define.
 
 ---
@@ -38,7 +38,7 @@ The online product may one day be sold separately from the consultancy. To keep 
 
 ### 1.2 Stack
 
-Unchanged from v1: Next.js (App Router), TypeScript strict, Tailwind with the four brand tokens, Supabase (Postgres, Auth, RLS, Storage), Resend for all email including auth email over custom SMTP. Additions: a scheduled-job runner (Supabase scheduled functions or Vercel cron) for campaign opening, reminders, closing, aggregation, subscription renewal reminders and lapse transitions, purges and event-trigger detection; a server-side spreadsheet library for generating and parsing the directory template as `.xlsx`. Uploaded files are parsed server-side only, size-limited, stored in the private bucket with a hash, and never executed or rendered.
+Unchanged from v1: Next.js (App Router), TypeScript strict, Tailwind with the four brand tokens, Supabase (Postgres, Auth, RLS, Storage), Resend for all email including auth email over custom SMTP. Additions: a scheduled-job runner (Vercel Cron calling authenticated job routes, decided 23 September 2026) for campaign opening, reminders, closing, aggregation, subscription renewal reminders and lapse transitions, purges and event-trigger detection; a server-side spreadsheet library for generating and parsing the directory template as `.xlsx`. Uploaded files are parsed server-side only, size-limited, stored in the private bucket with a hash, and never executed or rendered.
 
 ### 1.3 Layers
 
@@ -67,21 +67,25 @@ All tenant-owned tables carry `organisation_id`. Reference tables are seeded by 
 
 | Table | Notes |
 |---|---|
-| `organisations` | Adds `employee_band`, `subscription_status`, `support_access_enabled` (default true), `data_contribution_opt_out` (default false), sector metadata. |
+| `organisations` | Adds `data_contribution_opt_out` (default false) and sector metadata (ANZSIC division and class, size band). The employee band and the subscription state live on `subscriptions` (2.8). There is no support-access switch (3.2). |
 | `business_units` | Adds a stable `unit_code`. Hierarchy by `parent_unit_id`. Minimum 10 staff to be measurable. |
 | `unit_lineage` | Predecessor and successor links for merges and splits, with the effective date. Renames need no lineage row. |
 | `teams` | Team within a unit, for CII team-level scoring. |
 | `profiles` | One row per authenticated user. Flags: `is_owner`, `is_support_staff`. |
-| `org_memberships` | Role is one of `account_owner`, `administrator`, `executive_viewer`, `unit_viewer`, `manager_respondent`. |
+| `org_memberships` | Role is one of `account_owner`, `administrator`, `executive_viewer`, `unit_viewer`, `manager_respondent`. A person may hold several roles in one organisation; one active account owner per organisation. Manager memberships are created by the system at campaign launch and linked to the manager's directory record; no person grants them. PerformanceVP staff never hold memberships. |
 | `unit_access` | Scopes a `unit_viewer` to nominated units and descendants. |
+| `membership_invitations` | Access granted to an address that has no account yet, claimed when the account is created. |
+| `support_sessions` | How staff reach a client's data: staff member and name, reason, start, expiry, end. Visible to the client. |
 
 ### 2.2 Directory
 
 | Table | Notes |
 |---|---|
-| `employees` | `employee_ref` (the client's employee ID, the stable key, unique per organisation), names, work email, unit, team, `manager_employee_id`, role title, `role_family_id`, start date, FTE fraction, team-leader flag, leadership-team flag, status, `formal_rating_label`, `formal_rating_date`. |
-| `directory_uploads` | File metadata and hash, parsed differences (joiners, leavers, moves, manager changes), who applied it and when. Nothing applies until confirmed. |
-| `directory_snapshots` | The frozen directory for a campaign, taken at launch. |
+| `employees` | `employee_ref` (the client's employee ID, the stable key, unique per organisation), names, work email, unit, team, `manager_employee_id`, role title, `role_family_id`, start date, FTE fraction, team-leader flag, leadership-team flag, employment status, status. |
+| `formal_ratings` | The formal performance rating and its date, one per person. Kept apart from `employees` so a manager's read of their direct reports never includes a rating; read only through a function that logs every view. |
+| `directory_uploads` | File metadata and hash, the counts of the differences (joiners, leavers, moves, manager changes), who applied it and when. Nothing applies until confirmed. The file is kept only until the upload is decided or expires. |
+| `directory_upload_rows` | The staged rows of an upload awaiting its decision, read only through the logged preview. |
+| `directory_snapshots`, `snapshot_members`, `snapshot_formal_ratings` | The frozen directory for a campaign, taken at launch. Immutable, except that the purge redacts and unlinks. |
 
 ### 2.3 Unit context (client-configured)
 
@@ -114,7 +118,7 @@ Carried from v1: `ref_sub_dimensions`, `ref_archetype_weights`, `ref_survey_item
 
 ### 2.8 Subscriptions and audit
 
-`subscriptions` (band; status of `pending`, `active`, `grace`, `suspended` or `cancelled`; period start and end; agreement date; invoice reference; provisioned by). `audit_logs` as v1, extended with directory uploads, rating views and exports, results releases, every support-staff access, provisioning, subscription changes and organisation deletion.
+`subscriptions`, one row per term: band, period start and end, agreement date, invoice reference, provisioned by, and an optional `suspended` or `cancelled` override with its reason. The state (`pending`, `active`, `grace`, `suspended` or `cancelled`) is computed from the governing term on the Sydney calendar and never stored, so a scheduled job that fails to run cannot change anyone's access. `audit_logs` as v1, extended with directory uploads, rating views and exports, results releases, every support session and everything done in it, provisioning, subscription changes and organisation deletion. Row changes copy values only for allowlisted columns; rating values never reach the log.
 
 ---
 
@@ -124,15 +128,15 @@ Written before the code, as in v1.
 
 ### 3.1 Boundary and posture
 
-Unchanged: the organisation is the tenant, RLS on every table, deny by default, no `USING (true)` on tenant data, no grants to `anon`, role facts in tables so revocation is immediate.
+Unchanged: the organisation is the tenant, RLS on every table, deny by default, no `USING (true)` on tenant data, no grants to `anon`, role facts in tables so revocation is immediate. RLS is enabled and not forced: every table is owned by `postgres`, which the Data API never uses, and the definer helpers rely on the owner's exemption (decided 23 September 2026). Every foreign key between tenant tables carries `organisation_id`.
 
 ### 3.2 Roles
 
 | Role | Can do |
 |---|---|
-| **Owner** (one PerformanceVP account) | System administration, reference data deployments, audit review. Least privilege, with audited break-glass, as v1. |
-| **Support staff** (designated PerformanceVP accounts) | Access a client's account, including ratings, to assist with setup and support, where the organisation's `support_access_enabled` is true (the default). Every access is logged and visible to the account owner. |
-| **Account owner** | Everything an administrator can do, plus the subscription view, user management, the support-access switch and the data-contribution opt-out. |
+| **Owner** (one PerformanceVP account) | System administration, reference data deployments, audit review. Least privilege: no standing access to client data, which the Owner reaches through a support session like support staff, labelled as the Owner's. |
+| **Support staff** (designated PerformanceVP accounts) | Access a client's account, including ratings, to assist with setup and support, through a support session opened with a written reason and limited in time. Sessions work in every subscription state and the client cannot switch them off (decided 23 September 2026). Every session, and everything done in it, is logged and visible to the account owner and administrators. |
+| **Account owner** | Everything an administrator can do, plus the subscription view, user management and the data-contribution opt-out. |
 | **Administrator** | Directory, unit context, campaigns, checklists, review and release of results, the ratings area, exports. |
 | **Executive viewer** | All released results across the organisation. No directory editing, no ratings. |
 | **Unit viewer** | Released results for nominated units and descendants. No ratings. |
@@ -146,16 +150,18 @@ Helper functions replace v1's analyst helpers: `is_owner()`, `is_support_for(org
 
 | Table group | Read | Write |
 |---|---|---|
-| Organisation, units, teams, lineage, unit context | Members of the organisation by role; support staff where enabled | Administrators and account owner; support staff where enabled |
-| Directory and uploads | Administrators, account owner, support staff where enabled. A manager respondent sees their own direct reports only | Administrators and account owner; uploads apply server-side after confirmation |
+| Organisation, units, teams, lineage, unit context | Members of the organisation by role; staff under a support session | Administrators and account owner; staff under a support session |
+| Directory and uploads | Administrators, account owner, staff under a support session. A manager respondent sees their own direct reports only. Formal ratings through a logged function only | Administrators and account owner; staff under a support session (Guided Setup); uploads apply after confirmation |
 | Anonymous responses and item responses | No client-side read for any role, including support staff and the Owner | Public ingestion route only, service role |
 | Invitations | Administrators see status counts, never a link between a person and a response | Server-side |
-| Rating sessions and identified ratings | The rating manager (own rows); administrators and account owner; support staff where enabled. Never executive or unit viewers | The rating manager until the campaign closes; immutable afterwards |
-| Aggregates, engine inputs, runs | Administrators, account owner, support staff where enabled | Server-side only |
+| Rating sessions and identified ratings | The rating manager (own rows); administrators, account owner and staff under a support session, through functions that log every view and export. Never executive or unit viewers | The rating manager until the campaign closes; immutable afterwards |
+| Aggregates, engine inputs, runs | Administrators, account owner, staff under a support session | Server-side only |
 | Scores, composites, trip-wires, suggestions | Administrators and account owner for all runs; executive and unit viewers for released runs only, unit-filtered | Server-side only, inside the calculation transaction |
 | Action records | Roles that can see the unit's results | Administrators and account owner |
 | Reference tables | All authenticated users | Migration only |
-| Audit logs | Account owner and administrators for their organisation, including the support-access entries | Insert by trigger and server code only; no update or delete for any role |
+| Audit logs | Account owner and administrators for their organisation, including every support-session entry; the Owner for platform events and entries made by staff | Insert by trigger and server code only; no update or delete for any role, except the Owner's organisation deletion (Section 11) |
+
+In suspension the account owner keeps read access to the organisation, the subscription, the staff session history and the audit log, and nothing else.
 
 ### 3.4 The two kinds of data, kept apart
 
@@ -163,7 +169,7 @@ Survey responses are anonymous and structurally unlinkable to a person, exactly 
 
 ### 3.5 Identified manager flow
 
-Managers sign in with a one-time email code (no password) and receive the `manager_respondent` role scoped to the campaign. Rating forms list direct reports from the campaign snapshot. Ratings of 5, and talent bands 5 and 1, require a one-line evidence note. Forms pre-fill from the manager's previous ratings. Administrators see which managers are outstanding. Every administrator or support view or export of ratings writes an audit entry. A scheduled job nulls the employee link on rating rows when a directory record is purged (30 days after deactivation), so history stays reproducible without named ratings on former employees.
+Managers sign in with a one-time email code (no password) and receive the `manager_respondent` role scoped to the campaign. Rating forms list direct reports from the campaign snapshot. Ratings of 5, and talent bands 5 and 1, require a one-line evidence note. Forms pre-fill from the manager's previous ratings. Administrators see which managers are outstanding. Every administrator or support view or export of ratings writes an audit entry: administrators and staff read ratings only through functions that write it, so no view goes unrecorded. A scheduled job nulls the employee link on rating rows when a directory record is purged (30 days after deactivation), so history stays reproducible without named ratings on former employees.
 
 ### 3.6 Suppression and guardrails
 
@@ -173,7 +179,7 @@ Suppression is unchanged from v1 Section 3.6: the higher of the anonymity floor 
 
 ## 4. Authentication and onboarding
 
-Supabase Auth with `@supabase/ssr` sessions and middleware gating, as v1. Multi-factor authentication is mandatory for the Owner, support staff, account owners and administrators, because those roles can see identified ratings. Executive and unit viewers are offered it. Managers use the one-time email code.
+Supabase Auth with `@supabase/ssr` sessions and middleware gating, as v1. Account owners, administrators, viewers and PerformanceVP staff sign in with a password; managers use the one-time email code (decided 23 September 2026). Multi-factor authentication (TOTP) is mandatory for the Owner, support staff, account owners and administrators, because those roles can see identified ratings. Executive and unit viewers are offered it, and once enrolled always need it. The database enforces all of this: every role except manager needs a password session, the mandatory roles need `aal2`, and a signed-out or revoked session counts for nothing. Auth email is sent from `portal@performancevp.com.au`.
 
 There is no self-serve sign-up. Organisations are provisioned by the Owner or support staff on signature of an agreement (Section 11), and the account owner is invited by email. Public sign-up is disabled in Supabase Auth.
 
@@ -267,7 +273,7 @@ Price levels, Guided Setup scope, the support model and the legal terms are outs
 
 **Milestone 2: Intake package.** Exit: Survey Processing Workbook parity on the Northwind example; all online-rule fixtures pass.
 
-**Milestone 3: Tenancy, roles and directory.** Schema for Sections 2.1, 2.2 and 2.8; helper functions; RLS for every table; auth including the one-time-code manager sign-in and mandatory MFA; the Excel template, upload preview, snapshots and lineage; audit triggers. Exit: the RLS matrix in Section 3.3 proven by tests across two seeded organisations, including that executive and unit viewers cannot read ratings and that no role can read anonymous responses. Notes from Milestone 0. Data API grants: Supabase no longer auto-exposes new tables to `anon`, `authenticated` and `service_role` (the CLI's `auto_expose_new_tables` default is off, and the field is removed on 30 October 2026), so the first migration states the grants explicitly rather than assuming either the old or the new default, and the "no grants to `anon`" rule in 3.1 is asserted by a pgTAP test beside the RLS-on-every-table invariant that already exists. Key naming: Supabase issues publishable and secret keys alongside the legacy anon and service-role keys, and the local CLI prints both; the names in `apps/portal/.env.example` are confirmed against the staging project when it is created and renamed if the new keys are adopted. Whether RLS is also forced for the table owner is decided with the policies.
+**Milestone 3: Tenancy, roles and directory.** Schema for Sections 2.1, 2.2 and 2.8; helper functions; RLS for every table; auth including the one-time-code manager sign-in and mandatory MFA; the Excel template, upload preview, snapshots and lineage; audit triggers. Exit: the RLS matrix in Section 3.3 proven by tests across two seeded organisations, including that executive and unit viewers cannot read ratings and that no role can read anonymous responses. Notes from Milestone 0. Data API grants: Supabase no longer auto-exposes new tables to `anon`, `authenticated` and `service_role` (the CLI's `auto_expose_new_tables` default is off, and the field is removed on 30 October 2026), so the first migration states the grants explicitly rather than assuming either the old or the new default, and the "no grants to `anon`" rule in 3.1 is asserted by a pgTAP test beside the RLS-on-every-table invariant that already exists. Key naming: Supabase issues publishable and secret keys alongside the legacy anon and service-role keys, and the local CLI prints both; the names in `apps/portal/.env.example` are confirmed against the staging project when it is created and renamed if the new keys are adopted. Whether RLS is also forced for the table owner is decided with the policies: it is not (3.1). Scope, settled 23 September 2026: Milestone 3 also creates the three context tables that personal data references (role families, skills, knowledge domains) and the security-bearing tables of 2.5 (invitations, anonymous responses, rating sessions and ratings, with campaigns and campaign units as skeletons), so the exit criterion can be proven; Milestones 4 and 5 add their flows.
 
 **Milestone 4: Setup flows.** Section 7 end to end with placeholder templates. Exit: a new organisation reaches a passing readiness check without help.
 
@@ -298,7 +304,7 @@ None is executed as part of the build without sign-off.
 5. The VentraIP CNAME for `app`, additive only, at cutover. MX and TXT records untouched.
 6. The "Client login" link on the marketing site, prepared as a reviewable change.
 7. Carry the gap-flag guard correction into the production workbook, then supply parity fixture outputs during Milestone 1.
-8. Before launch, not before build: subscription terms that make the client responsible for its data with PerformanceVP as service provider, cover support-staff access, the data-contribution default and opt-out, the handling of access requests, and the retention of suspended organisations until the Owner deletes them or until any maximum period the review sets; a privacy notice that reflects the persistent directory and retained ratings; the respondent-facing statement separating anonymous surveys from identified ratings; and confirmation of which entity owns the IP.
+8. Before launch, not before build: subscription terms that make the client responsible for its data with PerformanceVP as service provider, cover support-staff access (which the client cannot switch off and always sees), the data-contribution default and opt-out, the handling of access requests, and the retention of suspended organisations until the Owner deletes them or until any maximum period the review sets; a privacy notice that reflects the persistent directory and retained ratings; the respondent-facing statement separating anonymous surveys from identified ratings; and confirmation of which entity owns the IP.
 
 ---
 
@@ -308,7 +314,7 @@ None is executed as part of the build without sign-off.
 
 **Intake and recommendations.** Parity and fixtures as Sections 6 and 10. Both packages gate merges.
 
-**RLS and security.** The SQL matrix suite from v1, rewritten for the new roles, asserting Section 3.3 per table. Focused cases: anonymous responses unreadable by every role; no query path from a directory record to an anonymous response; ratings readable only by the rating manager, administrators, the account owner and enabled support staff; support access denied when the switch is off; every ratings view and support access present in the audit log; token reuse and expired windows rejected; the purge job nulls employee links and deletes nothing else.
+**RLS and security.** The SQL matrix suite from v1, rewritten for the new roles, asserting Section 3.3 per table. Focused cases: anonymous responses unreadable by every role; no query path from a directory record to an anonymous response; ratings readable only by the rating manager, administrators, the account owner and staff under a support session; staff access denied without an open support session; every ratings view and support access present in the audit log; token reuse and expired windows rejected; the purge job nulls employee links and deletes nothing else.
 
 **Directory.** Upload tests for matching on employee ID, the difference preview, deactivation, snapshots unaffected by later edits, lineage on merge and split, and rejection of malformed or oversized files.
 
@@ -329,6 +335,8 @@ None is executed as part of the build without sign-off.
 **Made in this plan and confirmed with its approval on 21 September 2026:** mandatory MFA for account owners and administrators; one-time email code sign-in for managers; self-serve sign-up behind a flag until launch (withdrawn 22 September 2026, Section 11); DLP tables not built; the first plan's engine sections preserved in `docs/ENGINE_SPEC.md`.
 
 **Made on 22 September 2026:** sales-led subscriptions with no online payment; the lapse and retention policy (Section 11; `DECISIONS.md` 5.5).
+
+**Made on 23 September 2026, with the Milestone 3 plan:** staff access through logged support sessions with no client switch; passwords for every role except managers; `portal@performancevp.com.au` for auth email; the directory spreadsheet read and written by our own code over `fflate`; RLS not forced; ratings read through logged functions; the audit image allowlist; the subscription state computed from its terms; formal ratings in their own table; staff writing the directory under a session; the account owner's history access in suspension; publishable and secret keys; Vercel Cron as the job runner (`DECISIONS.md` 5.6). New placeholders: `EMPLOYEE_BANDS`, `SESSION_LIMITS`, `EMPLOYMENT_STATUS_VALUES`.
 
 **Deferred:** archetype weight sets; M1 behavioural lookups and the survey-behavioural flag; machine-themed open text; HRIS and engagement-platform integrations; the internal comparison set, pending legal review; `ENTITLEMENT_ENFORCEMENT`; Stripe Invoicing, as a possible later addition if invoicing ever moves out of the accounting system.
 

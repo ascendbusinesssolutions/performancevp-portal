@@ -1,0 +1,422 @@
+-- The two-organisation fixture the matrix and focused tests share.
+--
+-- Included with \ir after helpers/tests.psql, inside the test's transaction. Alpha and Beta are
+-- built identically, so every cross-organisation assertion is symmetrical. Personas are keyed
+-- '<org>_<role>' for client roles; 'owner', 'support_a', 'support_b' and 'outsider' are global.
+-- support_a holds an open support session on Alpha and an ended one on Beta; support_b holds none.
+-- On staging the existing Owner is adopted rather than a second one created (one Owner is a
+-- constraint), and assertions are scoped to fixture identifiers.
+
+create function tests.seed_identity()
+returns void
+language plpgsql
+as $$
+declare
+  v_org text;
+  v_org_id uuid;
+  v_owner public.profiles;
+  v_user uuid;
+begin
+  insert into public.ref_employee_bands (code, label, max_employees, sort_order)
+  values ('test_band', 'Test band (fixture only)', 250, 1000)
+  on conflict do nothing;
+
+  -- Staff.
+  select * into v_owner from public.profiles where is_owner;
+  if found then
+    insert into tests.personas (key, user_id, email) values ('owner', v_owner.id, v_owner.email);
+  else
+    v_user := tests.create_user('owner', 'owner@pvp.test', 'Olive Owner');
+    update public.profiles set is_owner = true where id = v_user;
+  end if;
+  v_user := tests.create_user('support_a', 'support.a@pvp.test', 'Sam Support');
+  update public.profiles set is_support_staff = true where id = v_user;
+  v_user := tests.create_user('support_b', 'support.b@pvp.test', 'Sasha Support');
+  update public.profiles set is_support_staff = true where id = v_user;
+  perform tests.create_user('outsider', 'outsider@elsewhere.test', 'Oscar Outsider');
+
+  foreach v_org in array array['alpha', 'beta'] loop
+    insert into public.organisations (name, anzsic_division, size_band)
+    values (initcap(v_org) || ' Test Pty Ltd', 'K', '200_to_1000')
+    returning id into v_org_id;
+    perform tests.remember(v_org, v_org_id);
+
+    insert into public.subscriptions (
+      organisation_id, employee_band, period_start, period_end, agreement_date,
+      invoice_reference, provisioned_by
+    ) values (
+      v_org_id, 'test_band', private.today() - 100, private.today() + 265, private.today() - 100,
+      'INV-' || upper(v_org) || '-1', tests.user_id('support_a')
+    );
+
+    perform tests.create_user(v_org || '_ao', 'ao@' || v_org || '.test', initcap(v_org) || ' Account Owner');
+    perform tests.create_user(v_org || '_admin', 'admin@' || v_org || '.test', initcap(v_org) || ' Administrator');
+    perform tests.create_user(v_org || '_exec', 'exec@' || v_org || '.test', initcap(v_org) || ' Executive');
+    perform tests.create_user(v_org || '_uv', 'uv@' || v_org || '.test', initcap(v_org) || ' Unit Viewer');
+
+    insert into public.org_memberships (organisation_id, user_id, role)
+    values
+      (v_org_id, tests.user_id(v_org || '_ao'), 'account_owner'),
+      (v_org_id, tests.user_id(v_org || '_admin'), 'administrator'),
+      (v_org_id, tests.user_id(v_org || '_exec'), 'executive_viewer'),
+      (v_org_id, tests.user_id(v_org || '_uv'), 'unit_viewer');
+
+    insert into public.membership_invitations (organisation_id, email, role, invited_by)
+    values (v_org_id, 'pending.viewer@' || v_org || '.test', 'executive_viewer', tests.user_id(v_org || '_ao'));
+  end loop;
+
+  -- support_a: open on Alpha, ended on Beta.
+  insert into public.support_sessions (
+    organisation_id, staff_user_id, staff_name, staff_email, kind, reason, started_at, expires_at
+  ) values (
+    tests.id('alpha'), tests.user_id('support_a'), 'Sam Support', 'support.a@pvp.test', 'support',
+    'Helping Alpha load its first directory', now() - interval '10 minutes', now() + interval '110 minutes'
+  );
+  insert into public.support_sessions (
+    organisation_id, staff_user_id, staff_name, staff_email, kind, reason, started_at, expires_at,
+    ended_at, ended_by
+  ) values (
+    tests.id('beta'), tests.user_id('support_a'), 'Sam Support', 'support.a@pvp.test', 'support',
+    'Answering a question about unit codes', now() - interval '3 days',
+    now() - interval '3 days' + interval '2 hours', now() - interval '3 days' + interval '1 hour',
+    tests.user_id('support_a')
+  );
+end
+$$;
+
+-- Per organisation: a root unit R with children C1 and C2, a grandchild G1 under C1, and a retired
+-- unit OLD merged into C2 (one lineage row). Teams: two in C1, one each in C2 and G1. Two role
+-- families (one a people-leader family) with two skills each; one knowledge domain each in C1 and
+-- C2. The unit viewer is scoped to C1, and so sees C1 and G1. Keys: '<org>_<unit>', and so on.
+create function tests.seed_structure()
+returns void
+language plpgsql
+as $$
+declare
+  v_org text;
+  v_org_id uuid;
+  v_id uuid;
+begin
+  foreach v_org in array array['alpha', 'beta'] loop
+    v_org_id := tests.id(v_org);
+
+    insert into public.business_units (organisation_id, unit_code, name, unit_type)
+    values (v_org_id, 'R', initcap(v_org) || ' Group', 'other') returning id into v_id;
+    perform tests.remember(v_org || '_R', v_id);
+    insert into public.business_units (organisation_id, unit_code, name, parent_unit_id, unit_type)
+    values (v_org_id, 'C1', 'Operations', tests.id(v_org || '_R'), 'operations') returning id into v_id;
+    perform tests.remember(v_org || '_C1', v_id);
+    insert into public.business_units (organisation_id, unit_code, name, parent_unit_id, unit_type)
+    values (v_org_id, 'C2', 'Sales', tests.id(v_org || '_R'), 'sales') returning id into v_id;
+    perform tests.remember(v_org || '_C2', v_id);
+    insert into public.business_units (organisation_id, unit_code, name, parent_unit_id, unit_type)
+    values (v_org_id, 'G1', 'Field Operations', tests.id(v_org || '_C1'), 'operations') returning id into v_id;
+    perform tests.remember(v_org || '_G1', v_id);
+    insert into public.business_units (organisation_id, unit_code, name, parent_unit_id, status, retired_on)
+    values (v_org_id, 'OLD', 'Former Sales', tests.id(v_org || '_R'), 'retired', private.today() - 200)
+    returning id into v_id;
+    perform tests.remember(v_org || '_OLD', v_id);
+    insert into public.unit_lineage (organisation_id, predecessor_unit_id, successor_unit_id, kind, effective_date)
+    values (v_org_id, tests.id(v_org || '_OLD'), tests.id(v_org || '_C2'), 'merge', private.today() - 200);
+
+    insert into public.teams (organisation_id, unit_id, name) values (v_org_id, tests.id(v_org || '_C1'), 'Team One')
+    returning id into v_id;
+    perform tests.remember(v_org || '_C1_T1', v_id);
+    insert into public.teams (organisation_id, unit_id, name) values (v_org_id, tests.id(v_org || '_C1'), 'Team Two')
+    returning id into v_id;
+    perform tests.remember(v_org || '_C1_T2', v_id);
+    insert into public.teams (organisation_id, unit_id, name) values (v_org_id, tests.id(v_org || '_C2'), 'Team One')
+    returning id into v_id;
+    perform tests.remember(v_org || '_C2_T1', v_id);
+    insert into public.teams (organisation_id, unit_id, name) values (v_org_id, tests.id(v_org || '_G1'), 'Team One')
+    returning id into v_id;
+    perform tests.remember(v_org || '_G1_T1', v_id);
+
+    insert into public.role_families (organisation_id, name) values (v_org_id, 'Analyst') returning id into v_id;
+    perform tests.remember(v_org || '_analyst', v_id);
+    insert into public.role_families (organisation_id, name, is_people_leader) values (v_org_id, 'Team Lead', true)
+    returning id into v_id;
+    perform tests.remember(v_org || '_lead', v_id);
+    insert into public.skills (organisation_id, role_family_id, name, is_critical, kind) values
+      (v_org_id, tests.id(v_org || '_analyst'), 'Modelling', true, 'technical'),
+      (v_org_id, tests.id(v_org || '_analyst'), 'Stakeholder communication', false, 'behavioural'),
+      (v_org_id, tests.id(v_org || '_lead'), 'Coaching', true, 'behavioural'),
+      (v_org_id, tests.id(v_org || '_lead'), 'Planning', false, 'technical');
+    perform tests.remember(v_org || '_skill_modelling',
+      (select id from public.skills where organisation_id = v_org_id and name = 'Modelling'));
+    insert into public.knowledge_domains (organisation_id, unit_id, name, criticality) values
+      (v_org_id, tests.id(v_org || '_C1'), 'Regulatory reporting', 3),
+      (v_org_id, tests.id(v_org || '_C2'), 'Product range', 2);
+    perform tests.remember(v_org || '_domain_c1',
+      (select id from public.knowledge_domains where organisation_id = v_org_id and unit_id = tests.id(v_org || '_C1')));
+
+    insert into public.unit_access (organisation_id, membership_id, unit_id)
+    select v_org_id, m.id, tests.id(v_org || '_C1')
+    from public.org_memberships m
+    where m.organisation_id = v_org_id and m.user_id = tests.user_id(v_org || '_uv');
+  end loop;
+end
+$$;
+
+-- One directory record, remembered as '<org>_<ref>'.
+create function tests.employee(
+  p_org text, p_ref text, p_first text, p_last text, p_unit text, p_team text, p_manager text,
+  p_family text, p_email text, p_team_leader boolean default false, p_leadership boolean default false
+)
+returns uuid
+language plpgsql
+as $$
+declare
+  v_id uuid;
+begin
+  insert into public.employees (
+    organisation_id, employee_ref, first_name, last_name, work_email, unit_id, team_id,
+    manager_employee_id, role_title, role_family_id, start_date, fte, is_team_leader, is_leadership_team
+  ) values (
+    tests.id(p_org), p_ref, p_first, p_last, p_email, tests.id(p_org || '_' || p_unit),
+    case when p_team is not null then tests.id(p_org || '_' || p_team) end,
+    case when p_manager is not null then tests.id(p_org || '_' || p_manager) end,
+    case when p_family = 'lead' then 'Team Lead' else 'Analyst' end,
+    tests.id(p_org || '_' || p_family), private.today() - 900, 1.0, p_team_leader, p_leadership
+  )
+  returning id into v_id;
+  perform tests.remember(p_org || '_' || p_ref, v_id);
+  return v_id;
+end
+$$;
+
+-- Per organisation, twenty people:
+--   E001 heads R (leadership team). E002 (the manager persona, mgr@) runs C1: E003 to E008, E014
+--   and, until deactivated, E019. E009 (mgr2@) runs C2: E010 to E013 and E020. E014 runs G1: E015
+--   to E018. E019 (gone@, a manager persona in Alpha) was deactivated 31 days ago; E020 29 days ago.
+-- Formal ratings for E003, E004, E005 and E019. A closed baseline campaign whose snapshot was taken
+-- while all twenty were active, and an open half-yearly campaign whose snapshot holds eighteen. One
+-- applied upload record.
+create function tests.seed_directory()
+returns void
+language plpgsql
+as $$
+declare
+  v_org text;
+  v_org_id uuid;
+  v_campaign uuid;
+  i integer;
+begin
+  foreach v_org in array array['alpha', 'beta'] loop
+    v_org_id := tests.id(v_org);
+    perform tests.employee(v_org, 'E001', 'Ruth', 'Root', 'R', null, null, 'lead', 'e001@' || v_org || '.test', false, true);
+    perform tests.employee(v_org, 'E002', 'Mia', 'Manager', 'C1', 'C1_T1', 'E001', 'lead', 'mgr@' || v_org || '.test', true, true);
+    for i in 3..8 loop
+      perform tests.employee(v_org, 'E00' || i, 'Person', 'Number' || i, 'C1',
+        case when i <= 5 then 'C1_T1' else 'C1_T2' end, 'E002', 'analyst', 'e00' || i || '@' || v_org || '.test');
+    end loop;
+    perform tests.employee(v_org, 'E009', 'Max', 'Manager', 'C2', 'C2_T1', 'E001', 'lead', 'mgr2@' || v_org || '.test', true, true);
+    for i in 10..13 loop
+      perform tests.employee(v_org, 'E0' || i, 'Person', 'Number' || i, 'C2', 'C2_T1', 'E009', 'analyst', 'e0' || i || '@' || v_org || '.test');
+    end loop;
+    perform tests.employee(v_org, 'E014', 'Gail', 'Lead', 'G1', 'G1_T1', 'E002', 'lead', 'e014@' || v_org || '.test', true);
+    for i in 15..18 loop
+      perform tests.employee(v_org, 'E0' || i, 'Person', 'Number' || i, 'G1', 'G1_T1', 'E014', 'analyst', 'e0' || i || '@' || v_org || '.test');
+    end loop;
+    perform tests.employee(v_org, 'E019', 'Gone', 'Manager', 'C1', 'C1_T1', 'E002', 'lead', 'gone@' || v_org || '.test');
+    perform tests.employee(v_org, 'E020', 'Person', 'Number20', 'C2', 'C2_T1', 'E009', 'analyst', 'e020@' || v_org || '.test');
+
+    insert into public.formal_ratings (organisation_id, employee_id, rating_label, rating_date)
+    values
+      (v_org_id, tests.id(v_org || '_E003'), 'Exceeds', private.today() - 60),
+      (v_org_id, tests.id(v_org || '_E004'), 'Meets', private.today() - 60),
+      (v_org_id, tests.id(v_org || '_E005'), 'Meets', private.today() - 60),
+      (v_org_id, tests.id(v_org || '_E019'), 'Meets', private.today() - 60);
+
+    -- The closed baseline: everyone active.
+    insert into public.campaigns (organisation_id, cadence, status, opens_at, closes_at, launched_at, closed_at)
+    values (v_org_id, 'baseline', 'closed', now() - interval '80 days', now() - interval '60 days',
+            now() - interval '80 days', now() - interval '60 days')
+    returning id into v_campaign;
+    perform tests.remember(v_org || '_closed', v_campaign);
+    insert into public.campaign_units (organisation_id, campaign_id, unit_id)
+    select v_org_id, v_campaign, tests.id(v_org || '_' || u) from unnest(array['C1', 'C2', 'G1']) as u;
+    perform tests.remember(v_org || '_closed_snapshot', private.take_directory_snapshot(v_campaign));
+
+    -- Two leave.
+    update public.employees set status = 'inactive' where id in (tests.id(v_org || '_E019'), tests.id(v_org || '_E020'));
+    update public.employees set deactivated_at = now() - interval '31 days' where id = tests.id(v_org || '_E019');
+    update public.employees set deactivated_at = now() - interval '29 days' where id = tests.id(v_org || '_E020');
+
+    -- The open half-yearly: eighteen active.
+    insert into public.campaigns (organisation_id, cadence, status, opens_at, closes_at, launched_at)
+    values (v_org_id, 'half_yearly', 'open', now() - interval '2 days', now() + interval '5 days', now() - interval '2 days')
+    returning id into v_campaign;
+    perform tests.remember(v_org || '_open', v_campaign);
+    insert into public.campaign_units (organisation_id, campaign_id, unit_id)
+    select v_org_id, v_campaign, tests.id(v_org || '_' || u) from unnest(array['C1', 'C2', 'G1']) as u;
+    perform tests.remember(v_org || '_open_snapshot', private.take_directory_snapshot(v_campaign));
+
+    insert into public.directory_uploads (
+      id, organisation_id, file_name, byte_size, sha256, storage_path, status, row_count, uploaded_by, decided_at
+    ) values (
+      gen_random_uuid(), v_org_id, 'directory.xlsx', 20480, repeat('0', 64),
+      'org/' || v_org_id || '/directory/first.xlsx', 'applied', 20, tests.user_id(v_org || '_admin'), now() - interval '90 days'
+    );
+
+    -- Managers who can sign in.
+    perform tests.create_user(v_org || '_mgr', 'mgr@' || v_org || '.test', 'Mia Manager');
+    insert into public.org_memberships (organisation_id, user_id, role, employee_id)
+    values (v_org_id, tests.user_id(v_org || '_mgr'), 'manager_respondent', tests.id(v_org || '_E002'));
+  end loop;
+
+  perform tests.create_user('alpha_mgr2', 'mgr2@alpha.test', 'Max Manager');
+  insert into public.org_memberships (organisation_id, user_id, role, employee_id)
+  values (tests.id('alpha'), tests.user_id('alpha_mgr2'), 'manager_respondent', tests.id('alpha_E009'));
+  perform tests.create_user('alpha_gone_mgr', 'gone@alpha.test', 'Gone Manager');
+  insert into public.org_memberships (organisation_id, user_id, role, employee_id)
+  values (tests.id('alpha'), tests.user_id('alpha_gone_mgr'), 'manager_respondent', tests.id('alpha_E019'));
+end
+$$;
+
+-- The snapshot row of a person in a campaign's snapshot.
+create function tests.member(p_org text, p_campaign text, p_ref text)
+returns uuid
+language sql
+stable
+as $$
+  select sm.id from public.snapshot_members sm
+  where sm.snapshot_id = tests.id(p_org || '_' || p_campaign || '_snapshot')
+    and sm.employee_id = tests.id(p_org || '_' || p_ref)
+$$;
+
+-- Rating sessions and ratings, invitations and anonymous responses. Per organisation: the manager
+-- persona (E002) has a session in both campaigns; in Alpha, alpha_mgr2 (E009) has one in the open
+-- campaign and the gone manager (E019) one in the closed campaign. Ratings (open campaign): E002
+-- rates E003 (skill 4, domain 4, band 3) and E004 (skill 5 and band 5, with notes); in Alpha E009
+-- rates E010 (skill 3). Closed campaign: E002 rated E003 (skill 3) and E019 (skill 4, domain 5 and
+-- band 1, with notes). Invitations: members Part A of C1 (E003 to E008) and C2 (E010 to E013) in
+-- the open campaign. Anonymous responses: three in C1 of the open campaign and two in the closed
+-- one, two items each.
+create function tests.seed_ratings()
+returns void
+language plpgsql
+as $$
+declare
+  v_org text;
+  v_org_id uuid;
+  v_session uuid;
+  v_response uuid;
+  v_cu uuid;
+  i integer;
+begin
+  foreach v_org in array array['alpha', 'beta'] loop
+    v_org_id := tests.id(v_org);
+
+    insert into public.rating_sessions (organisation_id, campaign_id, manager_snapshot_member_id, manager_employee_id)
+    values (v_org_id, tests.id(v_org || '_open'), tests.member(v_org, 'open', 'E002'), tests.id(v_org || '_E002'))
+    returning id into v_session;
+    perform tests.remember(v_org || '_open_session_mgr', v_session);
+    insert into public.skill_ratings (organisation_id, rating_session_id, subject_snapshot_member_id, skill_id, rating, evidence_note)
+    values
+      (v_org_id, v_session, tests.member(v_org, 'open', 'E003'), tests.id(v_org || '_skill_modelling'), 4, null),
+      (v_org_id, v_session, tests.member(v_org, 'open', 'E004'), tests.id(v_org || '_skill_modelling'), 5, 'Built the pricing model the unit now runs on');
+    insert into public.knowledge_ratings (organisation_id, rating_session_id, subject_snapshot_member_id, knowledge_domain_id, rating)
+    values (v_org_id, v_session, tests.member(v_org, 'open', 'E003'), tests.id(v_org || '_domain_c1'), 4);
+    insert into public.talent_bands (organisation_id, rating_session_id, subject_snapshot_member_id, band, evidence_note)
+    values
+      (v_org_id, v_session, tests.member(v_org, 'open', 'E003'), 3, null),
+      (v_org_id, v_session, tests.member(v_org, 'open', 'E004'), 5, 'Consistently leads the hardest client work');
+
+    -- The closed campaign's ratings were entered while it was open.
+    update public.campaigns set status = 'open' where id = tests.id(v_org || '_closed');
+    insert into public.rating_sessions (organisation_id, campaign_id, manager_snapshot_member_id, manager_employee_id, status, submitted_at)
+    values (v_org_id, tests.id(v_org || '_closed'), tests.member(v_org, 'closed', 'E002'), tests.id(v_org || '_E002'), 'submitted', now() - interval '61 days')
+    returning id into v_session;
+    perform tests.remember(v_org || '_closed_session_mgr', v_session);
+    insert into public.skill_ratings (organisation_id, rating_session_id, subject_snapshot_member_id, skill_id, rating, evidence_note)
+    values
+      (v_org_id, v_session, tests.member(v_org, 'closed', 'E003'), tests.id(v_org || '_skill_modelling'), 3, null),
+      (v_org_id, v_session, tests.member(v_org, 'closed', 'E019'), tests.id(v_org || '_skill_modelling'), 4, null);
+    insert into public.knowledge_ratings (organisation_id, rating_session_id, subject_snapshot_member_id, knowledge_domain_id, rating, evidence_note)
+    values (v_org_id, v_session, tests.member(v_org, 'closed', 'E019'), tests.id(v_org || '_domain_c1'), 5, 'Wrote the reporting procedures');
+    insert into public.talent_bands (organisation_id, rating_session_id, subject_snapshot_member_id, band, evidence_note)
+    values (v_org_id, v_session, tests.member(v_org, 'closed', 'E019'), 1, 'Performance plan in place');
+    update public.campaigns set status = 'closed' where id = tests.id(v_org || '_closed');
+
+    -- Invitations, members Part A, open campaign.
+    select id into v_cu from public.campaign_units where campaign_id = tests.id(v_org || '_open') and unit_id = tests.id(v_org || '_C1');
+    insert into public.invitations (organisation_id, campaign_unit_id, audience, snapshot_member_id, email, token_hash, status, sent_at)
+    select v_org_id, v_cu, 'members_part_a', tests.member(v_org, 'open', r), lower(r) || '@' || v_org || '.test',
+           encode(sha256(convert_to(v_org || r, 'UTF8')), 'hex'),
+           case when r in ('E003', 'E004', 'E005') then 'responded' else 'sent' end, now() - interval '2 days'
+    from unnest(array['E003', 'E004', 'E005', 'E006', 'E007', 'E008']) as r;
+    insert into public.invitations (organisation_id, campaign_unit_id, audience, snapshot_member_id, email, token_hash, status, sent_at)
+    select v_org_id, cu.id, 'members_part_a', tests.member(v_org, 'open', r), lower(r) || '@' || v_org || '.test',
+           encode(sha256(convert_to(v_org || r, 'UTF8')), 'hex'), 'sent', now() - interval '2 days'
+    from public.campaign_units cu, unnest(array['E010', 'E011', 'E012', 'E013']) as r
+    where cu.campaign_id = tests.id(v_org || '_open') and cu.unit_id = tests.id(v_org || '_C2');
+
+    -- Anonymous responses.
+    for i in 1..3 loop
+      insert into public.survey_responses (organisation_id, campaign_unit_id, audience, team_id, completion_seconds)
+      values (v_org_id, v_cu, 'members_part_a', tests.id(v_org || '_C1_T1'), 600 + i * 30)
+      returning id into v_response;
+      insert into public.survey_item_responses (organisation_id, response_id, item_code, value)
+      values (v_org_id, v_response, 'CII-01', 4), (v_org_id, v_response, 'MI2-03', 2);
+    end loop;
+    select id into v_cu from public.campaign_units where campaign_id = tests.id(v_org || '_closed') and unit_id = tests.id(v_org || '_C1');
+    for i in 1..2 loop
+      insert into public.survey_responses (organisation_id, campaign_unit_id, audience, completion_seconds)
+      values (v_org_id, v_cu, 'members_part_a', 700)
+      returning id into v_response;
+      insert into public.survey_item_responses (organisation_id, response_id, item_code, value)
+      values (v_org_id, v_response, 'CII-01', 3), (v_org_id, v_response, 'MI2-03', 3);
+    end loop;
+  end loop;
+
+  -- Alpha only: the second manager in the open campaign, and the gone manager in the closed one.
+  insert into public.rating_sessions (organisation_id, campaign_id, manager_snapshot_member_id, manager_employee_id)
+  values (tests.id('alpha'), tests.id('alpha_open'), tests.member('alpha', 'open', 'E009'), tests.id('alpha_E009'))
+  returning id into v_session;
+  perform tests.remember('alpha_open_session_mgr2', v_session);
+  insert into public.skill_ratings (organisation_id, rating_session_id, subject_snapshot_member_id, skill_id, rating)
+  values (tests.id('alpha'), v_session, tests.member('alpha', 'open', 'E010'), tests.id('alpha_skill_modelling'), 3);
+  insert into public.rating_sessions (organisation_id, campaign_id, manager_snapshot_member_id, manager_employee_id, status)
+  values (tests.id('alpha'), tests.id('alpha_closed'), tests.member('alpha', 'closed', 'E019'), tests.id('alpha_E019'), 'submitted')
+  returning id into v_session;
+  perform tests.remember('alpha_closed_session_gone', v_session);
+end
+$$;
+
+-- Everything the fixture holds at this step of the build.
+create function tests.seed_fixture()
+returns void
+language plpgsql
+as $$
+begin
+  perform tests.seed_identity();
+  perform tests.seed_structure();
+  perform tests.seed_directory();
+  perform tests.seed_ratings();
+end
+$$;
+
+-- Moves an organisation's current term so that today falls in the given state.
+create function tests.set_state(p_org text, p_state text)
+returns void
+language plpgsql
+as $$
+declare
+  v_today date := private.today();
+  v_start date;
+  v_end date;
+begin
+  case p_state
+    when 'pending' then v_start := v_today + 10; v_end := v_today + 375;
+    when 'active' then v_start := v_today - 100; v_end := v_today + 265;
+    when 'grace' then v_start := v_today - 375; v_end := v_today - 10;
+    when 'suspended' then v_start := v_today - 400; v_end := v_today - 40;
+  end case;
+  update public.subscriptions
+  set period_start = v_start, period_end = v_end, state_override = null, override_reason = null
+  where organisation_id = tests.id(p_org);
+end
+$$;
+
+grant execute on all functions in schema tests to anon, authenticated, service_role;

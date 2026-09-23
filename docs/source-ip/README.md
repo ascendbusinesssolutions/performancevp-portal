@@ -2,7 +2,7 @@
 
 This folder holds the canonical Performance Equation source documents that the portal implements. They are copied here so Claude Code can read them while building. **Treat every file in this folder as read-only authority.** The portal implements this IP; it does not redefine it. Do not edit these files, and do not invent sub-dimension names, weights, counts or scoring rules. Source them here.
 
-**These files are a snapshot.** The root masters live in the separate IP folder (`performance-equation`, alongside this repository), and this snapshot is refreshed only by copying from them. Nothing here is ever edited in place. If a document looks stale or internally inconsistent, flag it to Michael rather than correcting it here. All eleven documents were verified identical to their masters by SHA-256 on 21 September 2026.
+**These files are a snapshot.** The root masters live in the separate IP folder (`performance-equation`, alongside this repository), and this snapshot is refreshed only by copying from them. Nothing here is ever edited in place. If a document looks stale or internally inconsistent, flag it to Michael rather than correcting it here. All eleven documents were verified identical to their masters by SHA-256 on 23 September 2026.
 
 The operating documents of the build (`CLAUDE.md`, `DECISIONS.md`, `PORTAL_BUILD_PLAN.md` and `docs/ENGINE_SPEC.md`) are the opposite case: this repository is their only home, and they are edited here.
 

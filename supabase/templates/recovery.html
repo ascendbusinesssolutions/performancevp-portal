@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en-AU">
+  <body
+    style="
+      margin: 0;
+      padding: 32px 24px;
+      background: #ffffff;
+      font-family: Helvetica, Arial, sans-serif;
+      color: #1f3a52;
+    "
+  >
+    <p
+      style="
+        margin: 0 0 24px;
+        font-size: 12px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #82693f;
+      "
+    >
+      PerformanceVP
+    </p>
+    <h1
+      style="
+        margin: 0 0 16px;
+        font-family: Georgia, &quot;Times New Roman&quot;, serif;
+        font-size: 24px;
+        font-weight: normal;
+      "
+    >
+      Set or reset your password
+    </h1>
+    <p style="margin: 0 0 24px; font-size: 15px; line-height: 1.6">
+      A new password was requested for this address. If that was you, set it here.
+    </p>
+    <p style="margin: 0 0 24px">
+      <a
+        href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=recovery"
+        style="
+          display: inline-block;
+          padding: 12px 20px;
+          background: #1f3a52;
+          color: #ffffff;
+          text-decoration: none;
+          font-size: 15px;
+        "
+        >Set a new password</a
+      >
+    </p>
+    <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: #5c6670">
+      The link works once and lasts one hour. Your authenticator app is still needed to sign in
+      afterwards.
+    </p>
+    <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #5c6670">
+      If you did not ask for this, ignore this email. Nothing changes.
+    </p>
+  </body>
+</html>

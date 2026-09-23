@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 // A baseline every response carries. The portal is never indexed, never framed and never
-// leaks a referrer. A content security policy is planned with the security model in
-// Milestone 3, once the set of origins the application talks to is known.
+// leaks a referrer. The content security policy, which needs a fresh nonce per request, is set
+// in proxy.ts (lib/security/csp.ts).
 const securityHeaders = [
   { key: "X-Robots-Tag", value: "noindex, nofollow" },
   { key: "X-Content-Type-Options", value: "nosniff" },

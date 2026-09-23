@@ -1,19 +1,11 @@
 name: Database
 
-# Runs only when the database layer changes, until Milestone 3 writes the first migration.
-# From then on the path filter is removed and this becomes a required check.
+# Runs on every pull request and push to main, and is a required check from Milestone 3: the
+# migrations, the schema lint, the pgTAP suite and the generated types, from a fresh database.
 on:
   pull_request:
-    paths:
-      - supabase/**
-      - .github/workflows/database.yml
-      - .github/actions/setup-workspace/**
   push:
     branches: [main]
-    paths:
-      - supabase/**
-      - .github/workflows/database.yml
-      - .github/actions/setup-workspace/**
 
 permissions:
   contents: read
@@ -33,5 +25,10 @@ jobs:
       - run: pnpm exec supabase db start
       - run: pnpm exec supabase db lint
       - run: pnpm exec supabase test db
+      # The committed types must be what the migrations generate; regenerate with `pnpm db:types`.
+      - name: Generated types match the migrations
+        run: |
+          pnpm exec supabase gen types typescript --local --schema public > "$RUNNER_TEMP/database.types.ts"
+          diff -u apps/portal/lib/supabase/database.types.ts "$RUNNER_TEMP/database.types.ts"
       - if: always()
         run: pnpm exec supabase stop --no-backup

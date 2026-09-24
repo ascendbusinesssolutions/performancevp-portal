@@ -3,7 +3,7 @@
 
 **Author:** Michael, PerformanceVP
 **Status:** Working draft. Master reference for sub-dimension specification, data collection, cadence and refresh logic.
-**Last updated:** 23 September 2026 (7.3 trigger authorisation and 7.7 subscription scope rewritten for the online self-service subscription, which replaces the Tracking Subscription; the two-refresh cap and the per-unit briefing allocation are withdrawn; consultant-led clients re-measure through an annual Diagnostic. Prior, 21 September 2026: O1 audit-perception gap analysis now states which value feeds the O composite. Prior: 22 May 2026)
+**Last updated:** 24 September 2026 (7.7 restated as four campaigns a year, pulse, half-yearly, pulse, annual, since the half-yearly and annual carry the pulse items; the earlier "four pulses and two half-yearlies" double-counted them. Prior, 23 September 2026: 7.3 trigger authorisation and 7.7 subscription scope rewritten for the online self-service subscription, which replaces the Tracking Subscription; the two-refresh cap and the per-unit briefing allocation are withdrawn; consultant-led clients re-measure through an annual Diagnostic. Prior, 21 September 2026: O1 audit-perception gap analysis now states which value feeds the O composite. Prior: 22 May 2026)
 **Companion documents:** Performance Equation Strategy (master reference); Diagnostic Delivery Handbook; Tier 1 & 2 Data Collection Guide; Data Audit Template.
 
 ---
@@ -919,14 +919,14 @@ This is the methodological transparency that protects the model from false-preci
 
 The Tracking Subscription described in earlier versions is retired. Ongoing measurement is delivered two ways, and the cadence in this document applies to both.
 
-**The online subscription** (Strategy 4.1, offering 3) is priced annually by employee count and includes, for every unit in the organisation, every cycle in the cadence: the annual baseline, two half-yearly health checks, four quarterly pulses, and event-triggered refreshes without cap. The client runs each campaign; the portal scores it at close, and a client administrator reviews and releases the result. Reporting is the portal itself. No consultant time is included; Guided Setup (implementation, administrator training and post-implementation support) is an optional fixed-fee service, and Intervention Design is available on request. The online route measures with PerformanceVP instruments only, with one exception (formal performance ratings for C3), and does not include the DLP; the Online Measurement Specification defines the route and the Online Recommendations Specification the ranking and suggestions.
+**The online subscription** (Strategy 4.1, offering 3) is priced annually by employee count and includes, for every unit in the organisation, every cycle in the cadence. In a year that is four campaigns: a quarterly pulse at three months, the half-yearly health check at six, a quarterly pulse at nine and the annual baseline at twelve. The half-yearly carries the pulse item set and the annual carries the half-yearly's, so the pulse indicators are read every quarter without two campaigns falling in one quarter. Event-triggered refreshes are added without cap. The client runs each campaign; the portal scores it at close, and a client administrator reviews and releases the result. Reporting is the portal itself. No consultant time is included; Guided Setup (implementation, administrator training and post-implementation support) is an optional fixed-fee service, and Intervention Design is available on request. The online route measures with PerformanceVP instruments only, with one exception (formal performance ratings for C3), and does not include the DLP; the Online Measurement Specification defines the route and the Online Recommendations Specification the ranking and suggestions.
 
 **Consultant-led re-measurement** is an annual Diagnostic (Strategy 4.1, offering 1), reported through the document packs, with the executive briefing that the Diagnostic includes. Out-of-cycle refreshes and additional analyses are scoped and billed separately. There is no standing allocation of briefings or refreshes.
 
 | Item | Online subscription | Consultant-led |
 |---|---|---|
-| Quarterly pulses | 4, client-run | Not offered |
-| Half-yearly health checks | 2, client-run | Not offered |
+| Quarterly pulses | 2 as pulse campaigns (at 3 and 9 months); the pulse items are also read at the half-yearly and annual | Not offered |
+| Half-yearly health checks | 1 (at 6 months); its items are also read at the annual | Not offered |
 | Annual baseline refresh | 1, client-run | 1, as an annual Diagnostic |
 | Event-triggered refreshes | Uncapped, client-run | Scoped separately |
 | Executive briefings | None; the portal reports | 1, with the Diagnostic |

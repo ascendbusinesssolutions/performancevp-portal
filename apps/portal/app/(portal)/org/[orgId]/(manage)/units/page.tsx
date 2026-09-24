@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ActionForm } from "@/components/action-form";
 import { CheckboxField, RadioGroup, SelectField } from "@/components/fields";
 import { homeCrumb, PageHeader, Section } from "@/components/page";
-import { Head, indentClass, Row, Table, Td, Th } from "@/components/table";
+import { Head, Row, Table, Td, Th, TreeName } from "@/components/table";
 import { Field } from "@/components/ui";
 import { peopleCount, unitCount } from "@/lib/copy/common";
 import { setupCopy } from "@/lib/copy/setup";
@@ -63,6 +63,7 @@ export default async function UnitsPage({ params, searchParams }: PageProps<"/or
         : unitsCopy["measuredAs.empty"];
   };
   const tree = unitTree(units);
+  const nameOf = new Map(units.map((u) => [u.id, u.name]));
   const counts = headcountByUnit(people);
   const empty = tree
     .map((e) => e.unit)
@@ -115,7 +116,19 @@ export default async function UnitsPage({ params, searchParams }: PageProps<"/or
                       {unit.unit_code}
                     </Td>
                     <Td>
-                      <span className={`block ${indentClass(depth)}`}>{unit.name}</span>
+                      <TreeName
+                        depth={depth}
+                        parent={hasChildren(units, unit.id)}
+                        below={
+                          depth > 0
+                            ? fill(unitsCopy["tree.below"], {
+                                parent: nameOf.get(unit.parent_unit_id ?? "") ?? "",
+                              })
+                            : undefined
+                        }
+                      >
+                        {unit.name}
+                      </TreeName>
                     </Td>
                     <Td muted>{typeLabel(unit.unit_type)}</Td>
                     <Td figure align="right">

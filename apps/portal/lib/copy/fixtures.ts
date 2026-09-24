@@ -34,6 +34,7 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
   "context.unit.start.from": [
     { slots: { unit: "Claims" }, expected: "Start from the context of Claims" },
   ],
+  "units.tree.below": [{ slots: { parent: "Group" }, expected: "below Group" }],
   "units.leader.option.above": [
     { slots: { name: "Ruth Root", unit: "Head Office" }, expected: "Ruth Root, Head Office" },
   ],

@@ -16,6 +16,7 @@ export const unitsCopy = {
   "col.people": "People",
   "col.leader": "Unit leader",
   "col.measuredAs": "Measured as",
+  "tree.below": "below {parent}",
   "measuredAs.own": "On its own",
   "measuredAs.short": "Not yet: under 10",
   "measuredAs.empty": "Not yet: no one in it",

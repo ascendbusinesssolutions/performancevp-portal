@@ -1,6 +1,6 @@
 # PerformanceVP Online Subscription: Build Plan (v2)
 
-**Status:** Approved by Michael on 21 September 2026. Amended 22 September 2026: subscriptions are sales-led with no online payment (Sections 0, 1, 2.8, 4, 11, 12, 13 and 15). Amended 23 September 2026, with the Milestone 3 plan: staff reach client data through logged support sessions with no client switch, passwords for every role except managers, and the schema refinements Milestone 3 settled (Sections 1.2, 2.1, 2.2, 2.8, 3, 4, 12, 13, 14 and 15). Amended 23 September 2026, with the Milestone 4 plan: the unit leader, the scale map, the reference templates and the status colours (Sections 2.1, 2.3, 2.4, 12 and 15). This plan supersedes the June 2026 plan, which is archived at `archive/PORTAL_BUILD_PLAN_v1.md` for history only. The engine specification from that plan is preserved verbatim in `docs/ENGINE_SPEC.md`.
+**Status:** Approved by Michael on 21 September 2026. Amended 22 September 2026: subscriptions are sales-led with no online payment (Sections 0, 1, 2.8, 4, 11, 12, 13 and 15). Amended 23 September 2026, with the Milestone 3 plan: staff reach client data through logged support sessions with no client switch, passwords for every role except managers, and the schema refinements Milestone 3 settled (Sections 1.2, 2.1, 2.2, 2.8, 3, 4, 12, 13, 14 and 15). Amended 23 September 2026, with the Milestone 4 plan: the unit leader, the scale map, the reference templates and the status colours (Sections 2.1, 2.3, 2.4, 12 and 15). Amended 24 September 2026, with the Milestone 4b plan: measurement units (Sections 2.1, 2.3, 2.5, 7, 12 and 15). This plan supersedes the June 2026 plan, which is archived at `archive/PORTAL_BUILD_PLAN_v1.md` for history only. The engine specification from that plan is preserved verbatim in `docs/ENGINE_SPEC.md`.
 **Read with:** `Performance_Equation_Online_Measurement_Specification.md` and `Performance_Equation_Online_Recommendations_Specification.md`. Those two documents are the source for every online-specific rule in this plan. This plan says how to build what they define.
 
 ---
@@ -68,7 +68,8 @@ All tenant-owned tables carry `organisation_id`. Reference tables are seeded by 
 | Table | Notes |
 |---|---|
 | `organisations` | Adds `data_contribution_opt_out` (default false) and sector metadata (ANZSIC division and class, size band). The employee band and the subscription state live on `subscriptions` (2.8). There is no support-access switch (3.2). |
-| `business_units` | Adds a stable `unit_code` and `unit_leader_employee_id` (an active member of the unit, or nobody). Hierarchy by `parent_unit_id`. Minimum 10 of its own staff to be measurable; a unit with units below it and fewer than 10 of its own is a grouping unit and is not measured (Online Measurement Specification 6.2). |
+| `business_units` | Adds a stable `unit_code` and `unit_leader_employee_id` (an active member of the unit or of a unit above it, or nobody). Hierarchy by `parent_unit_id`. Measured through its measurement unit: on its own with 10 or more of its own staff; under 10, combined in its branch, or kept as a grouping unit where it has units below it (Online Measurement Specification 6.2). |
+| `measurement_units`, `measurement_unit_members`, `measurement_unit_lineage` | What a campaign measures: each org unit's single, created with it, or a combination of units under 10 chosen by the administrator, coded with its units' codes joined by `+`, with its own lineage. |
 | `unit_lineage` | Predecessor and successor links for merges and splits, with the effective date. Renames need no lineage row. |
 | `teams` | Team within a unit, for CII team-level scoring. |
 | `profiles` | One row per authenticated user. Flags: `is_owner`, `is_support_staff`. |
@@ -89,7 +90,7 @@ All tenant-owned tables carry `organisation_id`. Reference tables are seeded by 
 
 ### 2.3 Unit context (client-configured)
 
-`role_families`, `skills` (tags: critical or supporting; technical or behavioural), `knowledge_domains` (criticality 1 to 3), `decision_types`, `critical_processes`, `primary_systems`, and `rating_scale_maps` (the decision: mapped, with the calibration declaration, or skipped) with `rating_scale_map_entries` (client rating label to talent band). Clients configure context only. They cannot alter items, scales, scoring, thresholds or weights.
+`role_families`, `skills` (tags: critical or supporting; technical or behavioural), `knowledge_domains` (criticality 1 to 3), `decision_types`, `critical_processes`, `primary_systems`, and `rating_scale_maps` (the decision: mapped, with the calibration declaration, or skipped) with `rating_scale_map_entries` (client rating label to talent band). Knowledge domains, decision types, processes and systems belong to the measurement unit. Clients configure context only. They cannot alter items, scales, scoring, thresholds or weights.
 
 ### 2.4 Reference data
 
@@ -99,7 +100,7 @@ Carried from v1: `ref_sub_dimensions`, `ref_archetype_weights`, `ref_survey_item
 
 | Table | Notes |
 |---|---|
-| `campaigns`, `campaign_units` | Cadence type, window, status, snapshot reference, per-unit cycle link and headcount denominator. |
+| `campaigns`, `campaign_units` | Cadence type, window, status, snapshot reference, per-measurement-unit cycle link and headcount denominator. A campaign unit is a measurement unit. |
 | `campaign_audiences` | One row per audience per unit: members Part A, members Part B, managers, team leaders, leadership team, administrator checklists. |
 | `invitations` | Hashed single-use tokens for the anonymous audiences. Not linkable to responses. |
 | `survey_responses`, `survey_item_responses` | Anonymous. Carry campaign unit and audience only. Used for members, team leaders and the leadership team. |
@@ -211,11 +212,11 @@ New, and the second most consequential piece of code after the engine. It is the
 
 The setup flow is the product's front door and is built as a guided sequence with a readiness check at the end.
 
-1. **Organisation and units.** Name, sector metadata, unit hierarchy with stable unit codes.
+1. **Organisation and units.** Name, sector metadata, unit hierarchy with stable unit codes, and how units under 10 are measured: combined in their branch, or kept as grouping units.
 2. **Directory.** Download the Excel template, populate it from the HRIS, upload. The platform validates, shows the differences and applies nothing until the administrator confirms. Individuals can also be edited directly in the portal. Re-uploading rebuilds the structure, matching on employee ID.
 3. **Unit context.** Role families and skills from the template library, knowledge domains with criticality, decision types, three critical processes, primary systems.
 4. **Formal ratings (optional).** Map the client's rating labels to the five bands and declare whether ratings were calibrated. The 12-month rule is stated on the template, the upload screen and in the guidance.
-5. **Readiness check.** Units of at least 10, every person assigned to a unit and a manager, team leaders and leadership team flagged, frameworks complete. Blocks the first campaign until it passes.
+5. **Readiness check.** Measurement units of at least 10 (a unit under 10 lists what it could combine with), every person assigned to a unit and a manager, team leaders and leadership team flagged, frameworks complete. Blocks the first campaign until it passes.
 
 Unit continuity follows the specification: renames keep history; merges and splits create new units with lineage and an annotated break in the trend. A scheduled job compares directory changes with the Cadence Master 7.3 triggers and prompts the administrator to run the matching event-triggered refresh.
 
@@ -276,6 +277,8 @@ Price levels, Guided Setup scope, the support model and the legal terms are outs
 **Milestone 3: Tenancy, roles and directory.** Schema for Sections 2.1, 2.2 and 2.8; helper functions; RLS for every table; auth including the one-time-code manager sign-in and mandatory MFA; the Excel template, upload preview, snapshots and lineage; audit triggers. Exit: the RLS matrix in Section 3.3 proven by tests across two seeded organisations, including that executive and unit viewers cannot read ratings and that no role can read anonymous responses. Notes from Milestone 0. Data API grants: Supabase no longer auto-exposes new tables to `anon`, `authenticated` and `service_role` (the CLI's `auto_expose_new_tables` default is off, and the field is removed on 30 October 2026), so the first migration states the grants explicitly rather than assuming either the old or the new default, and the "no grants to `anon`" rule in 3.1 is asserted by a pgTAP test beside the RLS-on-every-table invariant that already exists. Key naming: Supabase issues publishable and secret keys alongside the legacy anon and service-role keys, and the local CLI prints both; the names in `apps/portal/.env.example` are confirmed against the staging project when it is created and renamed if the new keys are adopted. Whether RLS is also forced for the table owner is decided with the policies: it is not (3.1). Scope, settled 23 September 2026: Milestone 3 also creates the three context tables that personal data references (role families, skills, knowledge domains) and the security-bearing tables of 2.5 (invitations, anonymous responses, rating sessions and ratings, with campaigns and campaign units as skeletons), so the exit criterion can be proven; Milestones 4 and 5 add their flows.
 
 **Milestone 4: Setup flows.** Section 7 end to end with placeholder templates. Exit: a new organisation reaches a passing readiness check without help. From Milestone 3 (23 September 2026): email codes and links last one hour, the shared Supabase expiry, so an invitation can expire before it is used. When an invitation link has expired or been used, the confirmation page offers "Send me a new link". The person enters their work email and, if a pending invitation or an account exists for it, a fresh link is sent. The page responds the same either way, so it reveals nothing about who holds an account, and it is subject to the auth email rate limit. It replaces the fallback the invitation email gives today (the password-reset path), which has not been tested for an invited person who never set a password.
+
+**Milestone 4b: Measurement units.** Added 23 September 2026 with the Online Measurement Specification's "Combining small units for measurement": measurement units over the org units, the choice of combination on the units screen, and the readiness check, context, formal ratings and campaign units keyed on measurement units. Exit: a directory with two seven-person siblings, a nine-person leaf under a grouping parent, and a six-person unit with an eight-person unit below it reaches a passing readiness check by the administrator's choices alone. Milestones 4 and 4b merge together.
 
 **Milestone 5: Campaign engine.** All five audiences, both member parts, reminders, validity, aggregation, thresholds and roll-up.
 
@@ -339,6 +342,8 @@ None is executed as part of the build without sign-off.
 **Made on 23 September 2026, with the Milestone 3 plan:** staff access through logged support sessions with no client switch; passwords for every role except managers; `portal@performancevp.com.au` for auth email; the directory spreadsheet read and written by our own code over `fflate`; RLS not forced; ratings read through logged functions; the audit image allowlist; the subscription state computed from its terms; formal ratings in their own table; staff writing the directory under a session; the account owner's history access in suspension; publishable and secret keys; Vercel Cron as the job runner (`DECISIONS.md` 5.6). New placeholders: `EMPLOYEE_BANDS`, `SESSION_LIMITS`, `EMPLOYMENT_STATUS_VALUES`.
 
 **Made on 23 September 2026, with the Milestone 4 plan:** the readiness rules, readiness in the portal over the intake's rules, the unit leader, the status colours and the trip-wire treatment, no progress rail (`DECISIONS.md` 5.7). New placeholder: `ROLE_FAMILY_TEMPLATE_LIBRARY`.
+
+**Made on 23 and 24 September 2026, with the Milestone 4b plan:** measurement units over the org units, generated combination codes, changes refused once measured until Milestone 5, the candidate rule and the grouping choice, teams kept inside a combination, context per measurement unit, the widened unit leader, campaign units per measurement unit, and viewer scope (`DECISIONS.md` 5.8).
 
 **Deferred:** archetype weight sets; M1 behavioural lookups and the survey-behavioural flag; machine-themed open text; HRIS and engagement-platform integrations; the internal comparison set, pending legal review; `ENTITLEMENT_ENFORCEMENT`; Stripe Invoicing, as a possible later addition if invoicing ever moves out of the accounting system.
 

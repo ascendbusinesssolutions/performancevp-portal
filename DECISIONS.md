@@ -2,7 +2,7 @@
 
 This register records the settled decisions behind the portal build and the reasoning behind the consequential ones, so they are not reopened from scratch later. The build plan (`PORTAL_BUILD_PLAN.md`) holds the detail; the corrected source documents and the Diagnostic Workbook hold the calculation truth; `CLAUDE.md` holds the standing principles and guardrails. This file is the why and the what, not a substitute for those.
 
-**Last updated:** 23 September 2026 (Milestone 4: the setup decisions; see 5.7)
+**Last updated:** 24 September 2026 (Milestone 4b: the measurement-unit decisions; see 5.8)
 **Owner of record:** Michael, PerformanceVP
 
 ---
@@ -205,6 +205,26 @@ Settled with the Milestone 4 plan. The plan, the migration `20260923000900_setup
 | No progress rail | Setup progress is shown on the hub, not on every screen. | A rail would read formal ratings, and so write an audit entry, on every page view. |
 | ANZSIC | The 19 divisions as reference data; the class an optional four-digit code. | Metadata only. |
 | Placeholder | `ROLE_FAMILY_TEMPLATE_LIBRARY`: placeholder templates until the library is written. | Content, not a build decision. |
+
+### 5.8 The measurement-unit decisions of 23 and 24 September 2026
+
+Settled with the Milestone 4b plan (Online Measurement Specification 6.2, "Combining small units for measurement"). The plan, the migration `20260923001000_measurement_units.sql` and `apps/portal/lib/setup/measurement.ts` hold the detail.
+
+| Decision | Resolution | Reasoning |
+|---|---|---|
+| Representation | Every measurement unit is a row. Each org unit has a single measurement unit, created with it, which carries its code and follows its name and status; a combination holds two or more org units. | Context, campaigns, results and trends have one key, and a unit can move between being measured alone and combined, with lineage. |
+| Codes and names | A combination's code joins its units' codes with `+`, which no unit code may contain, and is fixed from its first campaign. Its name defaults to its units' names and is the administrator's to change. | Codes that cannot collide, with nothing to type. |
+| Changing a combination | Before a campaign measures it, a combination is extended or undone freely, and undoing removes the context entered for it. After, changes are refused until Milestone 5 builds retire-and-lineage. | Nothing measured changes silently. |
+| What may combine | A unit under 10 with a unit in its branch: a sibling, its parent, the unit above a grouping parent, or a unit directly below. At least one side is under 10 at the time, checked beside the intake's constant; two combinations do not combine. The readiness check rechecks the branch at every run. | The candidates of 6.2, and one home for the minimum of 10. |
+| Grouping units | A unit under 10 with units below it warns until it is combined downward or kept as a grouping unit. One with nobody of its own has nothing to choose. | The choice is explicit without blocking, as 6.2 says a grouping unit does not block. |
+| Readiness over measurement units | A leaf under 10 blocks with its candidates listed. The checks of measured units wait until one has 10 or more. | Context is not asked of a unit about to be combined. |
+| Teams in a combination | Each unit keeps its own teams where it has any, and a unit without teams is one team. | A small unit combined with a large one never collapses the large one's teams (amended by Michael, 23 September 2026). |
+| Unit context | Defined once per measurement unit. A new combination may start from one of its units' context, which the unit keeps. | 6.2. |
+| Unit leader | A member of the unit or of a unit above it (this amends 5.7). A combination that rolls up takes its top unit's leader; where siblings combine, the leader is chosen. The leadership team is the flagged people across the units, with a flagged leader from above; a leader not flagged warns. | Online Measurement Specification 6.1 as refreshed. |
+| Campaign units | `campaign_units` key on measurement units. | Every later milestone reads measurement units. |
+| Viewer scope | A unit viewer sees a measurement unit that holds, or held, a unit in their scope. | Proven now; first read in Milestone 6. |
+| Retirement and lineage | A unit inside a combination is not retired. An org unit merge or split also writes measurement lineage. | Trends follow one lineage table. |
+| The hub | "Organisation and units" stays open while a unit is under 10 and uncombined. | "Continue setup" leads to where the choice is made. |
 
 ---
 

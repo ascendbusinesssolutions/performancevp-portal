@@ -1,0 +1,313 @@
+-- Campaign helpers for the Milestone 5 tests. Included with \ir after helpers/fixture.psql.
+--
+-- tests.launch_plan builds the plan the portal's launch computes from live data (Milestone 5 plan,
+-- 2.3): per unit its active members with a team key (their team, or their org unit where they have
+-- none), the team keys, the position titles, the unit context, the team leaders and leadership
+-- team (a flagged leader from a unit above included), and a baseline deployment. tests.launch runs
+-- launch_campaign as the service role. tests.issue_tokens stands in for the sending job: it derives
+-- a hash per invitation (the test's own stand-in for the secret) and remembers which is whose, as
+-- only the job's memory ever does.
+
+create function tests.launch_plan(p_campaign uuid, p_c3_route text default 'module')
+returns jsonb
+language sql
+stable
+as $$
+  select jsonb_build_object('units', coalesce(jsonb_agg(u.unit order by u.code), '[]'::jsonb))
+  from (
+    select mu.code, jsonb_build_object(
+      'measurementUnitId', mu.id,
+      'c3Route', p_c3_route,
+      'members', (
+        select coalesce(jsonb_agg(jsonb_build_object(
+          'employeeId', e.id, 'teamKey', coalesce(e.team_id::text, 'unit:' || e.unit_id::text)
+        ) order by e.employee_ref), '[]'::jsonb)
+        from public.employees e
+        where e.organisation_id = mu.organisation_id and e.status = 'active' and e.unit_id = any (k.units)
+      ),
+      'teams', (
+        select coalesce(jsonb_agg(jsonb_build_object(
+          'key', x.key, 'name', x.name, 'teamId', x.team_id, 'businessUnitId', x.unit_id, 'kind', x.kind
+        ) order by x.name, x.key), '[]'::jsonb)
+        from (
+          select distinct t.id::text as key, t.name, t.id as team_id, t.unit_id, 'team' as kind
+          from public.employees e join public.teams t on t.id = e.team_id
+          where e.organisation_id = mu.organisation_id and e.status = 'active' and e.unit_id = any (k.units)
+          union
+          select distinct 'unit:' || b.id::text, b.name, null::uuid, b.id, 'unit'
+          from public.employees e join public.business_units b on b.id = e.unit_id
+          where e.organisation_id = mu.organisation_id and e.status = 'active' and e.unit_id = any (k.units)
+            and e.team_id is null
+        ) x
+      ),
+      'positions', (
+        select coalesce(jsonb_agg(jsonb_build_object('title', x.title) order by x.title), '[]'::jsonb)
+        from (
+          select distinct e.role_title as title from public.employees e
+          where e.organisation_id = mu.organisation_id and e.status = 'active' and e.role_title is not null
+            and (e.unit_id = any (k.units) or private.leader_eligible(mu.organisation_id, k.units, e.id))
+        ) x
+      ),
+      'context', jsonb_build_object(
+        'name', mu.name,
+        'roleFamilies', (
+          select coalesce(jsonb_agg(jsonb_build_object(
+            'id', rf.id, 'name', rf.name, 'peopleLeader', rf.is_people_leader,
+            'skills', (select coalesce(jsonb_agg(jsonb_build_object('id', s.id, 'name', s.name, 'critical', s.is_critical, 'kind', s.kind) order by s.name), '[]'::jsonb)
+                       from public.skills s where s.role_family_id = rf.id and s.status = 'active')
+          ) order by rf.name), '[]'::jsonb)
+          from public.role_families rf where rf.organisation_id = mu.organisation_id and rf.status = 'active'
+        ),
+        'knowledgeDomains', (select coalesce(jsonb_agg(jsonb_build_object('id', d.id, 'name', d.name, 'criticality', d.criticality) order by d.name), '[]'::jsonb)
+                             from public.knowledge_domains d where d.measurement_unit_id = mu.id and d.status = 'active'),
+        'decisionTypes', (select coalesce(jsonb_agg(jsonb_build_object('id', d.id, 'name', d.name) order by d.name), '[]'::jsonb)
+                          from public.decision_types d where d.measurement_unit_id = mu.id and d.status = 'active'),
+        'processes', (select coalesce(jsonb_agg(jsonb_build_object('id', p.id, 'name', p.name) order by p.name), '[]'::jsonb)
+                      from public.critical_processes p where p.measurement_unit_id = mu.id and p.status = 'active'),
+        'systems', (select coalesce(jsonb_agg(jsonb_build_object('id', s.id, 'name', s.name) order by s.name), '[]'::jsonb)
+                    from public.primary_systems s where s.measurement_unit_id = mu.id and s.status = 'active')
+      ),
+      'teamLeaders', (
+        select coalesce(jsonb_agg(e.id order by e.employee_ref), '[]'::jsonb) from public.employees e
+        where e.organisation_id = mu.organisation_id and e.status = 'active' and e.unit_id = any (k.units) and e.is_team_leader
+      ),
+      'leadershipTeam', (
+        select coalesce(jsonb_agg(e.id order by e.employee_ref), '[]'::jsonb) from public.employees e
+        where e.organisation_id = mu.organisation_id and e.status = 'active' and e.is_leadership_team
+          and (e.unit_id = any (k.units) or private.leader_eligible(mu.organisation_id, k.units, e.id))
+      ),
+      'audiences', jsonb_build_object(
+        'members_part_a', jsonb_build_object('items', (select jsonb_agg(code order by position) from public.ref_survey_items where in_baseline)),
+        'members_part_b', jsonb_build_object(
+          'items', (select jsonb_agg(code order by module_code, position) from public.ref_module_items
+                    where online and module_code in ('M-O1-CASCADE', 'M-O2-IA')),
+          'processIds', (select coalesce(jsonb_agg(p.id order by p.name), '[]'::jsonb) from public.critical_processes p
+                         where p.measurement_unit_id = mu.id and p.status = 'active')
+        ),
+        'team_leaders', jsonb_build_object('items', (select jsonb_agg(code order by position) from public.ref_module_items where module_code = 'M-C5-TL')),
+        'leadership_team', jsonb_build_object('items', '[]'::jsonb),
+        'managers', jsonb_build_object('items', case when p_c3_route = 'module' then '["c1", "c2", "c3"]'::jsonb else '["c1", "c2"]'::jsonb end),
+        'admin_checklists', jsonb_build_object('items', '["ADM-O1", "ADM-O2", "ADM-O4"]'::jsonb)
+      )
+    ) as unit
+    from public.campaign_units cu
+    join public.measurement_units mu on mu.id = cu.measurement_unit_id
+    cross join lateral (select private.measurement_unit_constituents(mu.organisation_id, mu.id) as units) k
+    where cu.campaign_id = p_campaign
+  ) u
+$$;
+
+-- The fixture's own campaigns measure C1, C2 and G1: its open one is closed and both are taken to
+-- review, so a test can launch another for those units.
+create function tests.clear_fixture_campaigns(p_org text)
+returns void
+language plpgsql
+as $$
+begin
+  update public.campaigns set status = 'closed', closed_at = now()
+  where id = tests.id(p_org || '_open') and status = 'open';
+  update public.campaigns set status = 'under_review'
+  where id in (tests.id(p_org || '_open'), tests.id(p_org || '_closed')) and status = 'closed';
+end
+$$;
+
+-- A draft baseline for the given units, remembered as the key, opened an hour ago (a test runs in
+-- one transaction, where now() stands still) and closing in a week.
+create function tests.draft_campaign(p_org text, p_key text, p_units text[], p_cadence text default 'baseline')
+returns uuid
+language plpgsql
+as $$
+declare
+  v_campaign uuid;
+begin
+  insert into public.campaigns (organisation_id, cadence, status, opens_at, closes_at, pulse_rotation)
+  values (tests.id(p_org), p_cadence, 'draft', now() - interval '1 hour', now() + interval '7 days',
+          case when p_cadence = 'quarterly_pulse' then 1 end)
+  returning id into v_campaign;
+  insert into public.campaign_units (organisation_id, campaign_id, measurement_unit_id)
+  select tests.id(p_org), v_campaign, tests.mu(p_org || '_' || u) from unnest(p_units) as u;
+  perform tests.remember(p_key, v_campaign);
+  return v_campaign;
+end
+$$;
+
+-- Launches as the service role, acting for the given persona, at the current setup version.
+create function tests.launch(p_campaign uuid, p_actor text default null, p_c3_route text default 'module')
+returns jsonb
+language plpgsql
+as $$
+declare
+  v_plan jsonb := tests.launch_plan(p_campaign, p_c3_route);
+  v_version bigint := public.setup_version((select organisation_id from public.campaigns where id = p_campaign));
+  v_result jsonb;
+begin
+  perform tests.as_service();
+  v_result := public.launch_campaign(
+    case when p_actor is null then null else tests.user_id(p_actor) end, p_campaign, v_version, v_plan
+  );
+  perform tests.as_postgres();
+  return v_result;
+end
+$$;
+
+-- What the sending job alone knows: each invitation's token hash.
+create table tests.tokens (
+  invitation_id uuid primary key,
+  campaign_unit_id uuid not null,
+  audience text not null,
+  snapshot_member_id uuid not null,
+  token_hash text not null
+);
+grant select on tests.tokens to anon, authenticated, service_role;
+
+create function tests.issue_tokens(p_campaign uuid)
+returns integer
+language plpgsql
+as $$
+declare
+  v_count integer;
+  v_tokens jsonb;
+begin
+  insert into tests.tokens (invitation_id, campaign_unit_id, audience, snapshot_member_id, token_hash)
+  select i.id, i.campaign_unit_id, i.audience, i.snapshot_member_id,
+         encode(extensions.digest('test-token:' || i.id::text || ':' || i.token_salt, 'sha256'), 'hex')
+  from public.invitations i
+  join public.campaign_units cu on cu.id = i.campaign_unit_id
+  where cu.campaign_id = p_campaign;
+  select jsonb_agg(jsonb_build_object('campaignUnitId', t.campaign_unit_id, 'audience', t.audience, 'tokenHash', t.token_hash))
+  into v_tokens
+  from tests.tokens t join public.campaign_units cu on cu.id = t.campaign_unit_id where cu.campaign_id = p_campaign;
+  perform tests.as_service();
+  v_count := public.issue_survey_tokens(p_campaign, v_tokens);
+  perform tests.as_postgres();
+  return v_count;
+end
+$$;
+
+-- A person's token for an audience of a campaign, by employee ID.
+create function tests.token(p_org text, p_campaign uuid, p_ref text, p_audience text)
+returns text
+language sql
+stable
+as $$
+  select t.token_hash from tests.tokens t
+  join public.campaign_units cu on cu.id = t.campaign_unit_id and cu.campaign_id = p_campaign
+  join public.snapshot_members sm on sm.id = t.snapshot_member_id
+  where sm.employee_id = tests.id(p_org || '_' || p_ref) and t.audience = p_audience
+$$;
+
+-- Submits as the service role; returns 'ok' or the error message.
+create function tests.submit(p_token text, p_payload jsonb, p_seconds integer default 300)
+returns text
+language plpgsql
+as $$
+declare
+  v_result text := 'ok';
+begin
+  perform tests.as_service();
+  begin
+    perform public.ingest_survey_response(p_token, p_payload, p_seconds);
+  exception when others then
+    v_result := sqlerrm;
+  end;
+  perform tests.as_postgres();
+  return v_result;
+end
+$$;
+
+-- Every place outside the named tables where any of the values appears as text: a column of any
+-- table in public or private whose text form contains one of them.
+create function tests.value_locations(p_values text[], p_except text[])
+returns setof text
+language plpgsql
+as $$
+declare
+  v_column record;
+  v_found boolean;
+begin
+  if cardinality(p_values) = 0 then
+    return;
+  end if;
+  for v_column in
+    select c.table_schema, c.table_name, c.column_name
+    from information_schema.columns c
+    join information_schema.tables t on t.table_schema = c.table_schema and t.table_name = c.table_name
+    where c.table_schema in ('public', 'private') and t.table_type = 'BASE TABLE'
+      and not (c.table_name = any (p_except))
+      and c.data_type in ('uuid', 'text', 'jsonb', 'ARRAY', 'character varying')
+  loop
+    execute format(
+      'select exists (select 1 from %I.%I x where x.%I is not null and exists (select 1 from unnest($1) v where position(v in x.%I::text) > 0))',
+      v_column.table_schema, v_column.table_name, v_column.column_name, v_column.column_name
+    ) into v_found using p_values;
+    if v_found then
+      return next v_column.table_schema || '.' || v_column.table_name || '.' || v_column.column_name;
+    end if;
+  end loop;
+end
+$$;
+
+-- A stored run's payload as the close job writes it (Milestone 5 plan, 6.2), with made-up values:
+-- seventeen sub-dimensions, three trip-wires, fourteen ranking rows.
+create function tests.run_payload(p_measured_on date default null)
+returns jsonb
+language sql
+stable
+as $$
+  select jsonb_build_object(
+    'cycle', jsonb_build_object('c3Source', 'module', 'measuredOn', coalesce(p_measured_on, private.today())),
+    'engineInput', jsonb_build_object('engagement', jsonb_build_object('archetype', 'Default', 'unitName', 'Operations')),
+    'engineVersion', '1.0.0',
+    'intakeVersion', '1.2.0',
+    'intakeInputSha256', repeat('ab', 32),
+    'methodology', jsonb_build_object('route', 'Online, self-administered, Tier 3 instruments'),
+    'engineResult', jsonb_build_object('components', jsonb_build_object('P', 61.2)),
+    'subDimensions', (
+      select jsonb_agg(jsonb_build_object(
+        'code', c, 'score', 50 + n, 'status', 'reported', 'reason', 'Response 70.0%', 'tier', 'Tier 3',
+        'source', 'Part A', 'vintage', private.today(), 'confidence', 'High', 'band', 'Amber',
+        'weight', 0.2, 'normalisedWeight', 0.2))
+      from unnest(array['C1', 'C2', 'C3', 'C4', 'C5', 'M1', 'M2', 'M3', 'M4', 'O1', 'O2', 'O3', 'O4', 'O5', 'S1', 'S2', 'S3'])
+           with ordinality as x (c, n)
+    ),
+    'composite', jsonb_build_object(
+      'c', 55, 'm', 60, 'o', 58, 'sInternal', 52, 's', 1.006, 'p', 58.3, 'pConfidence', 'High',
+      'bindingComponent', 'Capability', 'statement', 'C1 is the binding constraint', 'tripWireOverride', '',
+      'ranking', (select jsonb_agg(jsonb_build_object('code', n)) from generate_series(1, 14) n),
+      'topSix', (select jsonb_agg(jsonb_build_object('rank', n)) from generate_series(1, 6) n),
+      'weightSums', '{"C": 1, "M": 1, "O": 1, "S": 1}'::jsonb
+    ),
+    'tripWires', jsonb_build_array(
+      jsonb_build_object('code', 'TW1', 'mean', 3.2, 'score', 55, 'critical', true, 'measured', true),
+      jsonb_build_object('code', 'TW2', 'mean', 4, 'score', 75, 'critical', false, 'measured', true),
+      jsonb_build_object('code', 'TW3', 'critical', false, 'measured', false)
+    ),
+    'aggregates', jsonb_build_object(
+      'aggregates', '{"cascade": 62}'::jsonb, 'instruments', '{}'::jsonb, 'screening', '{}'::jsonb,
+      'adjustments', '[]'::jsonb, 'c3Route', '{"source": "module"}'::jsonb, 'teams', '[]'::jsonb
+    )
+  )
+$$;
+
+-- Closes a launched campaign now and takes it through settling and the rewrite, as the job does.
+create function tests.close_and_settle(p_campaign uuid)
+returns void
+language plpgsql
+as $$
+declare
+  v_cu uuid;
+begin
+  update public.campaigns set status = 'closed', closed_at = now(), closes_at = least(closes_at, now())
+  where id = p_campaign and status = 'open';
+  perform tests.as_service();
+  perform public.settle_campaign(p_campaign);
+  perform tests.as_postgres();
+  for v_cu in select id from public.campaign_units where campaign_id = p_campaign loop
+    perform tests.as_service();
+    perform public.close_campaign_responses(v_cu);
+    perform tests.as_postgres();
+  end loop;
+end
+$$;
+
+grant execute on all functions in schema tests to anon, authenticated, service_role;

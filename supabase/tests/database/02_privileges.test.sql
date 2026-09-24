@@ -236,8 +236,7 @@ insert into expected_grants values
   ('private.my_open_rating_session_ids()', 'authenticated', 'EXECUTE'),
   ('read_skill_ratings(uuid,uuid,uuid,uuid,text)', 'authenticated', 'EXECUTE'),
   ('read_knowledge_ratings(uuid,uuid,uuid,uuid,text)', 'authenticated', 'EXECUTE'),
-  ('read_talent_bands(uuid,uuid,uuid,uuid,text)', 'authenticated', 'EXECUTE'),
-  ('invitation_status_counts(uuid)', 'authenticated', 'EXECUTE');
+  ('read_talent_bands(uuid,uuid,uuid,uuid,text)', 'authenticated', 'EXECUTE');
 
 -- Step 8: the consoles.
 insert into expected_grants values
@@ -307,6 +306,54 @@ insert into expected_grants values
   ('public.ref_admin_checklist_values', 'authenticated', 'SELECT'),
   ('public.ref_admin_checklist_bands', 'authenticated', 'SELECT'),
   ('public.ref_event_triggers', 'authenticated', 'SELECT');
+
+-- Milestone 5, step 3: the campaign engine. invitation_status_counts is replaced by
+-- campaign_monitoring. The launch, the tokens, the two functions that touch the anonymous tables,
+-- the close and storing a result belong to the service role alone.
+insert into expected_grants values
+  ('public.campaign_schedule', 'authenticated', 'SELECT'),
+  ('public.snapshot_scale_maps', 'authenticated', 'SELECT'),
+  ('public.snapshot_scale_map_entries', 'authenticated', 'SELECT'),
+  ('public.campaign_teams', 'authenticated', 'SELECT'),
+  ('public.campaign_unit_contexts', 'authenticated', 'SELECT'),
+  ('public.campaign_audiences', 'authenticated', 'SELECT'),
+  ('public.campaign_audience_members', 'authenticated', 'SELECT'),
+  ('public.checklist_responses', 'authenticated', 'SELECT'),
+  ('public.measurement_cycles', 'authenticated', 'SELECT'),
+  ('public.engine_inputs', 'authenticated', 'SELECT'),
+  ('public.calculation_runs', 'authenticated', 'SELECT'),
+  ('public.calculation_run_details', 'authenticated', 'SELECT'),
+  ('public.sub_dimension_scores', 'authenticated', 'SELECT'),
+  ('public.composite_scores', 'authenticated', 'SELECT'),
+  ('public.trip_wire_results', 'authenticated', 'SELECT'),
+  ('public.unit_aggregates', 'authenticated', 'SELECT'),
+  ('create_campaign(uuid,text,text,uuid[],timestamp with time zone,timestamp with time zone,text)', 'authenticated', 'EXECUTE'),
+  ('update_campaign(uuid,text,uuid[],timestamp with time zone,timestamp with time zone)', 'authenticated', 'EXECUTE'),
+  ('schedule_campaign(uuid)', 'authenticated', 'EXECUTE'),
+  ('unschedule_campaign(uuid)', 'authenticated', 'EXECUTE'),
+  ('cancel_campaign(uuid)', 'authenticated', 'EXECUTE'),
+  ('extend_campaign(uuid,timestamp with time zone)', 'authenticated', 'EXECUTE'),
+  ('close_campaign_now(uuid)', 'authenticated', 'EXECUTE'),
+  ('campaign_monitoring(uuid)', 'authenticated', 'EXECUTE'),
+  ('save_checklist(uuid,text,jsonb)', 'authenticated', 'EXECUTE'),
+  ('split_out_measurement_unit(uuid,uuid,uuid,text)', 'authenticated', 'EXECUTE'),
+  ('release_cycles(uuid,uuid[])', 'authenticated', 'EXECUTE'),
+  ('private.visible_cycle_ids()', 'authenticated', 'EXECUTE'),
+  ('private.visible_run_ids()', 'authenticated', 'EXECUTE'),
+  ('setup_version(uuid)', 'service_role', 'EXECUTE'),
+  ('launch_campaign(uuid,uuid,bigint,jsonb)', 'service_role', 'EXECUTE'),
+  ('grant_manager_memberships(uuid)', 'service_role', 'EXECUTE'),
+  ('record_launch_refusal(uuid,jsonb)', 'service_role', 'EXECUTE'),
+  ('issue_survey_tokens(uuid,jsonb)', 'service_role', 'EXECUTE'),
+  ('survey_tokens_live(uuid,text[])', 'service_role', 'EXECUTE'),
+  ('survey_for_token(text)', 'service_role', 'EXECUTE'),
+  ('ingest_survey_response(text,jsonb,integer)', 'service_role', 'EXECUTE'),
+  ('close_due_campaigns()', 'service_role', 'EXECUTE'),
+  ('settle_campaign(uuid)', 'service_role', 'EXECUTE'),
+  ('close_campaign_responses(uuid)', 'service_role', 'EXECUTE'),
+  ('store_calculation_run(uuid,jsonb)', 'service_role', 'EXECUTE'),
+  ('store_pulse_result(uuid,jsonb)', 'service_role', 'EXECUTE'),
+  ('record_scoring_error(uuid,text)', 'service_role', 'EXECUTE');
 
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,

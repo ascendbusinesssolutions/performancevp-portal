@@ -118,24 +118,401 @@ export type Database = {
           },
         ]
       }
+      calculation_run_details: {
+        Row: {
+          engine_result: Json
+          id: string
+          organisation_id: string
+          run_id: string
+        }
+        Insert: {
+          engine_result: Json
+          id?: string
+          organisation_id: string
+          run_id: string
+        }
+        Update: {
+          engine_result?: Json
+          id?: string
+          organisation_id?: string
+          run_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calculation_run_details_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calculation_run_details_organisation_id_run_id_fkey"
+            columns: ["organisation_id", "run_id"]
+            isOneToOne: true
+            referencedRelation: "calculation_runs"
+            referencedColumns: ["organisation_id", "id"]
+          },
+        ]
+      }
+      calculation_runs: {
+        Row: {
+          cycle_id: string
+          engine_version: string
+          id: string
+          intake_input_sha256: string
+          intake_version: string
+          methodology: Json
+          organisation_id: string
+          recommendations_version: string | null
+          run_at: string
+        }
+        Insert: {
+          cycle_id: string
+          engine_version: string
+          id?: string
+          intake_input_sha256: string
+          intake_version: string
+          methodology: Json
+          organisation_id: string
+          recommendations_version?: string | null
+          run_at?: string
+        }
+        Update: {
+          cycle_id?: string
+          engine_version?: string
+          id?: string
+          intake_input_sha256?: string
+          intake_version?: string
+          methodology?: Json
+          organisation_id?: string
+          recommendations_version?: string | null
+          run_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calculation_runs_organisation_id_cycle_id_fkey"
+            columns: ["organisation_id", "cycle_id"]
+            isOneToOne: true
+            referencedRelation: "measurement_cycles"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "calculation_runs_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_audience_members: {
+        Row: {
+          audience: string
+          campaign_team_id: string | null
+          campaign_unit_id: string
+          id: string
+          organisation_id: string
+          snapshot_member_id: string
+        }
+        Insert: {
+          audience: string
+          campaign_team_id?: string | null
+          campaign_unit_id: string
+          id?: string
+          organisation_id: string
+          snapshot_member_id: string
+        }
+        Update: {
+          audience?: string
+          campaign_team_id?: string | null
+          campaign_unit_id?: string
+          id?: string
+          organisation_id?: string
+          snapshot_member_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_audience_members_organisation_id_campaign_team_id_fkey"
+            columns: ["organisation_id", "campaign_team_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_teams"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "campaign_audience_members_organisation_id_campaign_unit_id_fkey"
+            columns: ["organisation_id", "campaign_unit_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "campaign_audience_members_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_audience_members_organisation_id_snapshot_member__fkey"
+            columns: ["organisation_id", "snapshot_member_id"]
+            isOneToOne: false
+            referencedRelation: "snapshot_members"
+            referencedColumns: ["organisation_id", "id"]
+          },
+        ]
+      }
+      campaign_audiences: {
+        Row: {
+          audience: string
+          campaign_unit_id: string
+          id: string
+          issued: number | null
+          items: string[]
+          organisation_id: string
+          process_ids: string[]
+          responded: number | null
+        }
+        Insert: {
+          audience: string
+          campaign_unit_id: string
+          id?: string
+          issued?: number | null
+          items?: string[]
+          organisation_id: string
+          process_ids?: string[]
+          responded?: number | null
+        }
+        Update: {
+          audience?: string
+          campaign_unit_id?: string
+          id?: string
+          issued?: number | null
+          items?: string[]
+          organisation_id?: string
+          process_ids?: string[]
+          responded?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_audiences_organisation_id_campaign_unit_id_fkey"
+            columns: ["organisation_id", "campaign_unit_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "campaign_audiences_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_schedule: {
+        Row: {
+          anchor_campaign_id: string
+          cadence: string
+          campaign_id: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          due_on: string
+          id: string
+          noticed_at: string | null
+          organisation_id: string
+          status: string
+        }
+        Insert: {
+          anchor_campaign_id: string
+          cadence: string
+          campaign_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          due_on: string
+          id?: string
+          noticed_at?: string | null
+          organisation_id: string
+          status?: string
+        }
+        Update: {
+          anchor_campaign_id?: string
+          cadence?: string
+          campaign_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          due_on?: string
+          id?: string
+          noticed_at?: string | null
+          organisation_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_schedule_organisation_id_anchor_campaign_id_fkey"
+            columns: ["organisation_id", "anchor_campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "campaign_schedule_organisation_id_campaign_id_fkey"
+            columns: ["organisation_id", "campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "campaign_schedule_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_teams: {
+        Row: {
+          business_unit_id: string
+          campaign_unit_id: string
+          fte: number
+          headcount: number
+          id: string
+          kind: string
+          name: string
+          organisation_id: string
+          position: number
+          team_id: string | null
+        }
+        Insert: {
+          business_unit_id: string
+          campaign_unit_id: string
+          fte: number
+          headcount: number
+          id?: string
+          kind: string
+          name: string
+          organisation_id: string
+          position: number
+          team_id?: string | null
+        }
+        Update: {
+          business_unit_id?: string
+          campaign_unit_id?: string
+          fte?: number
+          headcount?: number
+          id?: string
+          kind?: string
+          name?: string
+          organisation_id?: string
+          position?: number
+          team_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_teams_organisation_id_business_unit_id_fkey"
+            columns: ["organisation_id", "business_unit_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "campaign_teams_organisation_id_campaign_unit_id_fkey"
+            columns: ["organisation_id", "campaign_unit_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "campaign_teams_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_teams_organisation_id_team_id_fkey"
+            columns: ["organisation_id", "team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["organisation_id", "id"]
+          },
+        ]
+      }
+      campaign_unit_contexts: {
+        Row: {
+          campaign_unit_id: string
+          context: Json
+          id: string
+          organisation_id: string
+          positions: Json
+        }
+        Insert: {
+          campaign_unit_id: string
+          context: Json
+          id?: string
+          organisation_id: string
+          positions: Json
+        }
+        Update: {
+          campaign_unit_id?: string
+          context?: Json
+          id?: string
+          organisation_id?: string
+          positions?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_unit_contexts_organisation_id_campaign_unit_id_fkey"
+            columns: ["organisation_id", "campaign_unit_id"]
+            isOneToOne: true
+            referencedRelation: "campaign_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "campaign_unit_contexts_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_units: {
         Row: {
+          c3_route: string | null
           campaign_id: string
+          fte: number | null
+          headcount: number | null
           id: string
           measurement_unit_id: string
           organisation_id: string
+          scoring_attempts: number
+          scoring_error: string | null
         }
         Insert: {
+          c3_route?: string | null
           campaign_id: string
+          fte?: number | null
+          headcount?: number | null
           id?: string
           measurement_unit_id: string
           organisation_id: string
+          scoring_attempts?: number
+          scoring_error?: string | null
         }
         Update: {
+          c3_route?: string | null
           campaign_id?: string
+          fte?: number | null
+          headcount?: number | null
           id?: string
           measurement_unit_id?: string
           organisation_id?: string
+          scoring_attempts?: number
+          scoring_error?: string | null
         }
         Relationships: [
           {
@@ -163,48 +540,215 @@ export type Database = {
       }
       campaigns: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           cadence: string
           closed_at: string | null
           closes_at: string | null
           created_at: string
+          created_by: string | null
+          event_trigger: string | null
           id: string
+          launch_blockers: Json | null
           launched_at: string | null
           launched_by: string | null
+          name: string | null
           opens_at: string | null
           organisation_id: string
+          pulse_rotation: number | null
+          responses_rewritten_at: string | null
+          settled_at: string | null
+          setup_version: number | null
           status: string
+          tokens_issued_at: string | null
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           cadence: string
           closed_at?: string | null
           closes_at?: string | null
           created_at?: string
+          created_by?: string | null
+          event_trigger?: string | null
           id?: string
+          launch_blockers?: Json | null
           launched_at?: string | null
           launched_by?: string | null
+          name?: string | null
           opens_at?: string | null
           organisation_id: string
+          pulse_rotation?: number | null
+          responses_rewritten_at?: string | null
+          settled_at?: string | null
+          setup_version?: number | null
           status?: string
+          tokens_issued_at?: string | null
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           cadence?: string
           closed_at?: string | null
           closes_at?: string | null
           created_at?: string
+          created_by?: string | null
+          event_trigger?: string | null
           id?: string
+          launch_blockers?: Json | null
           launched_at?: string | null
           launched_by?: string | null
+          name?: string | null
           opens_at?: string | null
           organisation_id?: string
+          pulse_rotation?: number | null
+          responses_rewritten_at?: string | null
+          settled_at?: string | null
+          setup_version?: number | null
           status?: string
+          tokens_issued_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "campaigns_event_trigger_fkey"
+            columns: ["event_trigger"]
+            isOneToOne: false
+            referencedRelation: "ref_event_triggers"
+            referencedColumns: ["code"]
+          },
           {
             foreignKeyName: "campaigns_organisation_id_fkey"
             columns: ["organisation_id"]
             isOneToOne: false
             referencedRelation: "organisations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_responses: {
+        Row: {
+          answers: Json
+          campaign_unit_id: string
+          checklist_code: string
+          entered_at: string
+          entered_by: string | null
+          id: string
+          organisation_id: string
+          version: number
+        }
+        Insert: {
+          answers: Json
+          campaign_unit_id: string
+          checklist_code: string
+          entered_at?: string
+          entered_by?: string | null
+          id?: string
+          organisation_id: string
+          version: number
+        }
+        Update: {
+          answers?: Json
+          campaign_unit_id?: string
+          checklist_code?: string
+          entered_at?: string
+          entered_by?: string | null
+          id?: string
+          organisation_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_responses_checklist_code_fkey"
+            columns: ["checklist_code"]
+            isOneToOne: false
+            referencedRelation: "ref_admin_checklists"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "checklist_responses_organisation_id_campaign_unit_id_fkey"
+            columns: ["organisation_id", "campaign_unit_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "checklist_responses_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      composite_scores: {
+        Row: {
+          binding_component: string | null
+          c: number | null
+          id: string
+          m: number | null
+          o: number | null
+          organisation_id: string
+          p: number | null
+          p_confidence: string | null
+          ranking: Json
+          run_id: string
+          s: number
+          s_internal: number
+          statement: string
+          top_six: Json
+          trip_wire_override: string | null
+          weight_sums: Json
+        }
+        Insert: {
+          binding_component?: string | null
+          c?: number | null
+          id?: string
+          m?: number | null
+          o?: number | null
+          organisation_id: string
+          p?: number | null
+          p_confidence?: string | null
+          ranking: Json
+          run_id: string
+          s: number
+          s_internal: number
+          statement: string
+          top_six: Json
+          trip_wire_override?: string | null
+          weight_sums: Json
+        }
+        Update: {
+          binding_component?: string | null
+          c?: number | null
+          id?: string
+          m?: number | null
+          o?: number | null
+          organisation_id?: string
+          p?: number | null
+          p_confidence?: string | null
+          ranking?: Json
+          run_id?: string
+          s?: number
+          s_internal?: number
+          statement?: string
+          top_six?: Json
+          trip_wire_override?: string | null
+          weight_sums?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "composite_scores_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "composite_scores_organisation_id_run_id_fkey"
+            columns: ["organisation_id", "run_id"]
+            isOneToOne: true
+            referencedRelation: "calculation_runs"
+            referencedColumns: ["organisation_id", "id"]
           },
         ]
       }
@@ -594,6 +1138,48 @@ export type Database = {
           },
         ]
       }
+      engine_inputs: {
+        Row: {
+          created_at: string
+          cycle_id: string
+          id: string
+          input: Json
+          intake_version: string
+          organisation_id: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_id: string
+          id?: string
+          input: Json
+          intake_version: string
+          organisation_id: string
+        }
+        Update: {
+          created_at?: string
+          cycle_id?: string
+          id?: string
+          input?: Json
+          intake_version?: string
+          organisation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "engine_inputs_organisation_id_cycle_id_fkey"
+            columns: ["organisation_id", "cycle_id"]
+            isOneToOne: true
+            referencedRelation: "measurement_cycles"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "engine_inputs_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       formal_ratings: {
         Row: {
           employee_id: string
@@ -661,7 +1247,7 @@ export type Database = {
           sent_at: string | null
           snapshot_member_id: string
           status: string
-          token_hash: string | null
+          token_salt: string
         }
         Insert: {
           audience: string
@@ -674,7 +1260,7 @@ export type Database = {
           sent_at?: string | null
           snapshot_member_id: string
           status?: string
-          token_hash?: string | null
+          token_salt?: string
         }
         Update: {
           audience?: string
@@ -687,7 +1273,7 @@ export type Database = {
           sent_at?: string | null
           snapshot_member_id?: string
           status?: string
-          token_hash?: string | null
+          token_salt?: string
         }
         Relationships: [
           {
@@ -829,6 +1415,70 @@ export type Database = {
             columns: ["organisation_id", "subject_snapshot_member_id"]
             isOneToOne: false
             referencedRelation: "snapshot_members"
+            referencedColumns: ["organisation_id", "id"]
+          },
+        ]
+      }
+      measurement_cycles: {
+        Row: {
+          c3_source: string | null
+          campaign_unit_id: string
+          created_at: string
+          id: string
+          kind: string
+          measured_on: string
+          measurement_unit_id: string
+          organisation_id: string
+          released_at: string | null
+          released_by: string | null
+          status: string
+        }
+        Insert: {
+          c3_source?: string | null
+          campaign_unit_id: string
+          created_at?: string
+          id?: string
+          kind: string
+          measured_on: string
+          measurement_unit_id: string
+          organisation_id: string
+          released_at?: string | null
+          released_by?: string | null
+          status?: string
+        }
+        Update: {
+          c3_source?: string | null
+          campaign_unit_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          measured_on?: string
+          measurement_unit_id?: string
+          organisation_id?: string
+          released_at?: string | null
+          released_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "measurement_cycles_organisation_id_campaign_unit_id_fkey"
+            columns: ["organisation_id", "campaign_unit_id"]
+            isOneToOne: true
+            referencedRelation: "campaign_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "measurement_cycles_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "measurement_cycles_organisation_id_measurement_unit_id_fkey"
+            columns: ["organisation_id", "measurement_unit_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_units"
             referencedColumns: ["organisation_id", "id"]
           },
         ]
@@ -2113,6 +2763,162 @@ export type Database = {
           },
         ]
       }
+      snapshot_scale_map_entries: {
+        Row: {
+          band: number
+          id: string
+          label: string
+          organisation_id: string
+          snapshot_scale_map_id: string
+        }
+        Insert: {
+          band: number
+          id?: string
+          label: string
+          organisation_id: string
+          snapshot_scale_map_id: string
+        }
+        Update: {
+          band?: number
+          id?: string
+          label?: string
+          organisation_id?: string
+          snapshot_scale_map_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "snapshot_scale_map_entries_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "snapshot_scale_map_entries_organisation_id_snapshot_scale__fkey"
+            columns: ["organisation_id", "snapshot_scale_map_id"]
+            isOneToOne: false
+            referencedRelation: "snapshot_scale_maps"
+            referencedColumns: ["organisation_id", "id"]
+          },
+        ]
+      }
+      snapshot_scale_maps: {
+        Row: {
+          calibrated: boolean | null
+          decision: string
+          id: string
+          organisation_id: string
+          snapshot_id: string
+        }
+        Insert: {
+          calibrated?: boolean | null
+          decision: string
+          id?: string
+          organisation_id: string
+          snapshot_id: string
+        }
+        Update: {
+          calibrated?: boolean | null
+          decision?: string
+          id?: string
+          organisation_id?: string
+          snapshot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "snapshot_scale_maps_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "snapshot_scale_maps_organisation_id_snapshot_id_fkey"
+            columns: ["organisation_id", "snapshot_id"]
+            isOneToOne: true
+            referencedRelation: "directory_snapshots"
+            referencedColumns: ["organisation_id", "id"]
+          },
+        ]
+      }
+      sub_dimension_scores: {
+        Row: {
+          band: string | null
+          code: string
+          confidence: string | null
+          gap: number | null
+          gap_flag: string | null
+          id: string
+          normalised_weight: number | null
+          organisation_id: string
+          perception: number | null
+          reason: string | null
+          run_id: string
+          score: number | null
+          source: string | null
+          status: string
+          structural: number | null
+          tier: string | null
+          vintage: string | null
+          weight: number | null
+        }
+        Insert: {
+          band?: string | null
+          code: string
+          confidence?: string | null
+          gap?: number | null
+          gap_flag?: string | null
+          id?: string
+          normalised_weight?: number | null
+          organisation_id: string
+          perception?: number | null
+          reason?: string | null
+          run_id: string
+          score?: number | null
+          source?: string | null
+          status: string
+          structural?: number | null
+          tier?: string | null
+          vintage?: string | null
+          weight?: number | null
+        }
+        Update: {
+          band?: string | null
+          code?: string
+          confidence?: string | null
+          gap?: number | null
+          gap_flag?: string | null
+          id?: string
+          normalised_weight?: number | null
+          organisation_id?: string
+          perception?: number | null
+          reason?: string | null
+          run_id?: string
+          score?: number | null
+          source?: string | null
+          status?: string
+          structural?: number | null
+          tier?: string | null
+          vintage?: string | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sub_dimension_scores_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sub_dimension_scores_organisation_id_run_id_fkey"
+            columns: ["organisation_id", "run_id"]
+            isOneToOne: false
+            referencedRelation: "calculation_runs"
+            referencedColumns: ["organisation_id", "id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           agreement_date: string
@@ -2229,6 +3035,7 @@ export type Database = {
       }
       survey_item_responses: {
         Row: {
+          decision_type_id: string | null
           id: string
           item_code: string
           organisation_id: string
@@ -2237,6 +3044,7 @@ export type Database = {
           value: number
         }
         Insert: {
+          decision_type_id?: string | null
           id?: string
           item_code: string
           organisation_id: string
@@ -2245,6 +3053,7 @@ export type Database = {
           value: number
         }
         Update: {
+          decision_type_id?: string | null
           id?: string
           item_code?: string
           organisation_id?: string
@@ -2272,29 +3081,36 @@ export type Database = {
       survey_responses: {
         Row: {
           audience: string
+          campaign_team_id: string | null
           campaign_unit_id: string
           completion_seconds: number | null
           id: string
           organisation_id: string
-          team_id: string | null
         }
         Insert: {
           audience: string
+          campaign_team_id?: string | null
           campaign_unit_id: string
           completion_seconds?: number | null
           id?: string
           organisation_id: string
-          team_id?: string | null
         }
         Update: {
           audience?: string
+          campaign_team_id?: string | null
           campaign_unit_id?: string
           completion_seconds?: number | null
           id?: string
           organisation_id?: string
-          team_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "survey_responses_organisation_id_campaign_team_id_fkey"
+            columns: ["organisation_id", "campaign_team_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_teams"
+            referencedColumns: ["organisation_id", "id"]
+          },
           {
             foreignKeyName: "survey_responses_organisation_id_campaign_unit_id_fkey"
             columns: ["organisation_id", "campaign_unit_id"]
@@ -2309,11 +3125,46 @@ export type Database = {
             referencedRelation: "organisations"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      survey_role_answers: {
+        Row: {
+          decision_type_id: string
+          id: string
+          organisation_id: string
+          position_id: string | null
+          response_id: string
+          role: string
+        }
+        Insert: {
+          decision_type_id: string
+          id?: string
+          organisation_id: string
+          position_id?: string | null
+          response_id: string
+          role: string
+        }
+        Update: {
+          decision_type_id?: string
+          id?: string
+          organisation_id?: string
+          position_id?: string | null
+          response_id?: string
+          role?: string
+        }
+        Relationships: [
           {
-            foreignKeyName: "survey_responses_organisation_id_team_id_fkey"
-            columns: ["organisation_id", "team_id"]
+            foreignKeyName: "survey_role_answers_organisation_id_fkey"
+            columns: ["organisation_id"]
             isOneToOne: false
-            referencedRelation: "teams"
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_role_answers_organisation_id_response_id_fkey"
+            columns: ["organisation_id", "response_id"]
+            isOneToOne: false
+            referencedRelation: "survey_responses"
             referencedColumns: ["organisation_id", "id"]
           },
         ]
@@ -2425,6 +3276,54 @@ export type Database = {
           },
         ]
       }
+      trip_wire_results: {
+        Row: {
+          code: string
+          critical: boolean
+          id: string
+          mean: number | null
+          measured: boolean
+          organisation_id: string
+          run_id: string
+          score: number | null
+        }
+        Insert: {
+          code: string
+          critical: boolean
+          id?: string
+          mean?: number | null
+          measured: boolean
+          organisation_id: string
+          run_id: string
+          score?: number | null
+        }
+        Update: {
+          code?: string
+          critical?: boolean
+          id?: string
+          mean?: number | null
+          measured?: boolean
+          organisation_id?: string
+          run_id?: string
+          score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_wire_results_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_wire_results_organisation_id_run_id_fkey"
+            columns: ["organisation_id", "run_id"]
+            isOneToOne: false
+            referencedRelation: "calculation_runs"
+            referencedColumns: ["organisation_id", "id"]
+          },
+        ]
+      }
       unit_access: {
         Row: {
           granted_at: string
@@ -2471,6 +3370,60 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "business_units"
             referencedColumns: ["organisation_id", "id"]
+          },
+        ]
+      }
+      unit_aggregates: {
+        Row: {
+          adjustments: Json
+          aggregates: Json | null
+          c3_route: Json | null
+          cycle_id: string
+          id: string
+          instruments: Json
+          organisation_id: string
+          pulse: Json | null
+          screening: Json
+          teams: Json
+        }
+        Insert: {
+          adjustments: Json
+          aggregates?: Json | null
+          c3_route?: Json | null
+          cycle_id: string
+          id?: string
+          instruments: Json
+          organisation_id: string
+          pulse?: Json | null
+          screening: Json
+          teams: Json
+        }
+        Update: {
+          adjustments?: Json
+          aggregates?: Json | null
+          c3_route?: Json | null
+          cycle_id?: string
+          id?: string
+          instruments?: Json
+          organisation_id?: string
+          pulse?: Json | null
+          screening?: Json
+          teams?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_aggregates_organisation_id_cycle_id_fkey"
+            columns: ["organisation_id", "cycle_id"]
+            isOneToOne: true
+            referencedRelation: "measurement_cycles"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "unit_aggregates_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2542,10 +3495,21 @@ export type Database = {
         }
         Returns: Json
       }
+      campaign_monitoring: { Args: { p_campaign_id: string }; Returns: Json }
       can_manage_directory: {
         Args: { p_organisation_id: string }
         Returns: boolean
       }
+      cancel_campaign: { Args: { p_campaign_id: string }; Returns: undefined }
+      close_campaign_now: {
+        Args: { p_campaign_id: string }
+        Returns: undefined
+      }
+      close_campaign_responses: {
+        Args: { p_campaign_unit_id: string }
+        Returns: Json
+      }
+      close_due_campaigns: { Args: never; Returns: string[] }
       close_support_session: {
         Args: { p_session_id: string }
         Returns: undefined
@@ -2558,6 +3522,18 @@ export type Database = {
         }
         Returns: string
       }
+      create_campaign: {
+        Args: {
+          p_cadence: string
+          p_closes_at: string
+          p_event_trigger?: string
+          p_measurement_unit_ids: string[]
+          p_name: string
+          p_opens_at: string
+          p_organisation_id: string
+        }
+        Returns: string
+      }
       designate_support_staff: { Args: { p_email: string }; Returns: string }
       directory_upload_preview: { Args: { p_upload_id: string }; Returns: Json }
       discard_directory_upload: {
@@ -2565,18 +3541,21 @@ export type Database = {
         Returns: undefined
       }
       expire_directory_uploads: { Args: never; Returns: number }
-      invitation_status_counts: {
+      extend_campaign: {
+        Args: { p_campaign_id: string; p_closes_at: string }
+        Returns: undefined
+      }
+      grant_manager_memberships: {
         Args: { p_campaign_id: string }
-        Returns: {
-          audience: string
-          bounced: number
-          campaign_unit_id: string
-          expired: number
-          issued: number
-          measurement_unit_id: string
-          responded: number
-          sent: number
-        }[]
+        Returns: Json
+      }
+      ingest_survey_response: {
+        Args: {
+          p_completion_seconds: number
+          p_payload: Json
+          p_token_hash: string
+        }
+        Returns: undefined
       }
       invite_member: {
         Args: {
@@ -2587,6 +3566,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      issue_survey_tokens: {
+        Args: { p_campaign_id: string; p_tokens: Json }
+        Returns: number
+      }
       keep_grouping_unit: {
         Args: {
           p_keep: boolean
@@ -2594,6 +3577,15 @@ export type Database = {
           p_organisation_id: string
         }
         Returns: undefined
+      }
+      launch_campaign: {
+        Args: {
+          p_actor_user_id: string
+          p_campaign_id: string
+          p_plan: Json
+          p_setup_version: number
+        }
+        Returns: Json
       }
       mark_upload_file_removed: {
         Args: { p_upload_id: string }
@@ -2718,6 +3710,14 @@ export type Database = {
         Args: { p_detail: Json; p_job: string }
         Returns: undefined
       }
+      record_launch_refusal: {
+        Args: { p_blockers: Json; p_campaign_id: string }
+        Returns: undefined
+      }
+      record_scoring_error: {
+        Args: { p_campaign_unit_id: string; p_code: string }
+        Returns: number
+      }
       record_subscription_term: {
         Args: {
           p_agreement_date: string
@@ -2739,6 +3739,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      release_cycles: {
+        Args: { p_campaign_id: string; p_measurement_unit_ids?: string[] }
+        Returns: number
+      }
       replace_account_owner: {
         Args: { p_email: string; p_organisation_id: string }
         Returns: boolean
@@ -2748,6 +3752,15 @@ export type Database = {
         Args: { p_membership_id: string }
         Returns: undefined
       }
+      save_checklist: {
+        Args: {
+          p_answers: Json
+          p_campaign_unit_id: string
+          p_checklist: string
+        }
+        Returns: number
+      }
+      schedule_campaign: { Args: { p_campaign_id: string }; Returns: undefined }
       set_data_contribution_opt_out: {
         Args: { p_opt_out: boolean; p_organisation_id: string }
         Returns: undefined
@@ -2770,6 +3783,17 @@ export type Database = {
       }
       set_unit_access: {
         Args: { p_membership_id: string; p_unit_ids: string[] }
+        Returns: undefined
+      }
+      settle_campaign: { Args: { p_campaign_id: string }; Returns: undefined }
+      setup_version: { Args: { p_organisation_id: string }; Returns: number }
+      split_out_measurement_unit: {
+        Args: {
+          p_measurement_unit_id: string
+          p_organisation_id: string
+          p_rest_name: string
+          p_unit_id: string
+        }
         Returns: undefined
       }
       staff_organisations: {
@@ -2799,8 +3823,35 @@ export type Database = {
         }
         Returns: Json
       }
+      store_calculation_run: {
+        Args: { p_campaign_unit_id: string; p_payload: Json }
+        Returns: string
+      }
+      store_pulse_result: {
+        Args: { p_campaign_unit_id: string; p_payload: Json }
+        Returns: string
+      }
+      survey_for_token: { Args: { p_token_hash: string }; Returns: Json }
+      survey_tokens_live: {
+        Args: { p_campaign_id: string; p_hashes: string[] }
+        Returns: string[]
+      }
       undo_measurement_unit: {
         Args: { p_measurement_unit_id: string; p_organisation_id: string }
+        Returns: undefined
+      }
+      unschedule_campaign: {
+        Args: { p_campaign_id: string }
+        Returns: undefined
+      }
+      update_campaign: {
+        Args: {
+          p_campaign_id: string
+          p_closes_at: string
+          p_measurement_unit_ids: string[]
+          p_name: string
+          p_opens_at: string
+        }
         Returns: undefined
       }
       uploads_awaiting_file_removal: {

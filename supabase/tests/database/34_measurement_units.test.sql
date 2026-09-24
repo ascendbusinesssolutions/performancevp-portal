@@ -232,8 +232,8 @@ select alike(
 select alike(
   tests.attempt('alpha_admin',
     $$select public.combine_measurement_units(tests.id('alpha'), array[tests.mu('alpha_C1'), tests.mu('alpha_C2')], 'Operations and Sales')$$),
-  'error: 22023 a measurement unit that a campaign has measured%',
-  'a measurement unit a campaign has measured is not changed'
+  'error: 22023 a campaign is measuring this unit%',
+  'a measurement unit a running campaign measures is not changed (retire-and-lineage is 42_retire_lineage)'
 );
 select alike(
   tests.attempt('alpha_admin',
@@ -405,8 +405,8 @@ insert into public.campaign_units (organisation_id, campaign_id, measurement_uni
 values (tests.id('alpha'), tests.id('alpha_open'), tests.id('alpha_V_combined'));
 select alike(
   tests.attempt('alpha_admin', format($$select public.undo_measurement_unit(%L, %L)$$, tests.id('alpha'), tests.id('alpha_V_combined'))),
-  'error: 22023 a measurement unit that a campaign has measured%',
-  'a combination a campaign has measured is not undone'
+  'error: 22023 a campaign is measuring this unit%',
+  'a combination a running campaign measures is not undone'
 );
 select alike(
   tests.attempt('alpha_admin', format($$select public.undo_measurement_unit(%L, %L)$$, tests.id('alpha'), tests.mu('alpha_R'))),

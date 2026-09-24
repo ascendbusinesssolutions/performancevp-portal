@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
 import { requireAccess } from "@/lib/auth/access";
 import type { FormState } from "@/lib/auth/form-state";
@@ -14,6 +15,7 @@ import {
 } from "@/lib/campaigns/calendar";
 import { loadCampaign } from "@/lib/campaigns/data";
 import { launchNow } from "@/lib/campaigns/launch";
+import { sendOutbox } from "@/lib/campaigns/sender";
 import { campaignsCopy, type CampaignsCopyKey } from "@/lib/copy/campaigns";
 import { setupCopy } from "@/lib/copy/setup";
 import { sydneyToday } from "@/lib/dates";
@@ -162,6 +164,8 @@ export async function launchCampaign(_previous: FormState, formData: FormData): 
   revalidatePath(campaignPath(orgId), "layout");
   switch (outcome.kind) {
     case "launched":
+      // The first invitations go now rather than at the next run of the job.
+      after(() => sendOutbox({ campaignId, budgetMs: 120_000 }));
       redirect(
         `${campaignPath(orgId, campaignId)}?notice=launched${
           outcome.accountsPending > 0 ? `&pending=${outcome.accountsPending}` : ""

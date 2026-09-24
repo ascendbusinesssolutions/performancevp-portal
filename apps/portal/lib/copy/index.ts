@@ -4,10 +4,12 @@ import { commonCopy } from "./common";
 import { consoleCopy } from "./console";
 import { contextCopy } from "./context";
 import { directoryCopy } from "./directory";
+import { emailCopy } from "./email";
 import { ratingsMapCopy } from "./ratings-map";
 import { readinessCopy } from "./readiness";
 import { setupCopy } from "./setup";
 import { shellCopy } from "./shell";
+import { surveyCopy } from "./survey";
 import { unitsCopy } from "./units";
 
 /**
@@ -25,9 +27,11 @@ export const COPY_TABLES: Readonly<
   console: { table: consoleCopy },
   context: { table: contextCopy },
   directory: { table: directoryCopy },
+  email: { table: emailCopy },
   "ratings-map": { table: ratingsMapCopy },
   readiness: { table: readinessCopy },
   setup: { table: setupCopy },
   shell: { table: shellCopy },
+  survey: { table: surveyCopy },
   units: { table: unitsCopy },
 };

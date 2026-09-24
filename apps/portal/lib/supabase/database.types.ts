@@ -3496,11 +3496,16 @@ export type Database = {
         Returns: Json
       }
       campaign_monitoring: { Args: { p_campaign_id: string }; Returns: Json }
+      campaigns_awaiting_tokens: { Args: never; Returns: string[] }
       can_manage_directory: {
         Args: { p_organisation_id: string }
         Returns: boolean
       }
       cancel_campaign: { Args: { p_campaign_id: string }; Returns: undefined }
+      claim_outbox: {
+        Args: { p_campaign_id?: string; p_limit: number }
+        Returns: Json
+      }
       close_campaign_now: {
         Args: { p_campaign_id: string }
         Returns: undefined
@@ -3573,6 +3578,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      invitations_for_tokens: {
+        Args: { p_campaign_id: string }
+        Returns: {
+          audience: string
+          campaign_unit_id: string
+          invitation_id: string
+          token_salt: string
+        }[]
+      }
       invite_member: {
         Args: {
           p_email: string
@@ -3613,6 +3627,14 @@ export type Database = {
       open_support_session: {
         Args: { p_organisation_id: string; p_reason: string }
         Returns: string
+      }
+      outbox_failed: {
+        Args: { p_error: string; p_outbox_id: string; p_permanent: boolean }
+        Returns: undefined
+      }
+      outbox_sent: {
+        Args: { p_outbox_id: string; p_provider_message_id: string }
+        Returns: undefined
       }
       provision_organisation: {
         Args: {

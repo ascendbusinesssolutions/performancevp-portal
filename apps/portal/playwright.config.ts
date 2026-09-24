@@ -20,7 +20,15 @@ export default defineConfig({
   retries: 0,
   reporter: [["list"]],
   use: { baseURL: "http://localhost:3000", trace: "retain-on-failure" },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] }, testIgnore: /\.phone\.spec\.ts$/ },
+    // The survey is tested on a phone before anything else (PORTAL_UX_BRIEF.md 7): 390 wide, touch.
+    {
+      name: "phone",
+      use: { ...devices["Pixel 7"], viewport: { width: 390, height: 844 } },
+      testMatch: /\.phone\.spec\.ts$/,
+    },
+  ],
   webServer: {
     command: "pnpm exec next start -p 3000",
     url: "http://localhost:3000/api/health",

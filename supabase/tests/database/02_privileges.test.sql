@@ -357,7 +357,13 @@ insert into expected_grants values
   -- Milestone 5, step 4: the scheduled launch's read and the calendar's decisions.
   ('decide_schedule_proposal(uuid,boolean,timestamp with time zone,timestamp with time zone)', 'authenticated', 'EXECUTE'),
   ('launch_dataset(uuid)', 'service_role', 'EXECUTE'),
-  ('due_scheduled_campaigns()', 'service_role', 'EXECUTE');
+  ('due_scheduled_campaigns()', 'service_role', 'EXECUTE'),
+  -- Milestone 5, step 5: sending.
+  ('invitations_for_tokens(uuid)', 'service_role', 'EXECUTE'),
+  ('campaigns_awaiting_tokens()', 'service_role', 'EXECUTE'),
+  ('claim_outbox(integer,uuid)', 'service_role', 'EXECUTE'),
+  ('outbox_sent(uuid,text)', 'service_role', 'EXECUTE'),
+  ('outbox_failed(uuid,text,boolean)', 'service_role', 'EXECUTE');
 
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,

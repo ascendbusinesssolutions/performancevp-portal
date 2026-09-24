@@ -20,7 +20,17 @@ const nextConfig: NextConfig = {
   ],
   poweredByHeader: false,
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    // The anonymous survey sends no referrer at all and is never cached (Milestone 5 plan, 4.2);
+    // listed last, so these override the baseline.
+    const survey = [
+      { key: "Referrer-Policy", value: "no-referrer" },
+      { key: "Cache-Control", value: "no-store" },
+    ];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      { source: "/s", headers: survey },
+      { source: "/api/survey/:path*", headers: survey },
+    ];
   },
 };
 

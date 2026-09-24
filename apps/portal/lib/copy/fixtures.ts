@@ -35,6 +35,149 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
     { slots: { unit: "Claims" }, expected: "Start from the context of Claims" },
   ],
   "units.tree.below": [{ slots: { parent: "Group" }, expected: "below Group" }],
+  "survey.bar.group": [{ slots: { g: 3, total: 12 }, expected: "Group 3 of 12" }],
+  "survey.bar.decision": [{ slots: { g: 2, total: 8 }, expected: "Decision 2 of 8" }],
+  "survey.landing.eyebrow": [
+    {
+      slots: { organisation: "Northwind Mutual", unit: "Member Services" },
+      expected: "Northwind Mutual · Member Services",
+    },
+  ],
+  "survey.landing.title.members": [
+    { slots: { unit: "Member Services" }, expected: "How is work going in Member Services?" },
+  ],
+  "survey.landing.title.leadershipTeam": [
+    { slots: { unit: "Member Services" }, expected: "Who decides what in Member Services?" },
+  ],
+  "survey.landing.anonymous": [
+    {
+      slots: { floor: 5 },
+      expected: "No name, no email, no login. Answers are only shown for groups of 5 or more.",
+    },
+  ],
+  "survey.landing.minutes.title": [{ slots: { minutes: 15 }, expected: "About 15 minutes" }],
+  "survey.landing.questions": [
+    { slots: { items: 71, groups: 18 }, expected: "71 short questions in 18 groups." },
+  ],
+  "survey.landing.decisions": [
+    { slots: { n: 8 }, expected: "8 of the unit's decisions, with six short questions on each." },
+  ],
+  "survey.about.behalf": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected: "PerformanceVP runs this survey on behalf of Northwind Mutual.",
+    },
+  ],
+  "survey.about.shown": [
+    {
+      slots: { organisation: "Northwind Mutual", floor: 5 },
+      expected:
+        "Northwind Mutual sees results for the unit, and for groups of 5 or more, never one person's answers.",
+    },
+  ],
+  "survey.scale.value": [
+    { slots: { value: 1, label: "Strongly disagree" }, expected: "1, Strongly disagree" },
+  ],
+  "survey.partB.process": [
+    { slots: { process: "Claims intake" }, expected: "Thinking about Claims intake" },
+  ],
+  "email.footer": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected: "Sent by PerformanceVP for Northwind Mutual.",
+    },
+  ],
+  "email.survey.subject": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected: "A short survey for Northwind Mutual",
+    },
+  ],
+  "email.survey.intro": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected:
+        "Northwind Mutual has asked PerformanceVP to run a short survey about how work is going.",
+    },
+  ],
+  "email.survey.link.members_part_a": [
+    {
+      slots: { unit: "Member Services", minutes: 15 },
+      expected: "The survey about Member Services, about 15 minutes:",
+    },
+  ],
+  "email.survey.link.members_part_b": [
+    {
+      slots: { unit: "Member Services", minutes: 6 },
+      expected: "A second, shorter survey about Member Services, about 6 minutes:",
+    },
+  ],
+  "email.survey.link.team_leaders": [
+    {
+      slots: { unit: "Member Services", minutes: 15 },
+      expected: "Questions for team leaders in Member Services, about 15 minutes:",
+    },
+  ],
+  "email.survey.link.leadership_team": [
+    {
+      slots: { unit: "Member Services", minutes: 10 },
+      expected: "Questions for the leadership team of Member Services, about 10 minutes:",
+    },
+  ],
+  "email.survey.closes": [
+    {
+      slots: { date: "Monday 28 September", time: "5 pm" },
+      expected: "The survey closes Monday 28 September at 5 pm.",
+    },
+  ],
+  "email.survey.behalf": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected: "PerformanceVP runs this survey on behalf of Northwind Mutual.",
+    },
+  ],
+  "email.manager.subject": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected: "Rate your team for Northwind Mutual",
+    },
+  ],
+  "email.manager.intro": [
+    {
+      slots: { organisation: "Northwind Mutual", units: "Member Services" },
+      expected:
+        "Northwind Mutual is asking you to rate the skills and knowledge of your direct reports in Member Services.",
+    },
+  ],
+  "email.manager.closes": [
+    {
+      slots: { date: "Monday 28 September", time: "5 pm" },
+      expected: "Rating closes Monday 28 September at 5 pm.",
+    },
+  ],
+  "email.refused.subject": [
+    { slots: { campaign: "Quarterly pulse" }, expected: "Quarterly pulse did not open" },
+  ],
+  "email.refused.body": [
+    {
+      slots: { campaign: "Quarterly pulse" },
+      expected:
+        "Quarterly pulse was scheduled to open, but the readiness check found something to fix first. It is a draft again.",
+    },
+  ],
+  "email.scores.subject": [
+    {
+      slots: { campaign: "Annual baseline" },
+      expected: "Results ready for review: Annual baseline",
+    },
+  ],
+  "email.scores.body": [
+    {
+      slots: { campaign: "Annual baseline" },
+      expected:
+        "Annual baseline has closed. Scores are calculated and held for your review. Nothing is visible to viewers until you release it.",
+    },
+  ],
   "units.measurement.lineageNote": [
     {
       slots: { name: "Claims and Service" },

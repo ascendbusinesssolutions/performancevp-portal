@@ -1,120 +1,15 @@
-import AxeBuilder from "@axe-core/playwright";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-import { COLUMNS } from "../lib/directory/columns";
-import type { TestCell } from "../lib/directory/test-workbook";
-import {
-  completeUnitContext,
-  fillFamilyFromTemplate,
-  go,
-  OWNER,
-  provision,
-  shot,
-  uploadFromTemplate,
-} from "./setup-helpers";
+import { readyKestrel, scan } from "./campaign-helpers";
+import { go, OWNER, shot } from "./setup-helpers";
 import { clearMail, hydrated, resetPersonas, sql } from "./support";
 
 // Milestone 5, step 4: an administrator starts a baseline, sees who it would ask and what the close
 // would need, and launches it; the launch freezes the teams and gives each rating manager a
 // sign-in. The calendar proposes the year; a scheduled pulse the readiness refuses at its opening
 // goes back to draft with its blockers. The only database writes after provisioning move a
-// scheduled opening into the past, as the clock would.
-//
-//   Dispatch (DSP, 12): the head in no team, North of 8 with its team leader, South of 3.
-
-interface Person {
-  ref: string;
-  first: string;
-  last: string;
-  team: "North" | "South" | null;
-  manager: string | null;
-  leadership?: boolean;
-  teamLeader?: boolean;
-}
-
-const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
-
-/** WCAG 2.1 AA on each campaign screen (PORTAL_UX_BRIEF.md 7; Milestone 5 plan, 8.4). */
-async function scan(page: Page, screen: string) {
-  await hydrated(page);
-  const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
-  expect(
-    results.violations.map(
-      (v) => `${screen}: ${v.id} at ${v.nodes.map((n) => n.target.join(" ")).join(" | ")}`,
-    ),
-  ).toEqual([]);
-}
-
-function people(): Person[] {
-  const list: Person[] = [
-    { ref: "D001", first: "Kara", last: "Head", team: null, manager: null, leadership: true },
-    {
-      ref: "D002",
-      first: "Liam",
-      last: "North",
-      team: "North",
-      manager: "D001",
-      leadership: true,
-      teamLeader: true,
-    },
-    { ref: "D003", first: "Mae", last: "South", team: "South", manager: "D001", leadership: true },
-  ];
-  for (let i = 4; i <= 10; i++) {
-    list.push({
-      ref: `D${String(i).padStart(3, "0")}`,
-      first: "Nia",
-      last: `North${i}`,
-      team: "North",
-      manager: "D002",
-    });
-  }
-  for (const i of [11, 12]) {
-    list.push({ ref: `D0${i}`, first: "Otto", last: `South${i}`, team: "South", manager: "D003" });
-  }
-  return list;
-}
-
-function rows(list: Person[]): TestCell[][] {
-  return list.map((p) =>
-    COLUMNS.map((c): TestCell => {
-      switch (c.key) {
-        case "employee_ref":
-          return p.ref;
-        case "first_name":
-          return p.first;
-        case "last_name":
-          return p.last;
-        case "work_email":
-          return `${p.ref.toLowerCase()}@kestrel.test`;
-        case "unit_code":
-          return "DSP";
-        case "unit_name":
-          return "Dispatch";
-        case "team_name":
-          return p.team;
-        case "manager_ref":
-          return p.manager;
-        case "role_title":
-          return p.manager === null ? "General Manager" : "Dispatcher";
-        case "role_family_name":
-          return "Dispatch officers";
-        case "start_date":
-          return "2022-02-01";
-        case "fte":
-          return 1;
-        case "is_team_leader":
-          return p.teamLeader ? "Y" : null;
-        case "is_leadership_team":
-          return p.leadership ? "Y" : null;
-        case "employment_status":
-          return "Permanent";
-        case "formal_rating_label":
-        case "formal_rating_date":
-          return null;
-      }
-    }),
-  );
-}
+// scheduled opening into the past, as the clock would. The organisation is Kestrel Logistics, from
+// e2e/campaign-helpers.ts.
 
 test.beforeEach(async () => {
   await resetPersonas([OWNER]);
@@ -129,23 +24,7 @@ test("a baseline is previewed and launched, and the calendar's scheduled pulse i
   const cronSecret = process.env.CRON_SECRET;
   test.skip(!cronSecret, "CRON_SECRET is needed for the job route");
   const stamp = Date.now();
-  const organisation = `Kestrel Logistics ${stamp}`;
-  await provision(page, organisation, `kestrel.ao.${stamp}@local.test`, stamp);
-  await page.getByRole("link", { name: "Setup", exact: true }).click();
-
-  await uploadFromTemplate(page, rows(people()), "kestrel.xlsx");
-  await page.getByRole("button", { name: "Apply the changes" }).click();
-  await expect(page.getByTestId("directory-counts")).toContainText("12 active");
-  await go(page, "Units");
-  await hydrated(page);
-  await page.getByRole("link", { name: "Edit Dispatch" }).click();
-  await expect(page.getByRole("heading", { name: "Dispatch", level: 1 })).toBeVisible();
-  await hydrated(page);
-  await page.getByLabel("Unit type").selectOption("operations");
-  await page.getByRole("button", { name: "Save changes" }).click();
-  await expect(page.getByText("Saved.")).toBeVisible();
-  await fillFamilyFromTemplate(page, "Dispatch officers", "customer_service");
-  await completeUnitContext(page, "Dispatch");
+  const { org } = await readyKestrel(page, stamp);
 
   // Readiness passes, with the warning about teams under 4, named for the unit.
   await go(page, "Readiness");
@@ -190,7 +69,6 @@ test("a baseline is previewed and launched, and the calendar's scheduled pulse i
   await expect(page.getByText("Launched. The campaign is open")).toBeVisible();
   await expect(page.getByTestId("campaign-state")).toHaveText(/^Open, closes \w+ \d+ \w+, 5 pm$/);
   await expect(page.getByRole("heading", { name: "Who was asked" })).toBeVisible();
-  const org = `(select id from public.organisations where name = '${organisation}')`;
   expect(
     await sql<{ name: string; kind: string; headcount: number }>(
       `select t.name, t.kind, t.headcount from public.campaign_teams t

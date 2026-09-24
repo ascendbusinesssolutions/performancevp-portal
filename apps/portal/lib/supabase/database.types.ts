@@ -1352,6 +1352,135 @@ export type Database = {
           },
         ]
       }
+      ref_admin_checklist_bands: {
+        Row: {
+          fact_code: string
+          lower: number | null
+          lower_inclusive: boolean
+          position: number
+          score: number
+          upper: number | null
+          upper_inclusive: boolean
+        }
+        Insert: {
+          fact_code: string
+          lower?: number | null
+          lower_inclusive: boolean
+          position: number
+          score: number
+          upper?: number | null
+          upper_inclusive: boolean
+        }
+        Update: {
+          fact_code?: string
+          lower?: number | null
+          lower_inclusive?: boolean
+          position?: number
+          score?: number
+          upper?: number | null
+          upper_inclusive?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ref_admin_checklist_bands_fact_code_fkey"
+            columns: ["fact_code"]
+            isOneToOne: false
+            referencedRelation: "ref_admin_checklist_facts"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      ref_admin_checklist_facts: {
+        Row: {
+          checklist_code: string
+          code: string
+          position: number
+          response_kind: string
+          source_response: string | null
+          wording: string
+        }
+        Insert: {
+          checklist_code: string
+          code: string
+          position: number
+          response_kind: string
+          source_response?: string | null
+          wording: string
+        }
+        Update: {
+          checklist_code?: string
+          code?: string
+          position?: number
+          response_kind?: string
+          source_response?: string | null
+          wording?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ref_admin_checklist_facts_checklist_code_fkey"
+            columns: ["checklist_code"]
+            isOneToOne: false
+            referencedRelation: "ref_admin_checklists"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      ref_admin_checklist_values: {
+        Row: {
+          fact_code: string
+          label: string
+          option: string
+          position: number
+          value: number | null
+        }
+        Insert: {
+          fact_code: string
+          label: string
+          option: string
+          position: number
+          value?: number | null
+        }
+        Update: {
+          fact_code?: string
+          label?: string
+          option?: string
+          position?: number
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ref_admin_checklist_values_fact_code_fkey"
+            columns: ["fact_code"]
+            isOneToOne: false
+            referencedRelation: "ref_admin_checklist_facts"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      ref_admin_checklists: {
+        Row: {
+          code: string
+          minimum_facts: number | null
+          position: number
+          repeats_over: string
+          source: string
+        }
+        Insert: {
+          code: string
+          minimum_facts?: number | null
+          position: number
+          repeats_over: string
+          source: string
+        }
+        Update: {
+          code?: string
+          minimum_facts?: number | null
+          position?: number
+          repeats_over?: string
+          source?: string
+        }
+        Relationships: []
+      }
       ref_anzsic_divisions: {
         Row: {
           code: string
@@ -1388,6 +1517,204 @@ export type Database = {
           label?: string
           max_employees?: number
           sort_order?: number
+        }
+        Relationships: []
+      }
+      ref_event_triggers: {
+        Row: {
+          affects: string[]
+          code: string
+          deploys: string
+          detection: string
+          position: number
+          source: string
+          source_trigger: string
+        }
+        Insert: {
+          affects: string[]
+          code: string
+          deploys: string
+          detection: string
+          position: number
+          source: string
+          source_trigger: string
+        }
+        Update: {
+          affects?: string[]
+          code?: string
+          deploys?: string
+          detection?: string
+          position?: number
+          source?: string
+          source_trigger?: string
+        }
+        Relationships: []
+      }
+      ref_module_items: {
+        Row: {
+          anchors: Json | null
+          code: string
+          is_reverse: boolean
+          module_code: string
+          online: boolean
+          portal_code: boolean
+          position: number
+          response_kind: string
+          wording: string
+        }
+        Insert: {
+          anchors?: Json | null
+          code: string
+          is_reverse: boolean
+          module_code: string
+          online: boolean
+          portal_code: boolean
+          position: number
+          response_kind: string
+          wording: string
+        }
+        Update: {
+          anchors?: Json | null
+          code?: string
+          is_reverse?: boolean
+          module_code?: string
+          online?: boolean
+          portal_code?: boolean
+          position?: number
+          response_kind?: string
+          wording?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ref_module_items_module_code_fkey"
+            columns: ["module_code"]
+            isOneToOne: false
+            referencedRelation: "ref_modules"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      ref_modules: {
+        Row: {
+          audience: string
+          code: string
+          disclosure: string
+          position: number
+          repeats_over: string
+          source: string
+          sub_dimension: string
+        }
+        Insert: {
+          audience: string
+          code: string
+          disclosure: string
+          position: number
+          repeats_over: string
+          source: string
+          sub_dimension: string
+        }
+        Update: {
+          audience?: string
+          code?: string
+          disclosure?: string
+          position?: number
+          repeats_over?: string
+          source?: string
+          sub_dimension?: string
+        }
+        Relationships: []
+      }
+      ref_pulse_rotation: {
+        Row: {
+          item_code: string
+          rotation: number
+        }
+        Insert: {
+          item_code: string
+          rotation: number
+        }
+        Update: {
+          item_code?: string
+          rotation?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ref_pulse_rotation_item_code_fkey"
+            columns: ["item_code"]
+            isOneToOne: false
+            referencedRelation: "ref_survey_items"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      ref_survey_items: {
+        Row: {
+          block: string
+          code: string
+          in_annual: boolean
+          in_baseline: boolean
+          in_half_yearly: boolean
+          in_pulse: boolean
+          is_reverse: boolean
+          position: number
+          pulse_rotates: boolean
+          section: string
+          sub_construct: string | null
+          wording: string
+        }
+        Insert: {
+          block: string
+          code: string
+          in_annual: boolean
+          in_baseline: boolean
+          in_half_yearly: boolean
+          in_pulse: boolean
+          is_reverse: boolean
+          position: number
+          pulse_rotates: boolean
+          section: string
+          sub_construct?: string | null
+          wording: string
+        }
+        Update: {
+          block?: string
+          code?: string
+          in_annual?: boolean
+          in_baseline?: boolean
+          in_half_yearly?: boolean
+          in_pulse?: boolean
+          is_reverse?: boolean
+          position?: number
+          pulse_rotates?: boolean
+          section?: string
+          sub_construct?: string | null
+          wording?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ref_survey_items_section_fkey"
+            columns: ["section"]
+            isOneToOne: false
+            referencedRelation: "ref_survey_sections"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      ref_survey_sections: {
+        Row: {
+          code: string
+          heading: string
+          position: number
+        }
+        Insert: {
+          code: string
+          heading: string
+          position: number
+        }
+        Update: {
+          code?: string
+          heading?: string
+          position?: number
         }
         Relationships: []
       }

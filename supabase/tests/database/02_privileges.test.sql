@@ -295,6 +295,19 @@ insert into expected_grants values
   ('undo_measurement_unit(uuid,uuid)', 'authenticated', 'EXECUTE'),
   ('keep_grouping_unit(uuid,uuid,boolean)', 'authenticated', 'EXECUTE');
 
+-- Milestone 5, step 1: the instrument as reference data, read by every signed-in person.
+insert into expected_grants values
+  ('public.ref_survey_sections', 'authenticated', 'SELECT'),
+  ('public.ref_survey_items', 'authenticated', 'SELECT'),
+  ('public.ref_pulse_rotation', 'authenticated', 'SELECT'),
+  ('public.ref_modules', 'authenticated', 'SELECT'),
+  ('public.ref_module_items', 'authenticated', 'SELECT'),
+  ('public.ref_admin_checklists', 'authenticated', 'SELECT'),
+  ('public.ref_admin_checklist_facts', 'authenticated', 'SELECT'),
+  ('public.ref_admin_checklist_values', 'authenticated', 'SELECT'),
+  ('public.ref_admin_checklist_bands', 'authenticated', 'SELECT'),
+  ('public.ref_event_triggers', 'authenticated', 'SELECT');
+
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,
          a.privilege_type as privilege

@@ -11,7 +11,8 @@
     "typecheck": "next typegen && tsc -p tsconfig.json",
     "test": "vitest run",
     "copy": "vitest run lib/copy",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "reference": "REFERENCE_WRITE=1 vitest run lib/reference"
   },
   "dependencies": {
     "@performancevp/engine": "workspace:*",

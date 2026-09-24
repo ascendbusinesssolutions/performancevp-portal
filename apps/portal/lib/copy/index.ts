@@ -1,4 +1,5 @@
 import { authCopy } from "./auth";
+import { campaignsCopy } from "./campaigns";
 import { commonCopy } from "./common";
 import { consoleCopy } from "./console";
 import { contextCopy } from "./context";
@@ -19,6 +20,7 @@ export const COPY_TABLES: Readonly<
   Record<string, { table: Readonly<Record<string, string>>; footer?: boolean }>
 > = {
   auth: { table: authCopy },
+  campaigns: { table: campaignsCopy },
   common: { table: commonCopy },
   console: { table: consoleCopy },
   context: { table: contextCopy },

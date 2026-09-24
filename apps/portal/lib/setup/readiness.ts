@@ -22,7 +22,7 @@ import {
   type MemberRow,
 } from "./measurement";
 import type { FormalRatingRow, SnapshotPerson } from "./snapshot";
-import { measurementSnapshot } from "./snapshot";
+import { measurementSnapshot, teamKeys } from "./snapshot";
 import type { UnitRow } from "./units";
 
 /**
@@ -37,6 +37,7 @@ import type { UnitRow } from "./units";
  */
 
 const LEADERSHIP_MIN = constants.THRESHOLDS.leadershipMinimumRespondents;
+const TEAM_MIN = constants.THRESHOLDS.teamMinimumValid;
 
 export interface ReadinessPerson extends SnapshotPerson {
   first_name: string;
@@ -74,6 +75,8 @@ export interface ReadinessInput {
   /** Active people only. */
   people: readonly ReadinessPerson[];
   families: ReadonlyArray<{ id: string; name: string; status: string }>;
+  /** The teams people belong to, for the team-size warning. */
+  teams: ReadonlyArray<{ id: string; name: string }>;
   skills: readonly SkillRow[];
   context: Parameters<typeof contextCounts>[1];
   formalRatings: readonly FormalRatingRow[];
@@ -100,6 +103,7 @@ export type Finding =
   | { kind: "noCriticalDomain"; unit: UnitRef }
   | { kind: "leadershipTeam"; unit: UnitRef; n: number }
   | { kind: "noTeamLeaders"; unit: UnitRef }
+  | { kind: "smallTeams"; unit: UnitRef; teams: Array<{ name: string; n: number }> }
   | { kind: "noUnitLeader"; unit: UnitRef; candidates: number }
   | { kind: "leaderNotFlagged"; unit: UnitRef; leader: Ref }
   | { kind: "ratingsUndecided" }
@@ -117,6 +121,7 @@ export type CheckKey =
   | "criticalDomain"
   | "leadershipTeam"
   | "teamLeaders"
+  | "teamSize"
   | "unitLeader"
   | "formalRatings"
   | "uploadAwaiting";
@@ -447,6 +452,35 @@ export function evaluateReadiness(input: ReadinessInput): Readiness {
     });
   }
 
+  // Teams under 4 (Milestone 5, added at approval): a team can never reach the team floor of 4
+  // valid respondents if it holds fewer people, so its own results are never shown and a response
+  // naming it is stored without the team. A warning, named per unit, suggesting a merge. Teams are
+  // the keys the campaign would freeze: a unit's own teams, and in a unit with teams a residual team
+  // for the people in none; inside a combination a unit without teams is one team.
+  {
+    const findings: Finding[] = [];
+    const teamName = new Map(input.teams.map((t) => [t.id, t.name]));
+    const unitName = new Map(input.units.map((u) => [u.id, u.name]));
+    for (const view of measured) {
+      const counts = new Map<string, number>();
+      for (const key of teamKeys(staffIn(view), view.combined).values()) {
+        if (key !== null) counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+      const small = [...counts]
+        .filter(([, n]) => n < TEAM_MIN)
+        .map(([key, n]) => ({ name: teamName.get(key) ?? unitName.get(key) ?? key, n }))
+        .sort((a, b) => a.name.localeCompare(b.name, "en-AU"));
+      if (small.length > 0)
+        findings.push({ kind: "smallTeams", unit: unitRef(view), teams: small });
+    }
+    checks.push({
+      key: "teamSize",
+      level: findings.length > 0 ? "warning" : "passed",
+      findings,
+      pass: NONE,
+    });
+  }
+
   // Formal ratings (D4): skipped unless the directory holds them; then mapped or skipped, with
   // every label mapped. The pass line previews each measurement unit's route with the intake's own
   // rule, over 80% of the measurement unit's FTE.
@@ -523,6 +557,7 @@ export function evaluateReadiness(input: ReadinessInput): Readiness {
     "criticalDomain",
     "leadershipTeam",
     "teamLeaders",
+    "teamSize",
     "unitLeader",
     "formalRatings",
   ];

@@ -29,6 +29,7 @@ export const CHECK_ORDER: readonly CheckKey[] = [
   "managers",
   "leadershipTeam",
   "teamLeaders",
+  "teamSize",
   "unitLeader",
   "unitForEveryone",
   "roleFamilies",
@@ -122,6 +123,8 @@ const where = {
   leader: (base: string, unit: UnitRef) =>
     unit.combined ? `${base}/units#measurement` : `${base}/units/${unit.unitIds[0]}#leader`,
   measurement: (base: string) => `${base}/units#measurement`,
+  teams: (base: string, unit: UnitRef) =>
+    unit.combined ? `${base}/units#measurement` : `${base}/units/${unit.unitIds[0]}#teams`,
 };
 
 /** The units a unit under 10 could be measured with, each with the total together. */
@@ -250,6 +253,14 @@ export function findingLine(orgId: string, finding: Finding): ReactNode {
       return fillNodes(readinessCopy["teamLeaders.warning"], {
         unit: unitLink(where.directory(base, finding.unit), finding.unit),
       });
+    case "smallTeams":
+      return fillNodes(readinessCopy["teamSize.warning"], {
+        unit: unitLink(where.teams(base, finding.unit), finding.unit),
+        teams: listOf(
+          finding.teams.map((t) => fill(readinessCopy["teamSize.team"], { team: t.name, n: t.n })),
+          LIST_WORDS,
+        ),
+      });
     case "noUnitLeader":
       return finding.candidates > 1
         ? fillNodes(readinessCopy["unitLeader.ambiguous"], {
@@ -359,6 +370,7 @@ const FIX: Partial<Record<CheckKey, { href: string; label: keyof typeof readines
   managers: { href: "directory?missing=manager", label: "fix.directory" },
   leadershipTeam: { href: "directory", label: "fix.directory" },
   teamLeaders: { href: "directory", label: "fix.directory" },
+  teamSize: { href: "units", label: "fix.units" },
   unitLeader: { href: "units", label: "fix.units" },
   roleFamilies: { href: "context", label: "fix.context" },
   context: { href: "context", label: "fix.context" },

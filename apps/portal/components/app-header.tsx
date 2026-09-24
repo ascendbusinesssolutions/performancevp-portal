@@ -25,7 +25,9 @@ export function AppHeader({ person, manageable }: { person: string; manageable: 
           <OrgNav manageable={manageable} />
         </div>
         <div className="flex shrink-0 items-center gap-6 text-sm">
-          <span className="hidden max-w-56 truncate text-slate-20 xl:inline" title={person}>
+          {/* Shown only on the widest screens since Campaigns joined the navigation, which
+              otherwise scrolls at 1280 pixels. */}
+          <span className="hidden max-w-56 truncate text-slate-20 2xl:inline" title={person}>
             {person}
           </span>
           <SignOutButton onDark />

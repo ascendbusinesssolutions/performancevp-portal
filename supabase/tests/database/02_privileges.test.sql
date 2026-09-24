@@ -353,7 +353,11 @@ insert into expected_grants values
   ('close_campaign_responses(uuid)', 'service_role', 'EXECUTE'),
   ('store_calculation_run(uuid,jsonb)', 'service_role', 'EXECUTE'),
   ('store_pulse_result(uuid,jsonb)', 'service_role', 'EXECUTE'),
-  ('record_scoring_error(uuid,text)', 'service_role', 'EXECUTE');
+  ('record_scoring_error(uuid,text)', 'service_role', 'EXECUTE'),
+  -- Milestone 5, step 4: the scheduled launch's read and the calendar's decisions.
+  ('decide_schedule_proposal(uuid,boolean,timestamp with time zone,timestamp with time zone)', 'authenticated', 'EXECUTE'),
+  ('launch_dataset(uuid)', 'service_role', 'EXECUTE'),
+  ('due_scheduled_campaigns()', 'service_role', 'EXECUTE');
 
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,

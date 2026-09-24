@@ -37,6 +37,8 @@ describe("measurementSnapshot of a single unit", () => {
         {
           employeeRef: "M1",
           fte: 0.6,
+          // In no team, in a unit with teams: the unit's residual team (D21).
+          teamId: "u",
           startDate: "2020-01-01",
           managerRef: "LEAD",
           formalRating: { label: "Meets", date: "2026-03-31" },
@@ -89,11 +91,18 @@ describe("measurementSnapshot", () => {
     ]);
   });
 
-  it("leaves a single's people with their teams as they are", () => {
+  it("gives a single's people without a team the unit's residual team (D21)", () => {
     expect(teams(measurementSnapshot(["P"], false, people))).toEqual([
       ["P1", "t1"],
       ["P2", "t2"],
-      ["P3", null],
+      ["P3", "P"],
+    ]);
+  });
+
+  it("gives a single with no teams at all no team keys", () => {
+    expect(teams(measurementSnapshot(["C"], false, people))).toEqual([
+      ["C1", null],
+      ["C2", null],
     ]);
   });
 });

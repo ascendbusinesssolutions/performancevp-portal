@@ -12,6 +12,7 @@ import {
   loadRoleFamilies,
   loadScaleMap,
   loadSkills,
+  loadTeams,
   loadUnitContext,
   loadUnits,
   type Person,
@@ -52,24 +53,35 @@ export interface SetupState {
 
 export const loadSetupState = cache(async (orgId: string): Promise<SetupState> => {
   const supabase = await createClient();
-  const [units, measurement, people, families, skills, context, formalRatings, scaleMap, uploads] =
-    await Promise.all([
-      loadUnits(supabase, orgId),
-      loadMeasurementUnits(supabase, orgId),
-      loadActivePeople(supabase, orgId),
-      loadRoleFamilies(supabase, orgId),
-      loadSkills(supabase, orgId),
-      loadUnitContext(supabase, orgId),
-      loadFormalRatingsForCheck(supabase, orgId),
-      loadScaleMap(supabase, orgId),
-      supabase
-        .from("directory_uploads")
-        .select("id, status, uploaded_at")
-        .eq("organisation_id", orgId)
-        .in("status", ["staged", "applied"])
-        .order("uploaded_at", { ascending: false })
-        .limit(10),
-    ]);
+  const [
+    units,
+    measurement,
+    people,
+    families,
+    teams,
+    skills,
+    context,
+    formalRatings,
+    scaleMap,
+    uploads,
+  ] = await Promise.all([
+    loadUnits(supabase, orgId),
+    loadMeasurementUnits(supabase, orgId),
+    loadActivePeople(supabase, orgId),
+    loadRoleFamilies(supabase, orgId),
+    loadTeams(supabase, orgId),
+    loadSkills(supabase, orgId),
+    loadUnitContext(supabase, orgId),
+    loadFormalRatingsForCheck(supabase, orgId),
+    loadScaleMap(supabase, orgId),
+    supabase
+      .from("directory_uploads")
+      .select("id, status, uploaded_at")
+      .eq("organisation_id", orgId)
+      .in("status", ["staged", "applied"])
+      .order("uploaded_at", { ascending: false })
+      .limit(10),
+  ]);
   const today = sydneyToday();
   const staged = (uploads.data ?? []).find((u) => u.status === "staged");
   const applied = (uploads.data ?? []).find((u) => u.status === "applied");
@@ -79,6 +91,7 @@ export const loadSetupState = cache(async (orgId: string): Promise<SetupState> =
     ...measurement,
     people,
     families,
+    teams,
     skills,
     context,
     formalRatings,

@@ -9,6 +9,7 @@ import { peopleCount, unitCount } from "@/lib/copy/common";
 import { setupCopy } from "@/lib/copy/setup";
 import { fill } from "@/lib/copy/template";
 import { unitsCopy } from "@/lib/copy/units";
+import { loadMeasuredUnits } from "@/lib/campaigns/data";
 import { requireOrgManager } from "@/lib/org/context";
 import {
   headcountByUnit,
@@ -30,7 +31,14 @@ import { createClient } from "@/lib/supabase/server";
 import { addUnit, recordLineage } from "./actions";
 import { type MeasurementNotice, MeasurementSection } from "./measurement-section";
 
-const NOTICES: readonly MeasurementNotice[] = ["combined", "undone", "kept", "withdrawn"];
+const NOTICES: readonly MeasurementNotice[] = [
+  "combined",
+  "undone",
+  "kept",
+  "withdrawn",
+  "split",
+  "retired",
+];
 
 /**
  * Setup step 1, second half: the units, with stable codes, arranged into a hierarchy
@@ -44,10 +52,11 @@ export default async function UnitsPage({ params, searchParams }: PageProps<"/or
   const { notice: noticeParam, measurement: measurementParam } = await searchParams;
   const org = await requireOrgManager(orgId);
   const supabase = await createClient();
-  const [units, people, measurement] = await Promise.all([
+  const [units, people, measurement, campaigns] = await Promise.all([
     loadUnits(supabase, orgId),
     loadActivePeople(supabase, orgId),
     loadMeasurementUnits(supabase, orgId),
+    loadMeasuredUnits(supabase, orgId),
   ]);
   const model = measurementModel({ units, people, ...measurement });
   const notice = NOTICES.find((n) => n === noticeParam) ?? null;
@@ -176,6 +185,8 @@ export default async function UnitsPage({ params, searchParams }: PageProps<"/or
           people={people}
           notice={notice}
           noticeUnitId={typeof measurementParam === "string" ? measurementParam : null}
+          measured={campaigns.measured}
+          running={campaigns.running}
         />
       ) : null}
 

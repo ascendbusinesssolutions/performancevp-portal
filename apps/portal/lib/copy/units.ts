@@ -172,6 +172,24 @@ export const unitsCopy = {
   "measurement.combination.undoNote":
     "Undoing removes the context entered for {name}. Each unit's own context is kept.",
 
+  // Retire-and-lineage (Milestone 5 plan, 2.5): a measurement unit with campaign results is never
+  // changed in place.
+  "measurement.lineageNote":
+    "{name} has results from a campaign, so it is not changed in place. It is kept with its history, the new arrangement starts as a new measurement unit, and trends show the change as a break.",
+  "measurement.lineageConfirm": "Record the break in the trend",
+  "measurement.combination.retireNote":
+    "{name} has results from a campaign. Undoing retires it, with its history and context kept, and its units are measured on their own again, each trend marked as a break.",
+  "measurement.running":
+    "A campaign is measuring {name}. It can be changed after that campaign closes.",
+  "measurement.split": "Measure it on its own",
+  "measurement.split.name": "Measure {unit} on its own",
+  "measurement.splitNote":
+    "{unit} now has {people}, enough to be measured on its own. The rest stay combined.",
+  "measurement.splitNoteRest":
+    "{unit} now has {people}, enough to be measured on its own. The rest are measured on their own again.",
+  "measurement.notice.split": "Done. The unit is measured on its own.",
+  "measurement.notice.retired":
+    "Retired. Its units are measured on their own again, and its history is kept.",
   "measurement.notice.combined": "Combined. {name} holds {list}: {people}.",
   "measurement.notice.undone": "Undone. Its units are measured on their own again.",
   "measurement.notice.kept": "Kept as a grouping unit.",
@@ -179,8 +197,9 @@ export const unitsCopy = {
 
   "error.combineStale": "The units have changed since this page was shown. Choose again.",
   "error.twoCombinations": "Two combinations cannot be combined. Undo one of them first.",
-  "error.measuredByCampaign":
-    "A campaign has measured this unit. Changing it after a campaign is not yet available.",
+  "error.runningCampaign":
+    "A campaign is measuring this unit. Change it after that campaign closes.",
+  "error.confirmLineage": "Confirm that the unit's trend breaks here.",
   "error.combinationName": "Give the combination a name of up to 200 characters.",
   "error.combinationLeader":
     "The unit leader must be a member of one of its units, or of a unit above them.",

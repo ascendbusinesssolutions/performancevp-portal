@@ -35,6 +35,172 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
     { slots: { unit: "Claims" }, expected: "Start from the context of Claims" },
   ],
   "units.tree.below": [{ slots: { parent: "Group" }, expected: "below Group" }],
+  "units.measurement.lineageNote": [
+    {
+      slots: { name: "Claims and Service" },
+      expected:
+        "Claims and Service has results from a campaign, so it is not changed in place. It is kept with its history, the new arrangement starts as a new measurement unit, and trends show the change as a break.",
+    },
+  ],
+  "units.measurement.combination.retireNote": [
+    {
+      slots: { name: "Claims and Service" },
+      expected:
+        "Claims and Service has results from a campaign. Undoing retires it, with its history and context kept, and its units are measured on their own again, each trend marked as a break.",
+    },
+  ],
+  "units.measurement.running": [
+    {
+      slots: { name: "Claims and Service" },
+      expected:
+        "A campaign is measuring Claims and Service. It can be changed after that campaign closes.",
+    },
+  ],
+  "units.measurement.split.name": [
+    { slots: { unit: "Claims" }, expected: "Measure Claims on its own" },
+  ],
+  "units.measurement.splitNote": [
+    {
+      slots: { unit: "Claims", people: "11 people" },
+      expected:
+        "Claims now has 11 people, enough to be measured on its own. The rest stay combined.",
+    },
+  ],
+  "units.measurement.splitNoteRest": [
+    {
+      slots: { unit: "Claims", people: "11 people" },
+      expected:
+        "Claims now has 11 people, enough to be measured on its own. The rest are measured on their own again.",
+    },
+  ],
+  "campaigns.calendar.due": [
+    {
+      slots: { cadence: "Quarterly pulse", date: "Thursday 24 December" },
+      expected: "Quarterly pulse, due Thursday 24 December",
+    },
+  ],
+  "campaigns.calendar.units": [
+    { slots: { list: "Claims and Service" }, expected: "For Claims and Service." },
+  ],
+  "campaigns.calendar.scheduleName": [
+    {
+      slots: { cadence: "Quarterly pulse", date: "Thursday 24 December" },
+      expected: "Schedule the Quarterly pulse due Thursday 24 December",
+    },
+  ],
+  "campaigns.calendar.scheduleNote": [
+    {
+      slots: { date: "Thursday 24 December", close: "Monday 28 December" },
+      expected: "It opens Thursday 24 December at 9 am and closes Monday 28 December at 5 pm.",
+    },
+  ],
+  "campaigns.calendar.dismissName": [
+    {
+      slots: { cadence: "Half-yearly check", date: "Wednesday 24 March 2027" },
+      expected: "Dismiss the Half-yearly check due Wednesday 24 March 2027",
+    },
+  ],
+  "campaigns.window.range": [
+    {
+      slots: { opens: "Tuesday 15 September", closes: "Monday 28 September" },
+      expected: "Tuesday 15 September to Monday 28 September",
+    },
+  ],
+  "campaigns.cadence.eventNamed": [
+    {
+      slots: { trigger: "Major process redesign" },
+      expected: "Event: Major process redesign",
+    },
+  ],
+  "campaigns.state.scheduled": [
+    { slots: { date: "Tuesday 6 October" }, expected: "Scheduled, opens Tuesday 6 October" },
+  ],
+  "campaigns.state.open": [
+    {
+      slots: { date: "Monday 28 September", time: "5 pm" },
+      expected: "Open, closes Monday 28 September, 5 pm",
+    },
+  ],
+  "campaigns.state.closed": [
+    {
+      slots: { date: "Monday 28 September" },
+      expected: "Closed Monday 28 September, under review",
+    },
+  ],
+  "campaigns.state.released": [
+    { slots: { date: "Friday 2 October" }, expected: "Released Friday 2 October" },
+  ],
+  "campaigns.draft.windowLine": [
+    {
+      slots: {
+        opens: "Tuesday 6 October",
+        openTime: "9 am",
+        closes: "Monday 19 October",
+        closeTime: "5 pm",
+      },
+      expected: "Opens Tuesday 6 October at 9 am. Closes Monday 19 October at 5 pm.",
+    },
+  ],
+  "campaigns.draft.launchNote": [
+    {
+      slots: { date: "Thursday 8 October", time: "5 pm" },
+      expected: "It opens now and closes Thursday 8 October at 5 pm.",
+    },
+  ],
+  "campaigns.draft.scheduleNote": [
+    {
+      slots: { date: "Tuesday 6 October", time: "9 am" },
+      expected: "It opens Tuesday 6 October at 9 am, once readiness passes then.",
+    },
+  ],
+  "campaigns.preview.needs": [{ slots: { n: 36 }, expected: "needs 36" }],
+  "campaigns.preview.fallback": [{ slots: { n: 1 }, expected: "1, the unit leader" }],
+  "campaigns.preview.formal": [
+    { slots: { n: 6 }, expected: "6; formal ratings for talent density" },
+  ],
+  "campaigns.preview.emailed": [
+    { slots: { people: "72 people" }, expected: "72 people receive the anonymous survey." },
+  ],
+  "campaigns.blocker.notMeasured": [
+    {
+      slots: { unit: "Claims" },
+      expected:
+        "Claims is no longer measured as it was when the draft was made. Remove it, and add the unit that now measures its people.",
+    },
+  ],
+  "campaigns.blocker.needsFullRun": [
+    {
+      slots: { unit: "Claims" },
+      expected:
+        "Claims has no released baseline or annual result to carry forward from. Its first campaign is a baseline.",
+    },
+  ],
+  "campaigns.blocker.busy": [
+    {
+      slots: { unit: "Claims" },
+      expected: "Another campaign is measuring Claims. Launch this one after that campaign closes.",
+    },
+  ],
+  "campaigns.blocker.readiness": [
+    { slots: { check: "Work emails" }, expected: "Work emails: see the readiness check." },
+  ],
+  "campaigns.launched.accountsPending": [
+    {
+      slots: { n: 2 },
+      expected: "Sign-in is not yet ready for 2 managers. It is set up again automatically.",
+    },
+  ],
+  "campaigns.launched.meta": [
+    { slots: { date: "Tuesday 15 September" }, expected: "Launched Tuesday 15 September." },
+  ],
+  "readiness.teamSize.warning": [
+    {
+      slots: { unit: "Claims", teams: "Intake has 2 and Claims has 1" },
+      expected:
+        "Claims: Intake has 2 and Claims has 1. A team under 4 can never reach the 4 responses a team result needs, so its own results are never shown; its people still count for the unit. Merge it into another team.",
+    },
+  ],
+  "readiness.teamSize.team": [{ slots: { team: "Intake", n: 2 }, expected: "Intake has 2" }],
   "units.leader.option.above": [
     { slots: { name: "Ruth Root", unit: "Head Office" }, expected: "Ruth Root, Head Office" },
   ],

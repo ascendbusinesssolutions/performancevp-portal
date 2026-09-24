@@ -5,8 +5,8 @@ import { useParams, usePathname } from "next/navigation";
 
 import { shellCopy, type ShellCopyKey } from "@/lib/copy/shell";
 
-// The organisation areas, in the order of the setup sequence, then access. Each path is relative to
-// /org/[orgId].
+// The organisation areas, in the order of the setup sequence, then campaigns and access. Each path
+// is relative to /org/[orgId].
 const ITEMS: ReadonlyArray<{ path: string; label: ShellCopyKey }> = [
   { path: "setup", label: "nav.setup" },
   { path: "units", label: "nav.units" },
@@ -14,6 +14,7 @@ const ITEMS: ReadonlyArray<{ path: string; label: ShellCopyKey }> = [
   { path: "context", label: "nav.context" },
   { path: "formal-ratings", label: "nav.formalRatings" },
   { path: "readiness", label: "nav.readiness" },
+  { path: "campaigns", label: "nav.campaigns" },
   { path: "access", label: "nav.access" },
 ];
 

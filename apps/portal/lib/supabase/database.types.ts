@@ -3534,11 +3534,27 @@ export type Database = {
         }
         Returns: string
       }
+      decide_schedule_proposal: {
+        Args: {
+          p_approve: boolean
+          p_closes_at?: string
+          p_opens_at?: string
+          p_proposal_id: string
+        }
+        Returns: string
+      }
       designate_support_staff: { Args: { p_email: string }; Returns: string }
       directory_upload_preview: { Args: { p_upload_id: string }; Returns: Json }
       discard_directory_upload: {
         Args: { p_upload_id: string }
         Returns: undefined
+      }
+      due_scheduled_campaigns: {
+        Args: never
+        Returns: {
+          campaign_id: string
+          organisation_id: string
+        }[]
       }
       expire_directory_uploads: { Args: never; Returns: number }
       extend_campaign: {
@@ -3587,6 +3603,7 @@ export type Database = {
         }
         Returns: Json
       }
+      launch_dataset: { Args: { p_campaign_id: string }; Returns: Json }
       mark_upload_file_removed: {
         Args: { p_upload_id: string }
         Returns: undefined

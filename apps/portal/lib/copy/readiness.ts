@@ -27,6 +27,7 @@ export const readinessCopy = {
   "check.managers": "A manager for everyone",
   "check.leadershipTeam": "Leadership team of 3",
   "check.teamLeaders": "Team leaders",
+  "check.teamSize": "Teams of 4 or more",
   "check.unitLeader": "Unit leaders",
   "check.unitForEveryone": "A unit for everyone",
   "check.roleFamilies": "Role families and skills",
@@ -57,6 +58,7 @@ export const readinessCopy = {
   "criticalDomain.pass": "Every unit has a knowledge domain marked critical.",
   "leadershipTeam.pass": "Every unit has 3 or more flagged.",
   "teamLeaders.pass": "Every unit has team leaders flagged.",
+  "teamSize.pass": "No team has fewer than 4 people.",
   "unitLeader.pass": "Every unit has its leader.",
   "formalRatings.pass": "Mapped to the five bands. Dated within 12 months for {n} people.",
   "formalRatings.below": "Below 80% in {list}, where managers rate instead.",
@@ -100,6 +102,11 @@ export const readinessCopy = {
   "leadershipTeam.warning":
     "{unit} has {n} flagged. Clarity & decision rights will be insufficient for {unit} until 3 are flagged.",
   "teamLeaders.warning": "{unit} has none. The learning module goes to its unit leader instead.",
+  // Added at the Milestone 5 approval. The residual team of people in no team is named after the
+  // unit, as the team question names it.
+  "teamSize.warning":
+    "{unit}: {teams}. A team under 4 can never reach the 4 responses a team result needs, so its own results are never shown; its people still count for the unit. Merge it into another team.",
+  "teamSize.team": "{team} has {n}",
   "unitLeader.none": "{unit} has no unit leader.",
   "unitLeader.ambiguous": "{unit} has no unit leader: {n} people could lead it. Choose one.",
   "unitLeader.notFlagged": "{leader}, who leads {unit}, is not flagged as leadership team.",

@@ -13,6 +13,7 @@ export const shellCopy = {
   "nav.context": "Unit context",
   "nav.formalRatings": "Formal ratings",
   "nav.readiness": "Readiness",
+  "nav.campaigns": "Campaigns",
   "nav.access": "Access",
 
   "crumb.label": "Breadcrumb",

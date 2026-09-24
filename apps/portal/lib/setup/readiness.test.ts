@@ -156,6 +156,7 @@ function baseline(): ReadinessInput {
     members: [],
     people,
     families: [{ id: "F", name: "Analysts", status: "active" }],
+    teams: [],
     skills,
     context: { domains: [], decisions: [], processes: [], systems: [] },
     formalRatings: [],
@@ -558,6 +559,35 @@ describe("evaluateReadiness", () => {
     expect(check(input, "formalRatings").level).toBe("skipped");
   });
 
+  it("warns about teams under 4, named per unit, without blocking", () => {
+    const input = baseline();
+    expect(check(input, "teamSize").level).toBe("passed");
+    // U1: team A of 9 and team B of 2, and the head of the organisation in neither (a residual
+    // team of 1). U2 has no teams at all, so it is one team.
+    input.teams = [
+      { id: "A", name: "Team A" },
+      { id: "B", name: "Team B" },
+    ];
+    let placed = 0;
+    input.people = input.people.map((p) => {
+      if (p.unit_id !== "U1" || p.id === "h") return p;
+      placed += 1;
+      return { ...p, team_id: placed <= 9 ? "A" : "B" };
+    });
+    const result = evaluateReadiness(input);
+    expect(result.ready).toBe(true);
+    expect(check(input, "teamSize").findings).toEqual([
+      {
+        kind: "smallTeams",
+        unit: ref("U1"),
+        teams: [
+          { name: "Team B", n: 2 },
+          { name: "Unit U1", n: 1 },
+        ],
+      },
+    ]);
+  });
+
   it("warns about an upload awaiting review without blocking (D11)", () => {
     const input = baseline();
     input.stagedUploadId = "upload-1";
@@ -590,6 +620,7 @@ describe("evaluateReadiness", () => {
       ["leadershipTeam", "skipped"],
       ["roleFamilies", "skipped"],
       ["teamLeaders", "skipped"],
+      ["teamSize", "skipped"],
       ["unitLeader", "skipped"],
     ]);
     expect(check(input, "units").level).toBe("blocker");

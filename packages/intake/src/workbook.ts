@@ -24,10 +24,16 @@ import type { IntakeInput, MemberResponse, PartAItem } from "./types";
 
 export interface SurveyWorkbookResult {
   headcounts: Headcounts;
-  /** 7 Screening: the main survey only; the workbook screens nothing else. */
+  /**
+   * 7 Screening: the main survey only; the workbook screens nothing else. Online, a separately
+   * submitted Part B is screened on its own (intake 1.2.0).
+   */
   screening: {
     members: ScreenedRows<MemberResponse>;
+    membersPartB?: ScreenedRows<MemberResponse>;
   };
+  /** The valid rows the Part B modules are scored over: the members' and any separate Part B rows. */
+  partBValid: MemberResponse[];
   /** 8 Type A Means. */
   typeA: {
     means: ItemMeans<PartAItem>;
@@ -52,6 +58,16 @@ export function runSurveyWorkbook(input: IntakeInput): SurveyWorkbookResult {
   const members = screenResponses(input.responses?.members ?? [], {
     headcount: counts.members,
   });
+  // Part B as its own survey (Online Measurement Specification Part 2): screened on its own, so the
+  // speed check sets a Part B cut-off from Part B times, then scored beside any Part B items the
+  // members' rows carry. Without it, exactly the workbook's single import.
+  const separatePartB = input.responses?.membersPartB;
+  const membersPartB =
+    separatePartB === undefined
+      ? undefined
+      : screenResponses(separatePartB, { headcount: counts.members });
+  const partBValid =
+    membersPartB === undefined ? members.valid : [...members.valid, ...membersPartB.valid];
 
   const typeA = {
     means: itemMeans(members.valid, PART_A_ITEMS),
@@ -67,13 +83,19 @@ export function runSurveyWorkbook(input: IntakeInput): SurveyWorkbookResult {
       input.unit.decisionTypes,
       counts.leadershipTeam,
     ),
-    cascade: scoreCascade(members.valid, counts.members),
-    informationAccess: scoreInformationAccess(members.valid, counts.members),
-    processFriction: scoreProcessFriction(members.valid, input.unit.processes),
+    cascade: scoreCascade(partBValid, counts.members),
+    informationAccess: scoreInformationAccess(partBValid, counts.members),
+    processFriction: scoreProcessFriction(partBValid, input.unit.processes),
     c1: scoreC1(rows, input.unit.roleFamilies, input.snapshot, counts.managers),
     c3: scoreC3(rows),
     c5: scoreC5(input.responses?.teamLeaders ?? [], counts.teamLeaders),
   };
 
-  return { headcounts: counts, screening: { members }, typeA, typeC };
+  return {
+    headcounts: counts,
+    screening: membersPartB === undefined ? { members } : { members, membersPartB },
+    partBValid,
+    typeA,
+    typeC,
+  };
 }

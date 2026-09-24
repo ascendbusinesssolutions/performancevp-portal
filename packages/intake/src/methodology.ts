@@ -24,6 +24,7 @@ function speedStatement(audience: string, summary: ScreeningSummary): string {
 
 export function buildMethodology(assembly: Assembly): Methodology {
   const members = assembly.workbook.screening.members.summary;
+  const membersPartB = assembly.workbook.screening.membersPartB?.summary;
   const teamLeaders = assembly.teamLeaderScreening.summary;
   const route =
     assembly.c3Route.source === "formal"
@@ -59,7 +60,9 @@ export function buildMethodology(assembly: Assembly): Methodology {
 
   const standingStatements = [
     ...STANDING_STATEMENTS,
-    speedStatement("member", members),
+    ...(membersPartB === undefined
+      ? [speedStatement("member", members)]
+      : [speedStatement("Part A member", members), speedStatement("Part B member", membersPartB)]),
     ...(assembly.instruments["M-C5-TL"]?.status === "not-deployed"
       ? []
       : [speedStatement("team-leader", teamLeaders)]),
@@ -75,7 +78,10 @@ export function buildMethodology(assembly: Assembly): Methodology {
   return {
     route,
     instruments,
-    exclusions: { members, teamLeaders },
+    exclusions:
+      membersPartB === undefined
+        ? { members, teamLeaders }
+        : { members, membersPartB, teamLeaders },
     insufficiencies,
     adjustments: assembly.adjustments,
     c3: assembly.c3Route,

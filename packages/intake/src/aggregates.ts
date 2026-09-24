@@ -75,7 +75,10 @@ export function buildAggregates(input: IntakeInput, assembly: Assembly): Aggrega
   const deployedB = new Set<string>(input.campaign.deployed.partB?.items ?? []);
   const means = assembly.workbook.typeA.means as Partial<Record<string, number>>;
   const validRows = assembly.workbook.screening.members.valid;
-  const iaMeans = itemMeans(validRows, [...O2I_GROUPS.access, ...O2I_GROUPS.use]);
+  const iaMeans = itemMeans(assembly.workbook.partBValid, [
+    ...O2I_GROUPS.access,
+    ...O2I_GROUPS.use,
+  ]);
   const mi1Deployed = MI1_ITEMS.filter((i) => deployedA.has(i));
   const mi2Deployed = MI2_ITEMS.filter((i) => deployedA.has(i));
 

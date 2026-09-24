@@ -2,7 +2,7 @@
 
 This register records the settled decisions behind the portal build and the reasoning behind the consequential ones, so they are not reopened from scratch later. The build plan (`PORTAL_BUILD_PLAN.md`) holds the detail; the corrected source documents and the Diagnostic Workbook hold the calculation truth; `CLAUDE.md` holds the standing principles and guardrails. This file is the why and the what, not a substitute for those.
 
-**Last updated:** 23 September 2026 (Milestone 3: staff access, sign-in and the tenancy decisions; see 5.6)
+**Last updated:** 24 September 2026 (Milestone 4b: the measurement-unit decisions; see 5.8)
 **Owner of record:** Michael, PerformanceVP
 
 ---
@@ -184,6 +184,47 @@ Settled with the Milestone 3 plan and its checkpoint. The plan and the migration
 | Keys | The publishable and secret keys, all Supabase calls server-side. | The legacy anon and service-role keys are deprecated by the end of 2026. |
 | Job runner | Vercel Cron, calling authenticated job routes; one daily route from Milestone 3 (upload expiry, file removal, the purge). | One runner for every scheduled job; file removal needs the Storage API. |
 | Placeholders | `EMPLOYEE_BANDS` (band codes and ceilings), `SESSION_LIMITS` (recommended 8 hours inactivity and 24 hours absolute), `EMPLOYMENT_STATUS_VALUES` (informational text until defined). | Commercial or source decisions not yet made. |
+
+### 5.7 The setup decisions of 23 September 2026
+
+Settled with the Milestone 4 plan. The plan, the migration `20260923000900_setup.sql` and `apps/portal/lib/setup/readiness.ts` hold the detail.
+
+| Decision | Resolution | Reasoning |
+|---|---|---|
+| Unit size | A unit's own active staff count toward its 10. A unit with units below it and fewer than 10 staff of its own is a grouping unit: it is not measured and does not block the first campaign, and its own staff are not surveyed as members of any unit, though they still act as managers and unit leaders for the people below them. A unit of 1 to 9 people with nothing below it, or an empty unit with nothing below it, blocks the first campaign. | Online Measurement Specification 6.2. The top of most organisations is the head and a small executive group, too few to measure; a unit is measured on the people in it. |
+| Reporting lines | Exactly one person, the head of the organisation, may have no manager. Anyone else without one, or reporting to someone who has left, blocks. | Manager ratings and skill coverage need every other reporting line. |
+| Framework counts | The Online Measurement Specification's counts block: 8 to 15 skills per role family in use, both kinds, at least one critical; 3 to 6 knowledge domains; 8 to 12 decision types; exactly 3 critical processes; 3 to 8 primary systems. A unit with no criticality-3 domain is a warning. | Each instrument needs its context; a missing critical domain only makes knowledge insufficient. |
+| Formal ratings at readiness | Ratings in the directory are mapped, every label, or the step is skipped. With none in the directory the step is skipped on its own. | Uploading ratings signals intent; an unmapped label would silently drop people from coverage. |
+| Where readiness runs | A pure function in the portal calling the intake package's own rules, with the setup counts in intake `constants.SETUP` (1.1.0). The campaign launch reruns it on the server (Milestone 5). | One home for each rule, so the preview says what the close will do. |
+| The readiness read of formal ratings | Logged as `ratings.checked`, not as a view. | The ratings area's count of views stays a count of people looking. |
+| Readiness styling | A glyph and a word in brand ink. | The status colours stay reserved for bands and trip-wires (PORTAL_UX_BRIEF.md 5). |
+| Warnings added | An upload awaiting review; a unit with no unit leader and no single candidate. | Neither blocks; both change what a campaign would measure. |
+| Unit leader | `business_units.unit_leader_employee_id`: an active member of the unit or nobody, released when the person moves or leaves, and proposed where one person in the unit reports outside it or to no one. | The leadership-team and team-leader modules need it (Milestone 5). |
+| Status colours | Defined as tokens, with contrast asserted by test. The trip-wire critical treatment is a 3 px rule and the label "Critical finding" in #7E2118 above the finding, with no fill. | As on the results mockup. |
+| Scale map in the audit log | Labels and bands are recorded as changed and never copied into images. | The log carries no rating vocabulary or band value, as for ratings; the campaign snapshot freezes the map. |
+| No progress rail | Setup progress is shown on the hub, not on every screen. | A rail would read formal ratings, and so write an audit entry, on every page view. |
+| ANZSIC | The 19 divisions as reference data; the class an optional four-digit code. | Metadata only. |
+| Placeholder | `ROLE_FAMILY_TEMPLATE_LIBRARY`: placeholder templates until the library is written. | Content, not a build decision. |
+
+### 5.8 The measurement-unit decisions of 23 and 24 September 2026
+
+Settled with the Milestone 4b plan (Online Measurement Specification 6.2, "Combining small units for measurement"). The plan, the migration `20260923001000_measurement_units.sql` and `apps/portal/lib/setup/measurement.ts` hold the detail.
+
+| Decision | Resolution | Reasoning |
+|---|---|---|
+| Representation | Every measurement unit is a row. Each org unit has a single measurement unit, created with it, which carries its code and follows its name and status; a combination holds two or more org units. | Context, campaigns, results and trends have one key, and a unit can move between being measured alone and combined, with lineage. |
+| Codes and names | A combination's code joins its units' codes with `+`, which no unit code may contain, and is fixed from its first campaign. Its name defaults to its units' names and is the administrator's to change. | Codes that cannot collide, with nothing to type. |
+| Changing a combination | Before a campaign measures it, a combination is extended or undone freely, and undoing removes the context entered for it. After, changes are refused until Milestone 5 builds retire-and-lineage. | Nothing measured changes silently. |
+| What may combine | A unit under 10 with a unit in its branch: a sibling, its parent, the unit above a grouping parent, or a unit directly below. At least one side is under 10 at the time, checked beside the intake's constant; two combinations do not combine. The readiness check rechecks the branch at every run. | The candidates of 6.2, and one home for the minimum of 10. |
+| Grouping units | A unit under 10 with units below it warns until it is combined downward or kept as a grouping unit. One with nobody of its own has nothing to choose. | The choice is explicit without blocking, as 6.2 says a grouping unit does not block. |
+| Readiness over measurement units | A leaf under 10 blocks with its candidates listed. The checks of measured units wait until one has 10 or more. | Context is not asked of a unit about to be combined. |
+| Teams in a combination | Each unit keeps its own teams where it has any, and a unit without teams is one team. | A small unit combined with a large one never collapses the large one's teams (amended by Michael, 23 September 2026). |
+| Unit context | Defined once per measurement unit. A new combination may start from one of its units' context, which the unit keeps. | 6.2. |
+| Unit leader | A member of the unit or of a unit above it (this amends 5.7). A combination that rolls up takes its top unit's leader; where siblings combine, the leader is chosen. The leadership team is the flagged people across the units, with a flagged leader from above; a leader not flagged warns. | Online Measurement Specification 6.1 as refreshed. |
+| Campaign units | `campaign_units` key on measurement units. | Every later milestone reads measurement units. |
+| Viewer scope | A unit viewer sees a measurement unit that holds, or held, a unit in their scope. | Proven now; first read in Milestone 6. |
+| Retirement and lineage | A unit inside a combination is not retired. An org unit merge or split also writes measurement lineage. | Trends follow one lineage table. |
+| The hub | "Organisation and units" stays open while a unit is under 10 and uncombined. | "Continue setup" leads to where the choice is made. |
 
 ---
 

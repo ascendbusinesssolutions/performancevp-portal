@@ -45,10 +45,11 @@ Every check the CI runs, in one command: `pnpm check`.
 | `pnpm lint`, `pnpm format:check` | ESLint across the workspace; Prettier on code (Markdown and the snapshots are excluded) |
 | `pnpm typecheck` | Every workspace; package source and package tests are checked separately |
 | `pnpm test` | Each package's own Vitest suite. A package can also run its suite alone from its folder |
+| `pnpm copy` | The copy check: the copy lint over every string in `apps/portal/lib/copy`, every template fixture and the three Supabase Auth email templates |
 | `pnpm build` | `next build` of the application |
 | `pnpm db:start`, `db:stop`, `db:reset`, `db:test`, `db:lint` | The local Supabase stack; `db:test` runs the pgTAP suite |
 | `pnpm db:types` | Regenerates `apps/portal/lib/supabase/database.types.ts` from the local database; CI fails if the committed file differs |
-| `pnpm --filter @performancevp/portal e2e` | The Playwright suite against the local stack. Run `pnpm build` first; it starts `next start` itself, or reuses a server already on port 3000 |
+| `pnpm --filter @performancevp/portal e2e` | The Playwright suite against the local stack. Run `pnpm build` first; it starts `next start` itself, or reuses a server already on port 3000. `e2e/setup.spec.ts` is the Milestone 4 exit criterion and `e2e/measurement-units.spec.ts` the Milestone 4b one, sharing `e2e/setup-helpers.ts`; set `E2E_SHOT_DIR` to a folder to keep their screenshots |
 
 ## Environment variables
 
@@ -64,15 +65,19 @@ The portal uses Supabase's publishable and secret keys; the legacy anon and serv
 
 Account owners, administrators, viewers and PerformanceVP staff sign in with a password: at least 12 characters with upper and lower case letters and digits, and a password change needs a recent sign-in. The Owner, support staff, account owners and administrators must enrol a TOTP authenticator and complete it at every sign-in; anyone else who enrols one is challenged too. Managers who rate their direct reports sign in with a six-digit code sent by email and never have a password. The database is the authority on all of this: a session opened by email code counts only for the manager role, and a role that needs TOTP counts only at `aal2`. `apps/portal/proxy.ts` sends people to the right step first, and sets the content security policy with a fresh nonce on every request.
 
-Public sign-up is off. People join by invitation, from the PerformanceVP console (an account owner, when an organisation is provisioned) or from the account owner's access page. Supabase has one expiry for email codes and email links, set to one hour (decided 23 September 2026), so an invitation or password link must be used within the hour and a manager's code lasts as long. The invitation email says how to ask for a fresh link.
+Public sign-up is off. People join by invitation, from the PerformanceVP console (an account owner, when an organisation is provisioned) or from the account owner's access page. Supabase has one expiry for email codes and email links, set to one hour (decided 23 September 2026), so an invitation or password link must be used within the hour and a manager's code lasts as long. An expired or used link lands on `/auth/new-link`, "Send me a new link", which the invitation email and the sign-in page also point to. It answers the same whatever the address. After the answer is sent, `public.new_link_kind` (service role only) decides whether to send the invitation again (it was never taken up), a password link (a confirmed account with a role that signs in with a password), or nothing (an unknown address, a manager, or a repeat within 60 seconds or beyond five an hour for one account, counted by account and never by address).
 
 ## Scheduled jobs
 
 One route, `GET /api/jobs/daily`, runs every scheduled job. Vercel Cron calls it daily at 17:00 UTC (03:00 in Sydney in winter, 04:00 in summer) with `CRON_SECRET` as a bearer token, and the route refuses any other caller. It expires directory uploads left undecided for 7 days, removes the files of decided uploads from storage, purges directory records deactivated 30 or more days earlier, and records each run in the audit log as `job.daily_completed`, so a missed run shows as a gap. Later milestones add their jobs to the same route. Vercel's Hobby plan allows daily cron only; the campaign engine in Milestone 5 will need more frequent runs.
 
+## Measurement units
+
+The directory keeps a client's units as their HRIS holds them; campaigns measure measurement units, laid over them (Online Measurement Specification 6.2; migration `20260923001000_measurement_units.sql`). Every org unit has a single measurement unit, created with it by trigger, that carries its code and follows its name and status. An administrator combines a unit under 10 with others in its branch on the units screen, and the combination, coded with its units' codes joined by `+`, holds them until it is undone. Unit context and `campaign_units` key on measurement units, and so will results, suggestions and trends from Milestone 6; nothing later reads an org unit where it means what is measured. `apps/portal/lib/setup/measurement.ts` holds the model the readiness check and the setup screens share: each measurement unit's state, the candidates a unit under 10 could combine with, whether a combination's units still share a branch, and where its leader comes from. The database holds tenancy, exclusive membership and the rule that nothing a campaign has measured is changed.
+
 ## The database suite
 
-`supabase/tests/database` holds the pgTAP suite: 21 files and 334 assertions at Milestone 3. It proves the access matrix of `PORTAL_BUILD_PLAN.md` Section 3.3 across two seeded organisations, including that no role can read anonymous responses and that executive and unit viewers cannot read ratings. Two include files carry the shared machinery: `helpers/tests.psql` (personas, `tests.authenticate_as`, and data-driven matrix runners) and `helpers/fixture.psql` (the two organisations, their directories, campaigns, responses and ratings). Each test file includes them with `\ir` inside its own transaction and rolls back, so nothing persists. `02_privileges` holds the exact list of grants; a new table or function without its grant line fails there.
+`supabase/tests/database` holds the pgTAP suite: 21 files and 334 assertions at Milestone 3, 24 files and 384 at Milestone 4, 25 files and 437 at Milestone 4b. It proves the access matrix of `PORTAL_BUILD_PLAN.md` Section 3.3 across two seeded organisations, including that no role can read anonymous responses and that executive and unit viewers cannot read ratings. Two include files carry the shared machinery: `helpers/tests.psql` (personas, `tests.authenticate_as`, and data-driven matrix runners) and `helpers/fixture.psql` (the two organisations, their directories, campaigns, responses and ratings). Each test file includes them with `\ir` inside its own transaction and rolls back, so nothing persists. `02_privileges` holds the exact list of grants; a new table or function without its grant line fails there.
 
 ## Local personas
 
@@ -105,6 +110,8 @@ The reason is the network, not the suite. `supabase test db` runs its test runne
 
 The URI carries the database password. It is set in the shell for the session only, and never written to a file in the repository or committed. URL-encode the password (`@` as `%40`, `:` as `%3A`, `/` as `%2F`, `#` as `%23`, `%` as `%25`), and keep the whole URI in single quotes so zsh does not expand `$` or `!` inside it. An `export` typed at the prompt is kept in the shell history; start the line with a space when `HIST_IGNORE_SPACE` is set, or remove the entry afterwards.
 
+The staging Security Advisor reports two expected warning types, and neither needs action: the SECURITY DEFINER functions that signed-in users can call (26 at Milestone 3), which by design are the checked, audited route for every action a row policy cannot express, and leaked-password protection being off, which Supabase offers on the Pro plan only.
+
 ## Version pins and why
 
 Each pin below is deliberate and is revisited when its blocker clears, not before.
@@ -128,7 +135,7 @@ Three guards, each independent, all proven on a deliberately violating file at M
 
 ## CI and deployment
 
-`.github/workflows/ci.yml` runs on every pull request and on pushes to `main`: `lint`, `typecheck`, `test (engine)`, `test (intake)`, `test (recommendations)`, `test (portal)`, `build` and `e2e`, as separately named checks. The `e2e` job starts the local Supabase stack from the migrations and the dev seed, builds the application and runs the Playwright suite against it. `.github/workflows/database.yml` runs always: it starts Postgres alone, lints the schema, runs the pgTAP suite and checks that the committed generated types match the migrations. `database`, `test (portal)` and `e2e` are to be required checks on `main`. Actions are pinned to commit SHAs. No secrets are stored in GitHub.
+`.github/workflows/ci.yml` runs on every pull request and on pushes to `main`: `lint`, `typecheck`, `copy`, `test (engine)`, `test (intake)`, `test (recommendations)`, `test (portal)`, `build` and `e2e`, as separately named checks. The `e2e` job starts the local Supabase stack from the migrations and the dev seed, builds the application and runs the Playwright suite against it. `.github/workflows/database.yml` runs always: it starts Postgres alone, lints the schema, runs the pgTAP suite and checks that the committed generated types match the migrations. `database`, `copy`, `test (portal)` and `e2e` are to be required checks on `main`. Actions are pinned to commit SHAs. No secrets are stored in GitHub.
 
 Deployment is through Vercel's Git integration, not from Actions. The Vercel project's root directory is `apps/portal`; `main` deploys to the project's temporary `*.vercel.app` URL, which serves as staging until cutover to `app.performancevp.com.au`; pull requests get preview URLs. `apps/portal/vercel.json` sets the function region to Sydney. `GET /api/health` reports the environment, the commit and the three package versions.
 
@@ -144,6 +151,7 @@ Consequential decisions not yet settled are held as named placeholders rather th
 
 | `EMPLOYEE_BANDS` | The subscription bands and the most employees each allows. `ref_employee_bands` is created empty; the dev seed and the test fixture carry test bands, and staging needs one clearly labelled test band before an organisation can be provisioned. | First client |
 | `SESSION_LIMITS` | The inactivity and absolute session timeouts, recommended at 8 and 24 hours. Hosted Supabase sets them on the Pro plan only. | Staging on Pro |
+| `ROLE_FAMILY_TEMPLATE_LIBRARY` | The starter content the unit-context screens offer: role-family skill frameworks, decision-type starter lists by unit type, and prompts for knowledge domains, processes and systems (Online Measurement Specification 4.5). `ref_templates` is seeded with placeholder content, every row flagged `is_placeholder`, until the library is written. | First client |
 | `EMPLOYMENT_STATUS_VALUES` | The values of the directory's employment status field. Online Measurement Specification 6.1 names the field without defining them, so it is held as free text for information only and used by no rule. | Before any rule depends on it |
 
 `ENTITLEMENT_ENFORCEMENT`, the commercial rule for headcount against plan band, is held in `PORTAL_BUILD_PLAN.md` Section 11. The directory preview shows the active headcount against the band and does nothing more until it is settled.

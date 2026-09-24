@@ -36,6 +36,19 @@ as $$
   select id from tests.ids where key = p_key
 $$;
 
+-- The single measurement unit of a remembered org unit (Milestone 4b). Read past row security, so
+-- a statement run as a persona of another organisation still names the unit it is refused.
+create function tests.mu(p_key text)
+returns uuid
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select mu.id from public.measurement_units mu
+  where mu.single_unit_id = (select i.id from tests.ids i where i.key = p_key)
+$$;
+
 create function tests.remember(p_key text, p_id uuid)
 returns uuid
 language sql

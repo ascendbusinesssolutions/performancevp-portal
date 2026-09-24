@@ -1,24 +1,46 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { type ReactNode, useId } from "react";
 
-import { authCopy } from "@/lib/copy/auth";
+import { shellCopy } from "@/lib/copy/shell";
+
+import { buttonClass } from "./button";
 
 /**
- * The few interface pieces the sign-in pages share. Brand tokens only (app/globals.css); proper
- * styling of the application arrives with the setup flows in Milestone 4.
+ * The interface pieces the sign-in pages and the working screens share. Brand tokens only
+ * (app/globals.css). Control boundaries use grey-80, which meets 3:1 on white (WCAG 1.4.11).
  */
+
+/**
+ * The wordmark on a white page: "Performance" in slate, "VP" in gold-deep, the brand's gold for
+ * text on white (PORTAL_UX_BRIEF.md 7; Strategic Gold is 2.58:1 on white, gold-deep 5.20:1). The
+ * header keeps Strategic Gold, which meets 4.5:1 on slate.
+ */
+export function Wordmark() {
+  return (
+    <p className="font-display text-[26px] leading-none font-medium">
+      <span className="text-slate">{shellCopy["wordmark.first"]}</span>
+      <span className="text-gold-deep">{shellCopy["wordmark.second"]}</span>
+    </p>
+  );
+}
 
 export function AuthShell({ title, children }: { title: string; children: ReactNode }) {
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-16">
-      <p className="font-mono text-xs uppercase tracking-widest text-gold-deep">
-        {authCopy["brand.eyebrow"]}
-      </p>
-      <h1 className="mt-3 font-display text-3xl font-medium text-slate">{title}</h1>
+      <Wordmark />
+      <h1 className="mt-8 font-display text-3xl font-medium text-slate">{title}</h1>
       <div className="mt-8">{children}</div>
     </main>
   );
 }
+
+/** A text input, select or textarea, without the gap below its label (for use in tables). */
+export const CONTROL_CLASS =
+  "block w-full rounded-control border border-grey-80 bg-white px-3 py-2 text-slate " +
+  "focus:border-slate focus:outline-2 focus:outline-offset-2 focus:outline-slate " +
+  "disabled:bg-grey-10 disabled:text-grey";
+
+export const INPUT_CLASS = `mt-1 ${CONTROL_CLASS}`;
 
 export function Field({
   label,
@@ -28,38 +50,57 @@ export function Field({
   inputMode,
   required = true,
   defaultValue,
+  hint,
+  maxLength,
+  disabled,
+  list,
 }: {
   label: string;
   name: string;
   type?: string;
   autoComplete?: string;
-  inputMode?: "text" | "email" | "numeric";
+  inputMode?: "text" | "email" | "numeric" | "decimal";
   required?: boolean;
   defaultValue?: string;
+  hint?: string;
+  maxLength?: number;
+  disabled?: boolean;
+  list?: string;
 }) {
+  // The label holds its text only and names the input through htmlFor; the hint is linked by
+  // aria-describedby, so the field's accessible name is exactly its label.
+  const id = useId();
   return (
-    <label className="block">
-      <span className="block text-sm text-grey">{label}</span>
+    <div>
+      <label htmlFor={id} className="block text-sm text-grey">
+        {label}
+      </label>
       <input
-        className="mt-1 block w-full rounded-none border border-grey-40 bg-white px-3 py-2 text-slate focus:border-slate focus:outline-2 focus:outline-offset-2 focus:outline-slate"
+        id={id}
+        list={list}
+        className={INPUT_CLASS}
         name={name}
         type={type}
         autoComplete={autoComplete}
         inputMode={inputMode}
         required={required}
         defaultValue={defaultValue}
+        maxLength={maxLength}
+        disabled={disabled}
+        aria-describedby={hint ? `${id}-hint` : undefined}
       />
-    </label>
+      {hint ? (
+        <p id={`${id}-hint`} className="mt-1 text-xs text-grey">
+          {hint}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
 export function SubmitButton({ children, pending }: { children: ReactNode; pending?: boolean }) {
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="mt-6 w-full bg-slate px-4 py-3 text-white hover:bg-slate-90 focus:outline-2 focus:outline-offset-2 focus:outline-slate disabled:opacity-60"
-    >
+    <button type="submit" disabled={pending} className={`mt-6 w-full ${buttonClass("primary")}`}>
       {children}
     </button>
   );

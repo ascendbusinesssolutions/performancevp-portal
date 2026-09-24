@@ -198,6 +198,111 @@ export const directoryCopy = {
   "preview.field.leadership_team": "Leadership team",
   "preview.field.employment_status": "Employment status",
   "preview.field.formal_rating": "Formal rating",
+
+  // Milestone 4: the S3 lines the Milestone 3 preview lacked (PORTAL_COPY_SPEC.md S3).
+  "preview.newUnitLine":
+    "Unit code {code} is new. It will be created as a unit named {name}, {n} people.",
+  "preview.leaversThreshold":
+    "{n} leavers is more than {threshold}. Confirm the file is the whole directory before applying it.",
+  "preview.ratings.title": "Formal ratings in this file",
+  "preview.ratings.present":
+    "Rating and date present for {n} of {total}. Dated within 12 months: {current}.",
+  "preview.ratings.coverage": "Coverage by unit: {list}.",
+  "preview.ratings.unitShare": "{unit} {pct}%",
+  "preview.ratings.use": "Units at 80% or above use these for talent density.",
+  "preview.ratings.below": "The managers of {list} will rate instead.",
+  "preview.ratings.mapping":
+    "Rating labels are mapped to the five talent bands on the formal ratings screen.",
+
+  // The directory screen (Milestone 4).
+  "page.ratingRule":
+    "Formal performance ratings in the file are used only when dated within the 12 months before a campaign launches, and only for units where they cover at least 80% of the people, by FTE. Elsewhere managers rate talent density.",
+  "page.awaiting": "An upload is awaiting review. Nothing in it applies until you apply it.",
+  "page.awaitingLink": "Review the differences",
+  "page.addPerson": "Add a person",
+  "page.meta": "{active} active, {inactive} deactivated",
+  "page.inactiveNote": "Deactivated records are purged 30 days after deactivation.",
+
+  "people.filter.unit": "Unit",
+  "people.filter.allUnits": "All units",
+  "people.filter.missing": "Show",
+  "people.filter.everyone": "Everyone",
+  "people.filter.manager": "Without a manager, or whose manager has left",
+  "people.filter.email": "Without a work email",
+  "people.filter.role_family": "Without a role family",
+  "people.filter.apply": "Filter",
+  "people.search": "Find by name or employee ID",
+  "people.count": "{shown} of {total}",
+  "people.none": "No one matches.",
+  "people.page": "Page {page} of {pages}",
+  "people.previous": "Previous",
+  "people.next": "Next",
+  "people.col.flags": "Leads",
+  "people.flag.teamLeader": "Team leader",
+  "people.flag.leadershipTeam": "Leadership team",
+  "people.edit": "Edit",
+
+  // One person (Online Measurement Specification 6.1: edited directly in the portal).
+  "person.newTitle": "Add a person",
+  "person.meta": "Employee ID {ref}",
+  "person.details": "Details",
+  "person.employeeRef": "Employee ID",
+  "person.employeeRef.hint":
+    "Your employee ID, the key every upload is matched on. It cannot be changed once the person is added.",
+  "person.firstName": "First name",
+  "person.lastName": "Last name",
+  "person.workEmail": "Work email",
+  "person.workEmail.hint": "Used for survey invitations and, for managers, to sign in.",
+  "person.unit": "Unit",
+  "person.team": "Team",
+  "person.team.none": "No team",
+  "person.manager": "Manager's employee ID",
+  "person.manager.hint":
+    "Blank for the head of the organisation. Start typing to see matching people.",
+  "person.managerNow": "Currently {name}.",
+  "person.roleTitle": "Role title",
+  "person.roleFamily": "Role family",
+  "person.roleFamily.none": "Not set",
+  "person.startDate": "Start date",
+  "person.fte": "FTE fraction",
+  "person.fte.hint": "Between 0 and 1: 1 is full time, 0.6 is three days a week.",
+  "person.teamLeader": "Team leader",
+  "person.leadershipTeam": "Member of the unit's leadership team",
+  "person.employmentStatus": "Employment status",
+  "person.save": "Save",
+  "person.add": "Add the person",
+  "person.added": "Added.",
+  "person.saved": "Saved.",
+  "person.back": "Back to the directory",
+
+  "person.status.title": "Status",
+  "person.status.active": "Active.",
+  "person.status.inactive":
+    "Deactivated. The record is purged 30 days after deactivation unless the person is reactivated.",
+  "person.deactivate": "Deactivate",
+  "person.reactivate": "Reactivate",
+
+  "person.rating.title": "Formal performance rating",
+  "person.rating.intro":
+    "Identified data. Opening it is logged and visible to your account owner. A formal rating is used for talent density only when dated within the 12 months before a campaign launches, and only where the unit's current ratings cover at least 80% of its people by FTE.",
+  "person.rating.show": "Show the formal rating",
+  "person.rating.none": "No formal rating is recorded.",
+  "person.rating.current": "{label}, dated {date}.",
+  "person.rating.label": "Rating, in your organisation's words",
+  "person.rating.date": "Rating date",
+  "person.rating.save": "Save the rating",
+  "person.rating.clear": "Remove the rating",
+  "person.rating.saved": "Saved. The view and the change are both logged.",
+
+  "error.refUsed": "That employee ID is already in the directory.",
+  "error.refFormat": "Enter the employee ID, up to 64 characters.",
+  "error.emailUsed": "That work email belongs to someone else in the directory.",
+  "error.teamUnit": "The team must be one of the unit's teams.",
+  "error.retiredUnit": "A person cannot be placed in a retired unit.",
+  "error.managerUnknown": "No one in the directory has that employee ID.",
+  "error.managerSelf": "A person cannot be their own manager.",
+  "error.managerLoop": "That reporting line would loop back to this person.",
+  "error.ratingDate": "Give the rating's date, which cannot be in the future.",
 } as const;
 
 export type DirectoryCopyKey = keyof typeof directoryCopy;

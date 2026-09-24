@@ -1,25 +1,24 @@
-import { SignOutButton } from "@/components/sign-out-button";
+import { AppHeader } from "@/components/app-header";
 import { requireAccess } from "@/lib/auth/access";
-import { authCopy } from "@/lib/copy/auth";
 
 /**
  * The signed-in area. requireAccess sends anyone who lacks the assurance their roles need to
  * sign in, enrol or complete TOTP first; the database refuses those roles anyway until they do.
+ * The header shows an organisation's navigation to the people who manage it: its account owner and
+ * administrators, and staff with a session open on it.
  */
 export default async function PortalLayout({ children }: LayoutProps<"/">) {
   const access = await requireAccess();
+  const manageable = [
+    ...access.memberships
+      .filter((m) => m.role === "account_owner" || m.role === "administrator")
+      .map((m) => m.organisationId),
+    ...access.openSupportSessions.map((s) => s.organisationId),
+  ];
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
-      <header className="flex items-baseline justify-between border-b border-grey-20 pb-4">
-        <p className="font-mono text-xs uppercase tracking-widest text-gold-deep">
-          {authCopy["brand.eyebrow"]}
-        </p>
-        <div className="flex items-baseline gap-6">
-          <span className="text-sm text-grey">{access.fullName ?? access.email}</span>
-          <SignOutButton />
-        </div>
-      </header>
-      {children}
-    </div>
+    <>
+      <AppHeader person={access.fullName ?? access.email} manageable={manageable} />
+      <div className="mx-auto max-w-[1160px] px-6 pb-24">{children}</div>
+    </>
   );
 }

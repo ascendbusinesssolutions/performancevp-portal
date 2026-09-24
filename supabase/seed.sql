@@ -96,9 +96,11 @@ begin
     (v_org, v_analyst, 'Case handling', true, 'technical'),
     (v_org, v_analyst, 'Customer communication', false, 'behavioural'),
     (v_org, v_lead, 'Coaching', true, 'behavioural');
-  insert into public.knowledge_domains (organisation_id, unit_id, name, criticality) values
-    (v_org, v_ops, 'Service standards', 3),
-    (v_org, v_sales, 'Product range', 2);
+  -- Context belongs to the measurement unit; each unit's single is created with it.
+  insert into public.knowledge_domains (organisation_id, measurement_unit_id, name, criticality)
+  select v_org, mu.id, d.name, d.criticality
+  from (values (v_ops, 'Service standards', 3), (v_sales, 'Product range', 2)) as d (unit_id, name, criticality)
+  join public.measurement_units mu on mu.organisation_id = v_org and mu.single_unit_id = d.unit_id;
 
   -- A small directory: a head of group, the manager persona running Operations, a Sales lead.
   insert into public.employees (organisation_id, employee_ref, first_name, last_name, work_email, unit_id,

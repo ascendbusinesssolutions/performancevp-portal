@@ -32,7 +32,7 @@ export function EnrolForm() {
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={state.qrCode}
-          alt=""
+          alt={authCopy["mfa.enrol.qrAlt"]}
           width={180}
           height={180}
           className="mt-3 border border-grey-20 bg-white p-2"

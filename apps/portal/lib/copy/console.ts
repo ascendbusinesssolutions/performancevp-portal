@@ -91,6 +91,9 @@ export const consoleCopy = {
     "PerformanceVP staff reach your data only through a session like these. Each is listed here with everything done in it.",
   "access.sessions.open": "open now",
   "access.sessions.nothing": "Nothing changed in this session.",
+  // PORTAL_COPY_SPEC.md A2.
+  "access.sessions.line": "{staff}, {start} to {end}, {reason}",
+  "access.termRange": "{start} to {end}",
 } as const;
 
 export type ConsoleCopyKey = keyof typeof consoleCopy;

@@ -112,6 +112,15 @@ export async function latestLink(email: string, type: "recovery" | "invite"): Pr
   throw new Error(`no ${type} link arrived for ${email}`);
 }
 
+/**
+ * Waits until React has hydrated the current document (components/hydration-mark.tsx). Before that
+ * a link click is a full page load and hydration can undo a choice made in a select, so tests wait
+ * for it after a full page load and before a click that navigates.
+ */
+export async function hydrated(page: Page): Promise<void> {
+  await page.locator("html[data-hydrated]").waitFor({ state: "attached" });
+}
+
 /** Signs in with a password and enrols TOTP (every persona here needs it); returns the secret. */
 export async function signInAndEnrol(
   page: Page,
@@ -119,6 +128,7 @@ export async function signInAndEnrol(
   password = PASSWORD,
 ): Promise<string> {
   await page.goto("/login");
+  await hydrated(page);
   await page.getByLabel("Work email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();

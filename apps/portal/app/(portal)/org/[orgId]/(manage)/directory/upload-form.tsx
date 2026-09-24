@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
+import { buttonClass } from "@/components/button";
 import { Notice } from "@/components/ui";
 import { directoryCopy } from "@/lib/copy/directory";
 import { DIRECTORY_UPLOAD_MAX_BYTES } from "@/lib/directory/columns";
@@ -63,7 +64,7 @@ export function UploadForm({ organisationId }: { organisationId: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="max-w-2xl">
+    <form onSubmit={submit} className="max-w-md">
       {rejected ? <Notice tone="problem">{directoryCopy["page.rejected"]}</Notice> : null}
       {errors.length > 0 ? (
         <ul
@@ -93,11 +94,7 @@ export function UploadForm({ organisationId }: { organisationId: string }) {
         />
       </label>
       <p className="mt-1 text-xs text-grey">{directoryCopy["page.fileLimit"]}</p>
-      <button
-        type="submit"
-        disabled={pending}
-        className="mt-4 bg-slate px-4 py-2 text-white hover:bg-slate-90 focus:outline-2 focus:outline-offset-2 focus:outline-slate disabled:opacity-60"
-      >
+      <button type="submit" disabled={pending} className={`mt-4 ${buttonClass("primary")}`}>
         {pending ? directoryCopy["page.uploading"] : directoryCopy["page.upload"]}
       </button>
     </form>

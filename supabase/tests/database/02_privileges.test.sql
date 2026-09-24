@@ -192,7 +192,7 @@ insert into expected_grants values
   ('apply_directory_upload(uuid,text,boolean)', 'authenticated', 'EXECUTE'),
   ('discard_directory_upload(uuid)', 'authenticated', 'EXECUTE'),
   ('set_formal_rating(uuid,text,date)', 'authenticated', 'EXECUTE'),
-  ('read_formal_ratings(uuid,uuid,text)', 'authenticated', 'EXECUTE'),
+  ('read_formal_ratings(uuid,uuid,text,uuid)', 'authenticated', 'EXECUTE'),
   ('stage_directory_upload(uuid,uuid,uuid,text,integer,text,text,text,jsonb,jsonb)', 'service_role', 'EXECUTE'),
   ('purge_deactivated_employees(date)', 'service_role', 'EXECUTE'),
   ('expire_directory_uploads()', 'service_role', 'EXECUTE'),
@@ -248,6 +248,52 @@ insert into expected_grants values
 insert into expected_grants values
   ('can_manage_directory(uuid)', 'authenticated', 'EXECUTE'),
   ('record_job_run(text,jsonb)', 'service_role', 'EXECUTE');
+
+-- Milestone 4: the setup flows. read_formal_ratings gained p_employee_id (above).
+insert into expected_grants values
+  ('public.ref_anzsic_divisions', 'authenticated', 'SELECT'),
+  ('public.ref_templates', 'authenticated', 'SELECT'),
+  ('public.ref_template_items', 'authenticated', 'SELECT'),
+  ('public.business_units(unit_leader_employee_id)', 'authenticated', 'UPDATE'),
+  ('public.decision_types', 'authenticated', 'SELECT'),
+  ('public.decision_types', 'authenticated', 'INSERT'),
+  ('public.decision_types(name)', 'authenticated', 'UPDATE'),
+  ('public.decision_types(status)', 'authenticated', 'UPDATE'),
+  ('public.critical_processes', 'authenticated', 'SELECT'),
+  ('public.critical_processes', 'authenticated', 'INSERT'),
+  ('public.critical_processes(name)', 'authenticated', 'UPDATE'),
+  ('public.critical_processes(status)', 'authenticated', 'UPDATE'),
+  ('public.primary_systems', 'authenticated', 'SELECT'),
+  ('public.primary_systems', 'authenticated', 'INSERT'),
+  ('public.primary_systems(name)', 'authenticated', 'UPDATE'),
+  ('public.primary_systems(status)', 'authenticated', 'UPDATE'),
+  ('public.rating_scale_maps', 'authenticated', 'SELECT'),
+  ('public.rating_scale_maps(organisation_id)', 'authenticated', 'INSERT'),
+  ('public.rating_scale_maps(decision)', 'authenticated', 'INSERT'),
+  ('public.rating_scale_maps(calibrated)', 'authenticated', 'INSERT'),
+  ('public.rating_scale_maps(decision)', 'authenticated', 'UPDATE'),
+  ('public.rating_scale_maps(calibrated)', 'authenticated', 'UPDATE'),
+  ('public.rating_scale_map_entries', 'authenticated', 'SELECT'),
+  ('public.rating_scale_map_entries', 'authenticated', 'DELETE'),
+  ('public.rating_scale_map_entries(organisation_id)', 'authenticated', 'INSERT'),
+  ('public.rating_scale_map_entries(label)', 'authenticated', 'INSERT'),
+  ('public.rating_scale_map_entries(band)', 'authenticated', 'INSERT'),
+  ('public.rating_scale_map_entries(band)', 'authenticated', 'UPDATE'),
+  ('new_link_kind(text)', 'service_role', 'EXECUTE');
+
+-- Milestone 4b: measurement units. Written through the three functions, apart from a combined
+-- unit's name and leader. invitation_status_counts was replaced to report measurement units (above).
+insert into expected_grants values
+  ('public.measurement_units', 'authenticated', 'SELECT'),
+  ('public.measurement_units(name)', 'authenticated', 'UPDATE'),
+  ('public.measurement_units(unit_leader_employee_id)', 'authenticated', 'UPDATE'),
+  ('public.measurement_unit_members', 'authenticated', 'SELECT'),
+  ('public.measurement_unit_lineage', 'authenticated', 'SELECT'),
+  ('private.viewable_measurement_unit_ids()', 'authenticated', 'EXECUTE'),
+  ('private.can_view_measurement_unit(uuid)', 'authenticated', 'EXECUTE'),
+  ('combine_measurement_units(uuid,uuid[],text)', 'authenticated', 'EXECUTE'),
+  ('undo_measurement_unit(uuid,uuid)', 'authenticated', 'EXECUTE'),
+  ('keep_grouping_unit(uuid,uuid,boolean)', 'authenticated', 'EXECUTE');
 
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,

@@ -4,8 +4,6 @@
  * Michael's review with the copy module before Milestone 6.
  */
 export const authCopy = {
-  "brand.eyebrow": "PerformanceVP",
-
   "login.title": "Sign in",
   "login.email": "Work email",
   "login.password": "Password",
@@ -32,6 +30,18 @@ export const authCopy = {
   "code.again": "Send a new code",
   "code.toPassword": "Sign in with a password instead",
 
+  "newLink.title": "Send me a new link",
+  "newLink.expired": "That link has expired or has already been used.",
+  "newLink.intro":
+    "Enter your work email. If it has an invitation or an account, we send a new link to finish setting up or to set your password.",
+  "newLink.email": "Work email",
+  "newLink.submit": "Send me a new link",
+  // The same answer whether or not the address has an invitation or an account.
+  "newLink.sent":
+    "If that address has an invitation or an account, a new link is on its way. It lasts one hour.",
+  "newLink.toLogin": "Back to sign in",
+  "login.toNewLink": "Link expired? Send me a new link",
+
   "reset.title": "Set or reset your password",
   "reset.intro":
     "Enter your work email. If it belongs to an account, we send a link to set a new password.",
@@ -54,6 +64,7 @@ export const authCopy = {
     "Your role can see identified ratings, so signing in needs a second step. Add PerformanceVP to an authenticator app, then enter the six-digit code it shows.",
   "mfa.enrol.start": "Show the setup code",
   "mfa.enrol.scan": "Scan this with your authenticator app.",
+  "mfa.enrol.qrAlt": "Setup code for your authenticator app",
   "mfa.enrol.secret": "Or enter this key by hand",
   "mfa.enrol.code": "Code from your app",
   "mfa.enrol.submit": "Confirm",
@@ -68,6 +79,9 @@ export const authCopy = {
     "You are signed in, but your account has no access to an organisation. Your account owner can grant it.",
 
   "portal.title": "Your access",
+  "portal.col.organisation": "Organisation",
+  "portal.col.role": "Role",
+  "portal.col.subscription": "Subscription",
   "portal.signOut": "Sign out",
   "portal.staffSessions": "Open support sessions",
   "portal.noStaffSessions": "No open support sessions.",

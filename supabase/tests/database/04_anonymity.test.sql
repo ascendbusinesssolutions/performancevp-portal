@@ -125,11 +125,11 @@ select is_empty(
 -- What administrators see instead: counts, never a person.
 select results_eq(
   $$
-    select u.unit_code, c.audience, c.sent, c.responded
+    select u.code, c.audience, c.sent, c.responded
     from (select tests.value_as('alpha_admin', format('select jsonb_agg(to_jsonb(c)) from public.invitation_status_counts(%L) c', tests.id('alpha_open')))::jsonb as j) x
-    cross join lateral jsonb_to_recordset(x.j) as c (unit_id uuid, audience text, sent integer, responded integer)
-    join public.business_units u on u.id = c.unit_id
-    order by u.unit_code
+    cross join lateral jsonb_to_recordset(x.j) as c (measurement_unit_id uuid, audience text, sent integer, responded integer)
+    join public.measurement_units u on u.id = c.measurement_unit_id
+    order by u.code
   $$,
   $$ values ('C1'::text, 'members_part_a'::text, 3, 3), ('C2', 'members_part_a', 4, 0) $$,
   'administrators see invitation status counts per unit and audience'

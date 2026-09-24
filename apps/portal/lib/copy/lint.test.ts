@@ -1,18 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { authCopy } from "./auth";
-import { consoleCopy } from "./console";
-import { directoryCopy } from "./directory";
-import { lintCopy, lintString } from "./lint";
+import { lintString } from "./lint";
 
-describe("the copy module", () => {
-  it("passes the copy lint", () => {
-    expect(lintCopy(authCopy)).toEqual([]);
-    expect(lintCopy(consoleCopy)).toEqual([]);
-    expect(lintCopy(directoryCopy)).toEqual([]);
-  });
-});
-
+// The rules themselves. copy.test.ts runs them over every copy table, fixture and email template.
 describe("lintString", () => {
   it("catches each rule", () => {
     const rules = (text: string) => lintString("k", text).map((p) => p.rule);

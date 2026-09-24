@@ -15,7 +15,14 @@ import { contentSecurityPolicy } from "@/lib/security/csp";
  * the database itself on every query.
  */
 
-const PUBLIC_PATHS = ["/login", "/auth/confirm", "/auth/reset", "/api/health", "/api/jobs"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/auth/confirm",
+  "/auth/reset",
+  "/auth/new-link",
+  "/api/health",
+  "/api/jobs",
+];
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));

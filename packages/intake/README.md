@@ -6,7 +6,7 @@ The intake package. A pure TypeScript package that turns the raw survey rows of 
 
 **Dependencies.** The engine's input types only (`PORTAL_BUILD_PLAN.md` 1.3). Test files may call the engine; `src/` may not.
 
-**Status.** Milestone 2 complete: Northwind and ten generated scenarios match the workbook on every mapped formula cell; every Part 4 worked example reproduces through the engine. Version 1.0.0.
+**Status.** Milestone 2 complete: Northwind and ten generated scenarios match the workbook on every mapped formula cell; every Part 4 worked example reproduces through the engine. Version 1.1.0 (Milestone 4) adds `constants.SETUP`, the setup counts the portal's readiness check applies before a first campaign; no scoring changed.
 
 ## Public surface
 

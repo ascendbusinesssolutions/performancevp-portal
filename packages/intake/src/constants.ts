@@ -84,6 +84,25 @@ export const THRESHOLDS = {
   s1FteCoverage: 0.75,
 } as const;
 
+/**
+ * The setup counts the readiness check applies before a first campaign, so that each instrument has
+ * what it needs (Milestone 4). Online Measurement Specification 6.2 (a unit of 10 or more), 3.1 and
+ * 4.5 (8 to 15 skills per role family, technical and behavioural, critical skills marked), 3.1 and
+ * 4.1 (3 to 6 knowledge domains per unit, criticality 1 to 3, and C2 valid only with a
+ * criticality-3 domain), 3.3 (8 to 12 decision types for M-O1-LT; 3 processes for M-O3-PF,
+ * discrepancy 2 in Part 11.3) and 4.3 (3 to 8 primary systems for ADM-O2). The leadership team's
+ * minimum of 3 is THRESHOLDS.leadershipMinimumRespondents.
+ */
+export const SETUP = {
+  minUnitStaff: 10,
+  skillsPerRoleFamily: { min: 8, max: 15 },
+  knowledgeDomainsPerUnit: { min: 3, max: 6 },
+  criticalDomainCriticality: 3,
+  decisionTypesPerUnit: { min: 8, max: 12 },
+  criticalProcessesPerUnit: 3,
+  primarySystemsPerUnit: { min: 3, max: 8 },
+} as const;
+
 /** Anonymity floor: 5, raised to 8 for M2, pay equity and fairness. CLAUDE.md Section 4; DECISIONS.md 2.2. */
 export const ANONYMITY_FLOOR = { standard: 5, raised: 8 } as const;
 export const RAISED_FLOOR_ITEMS: ReadonlySet<string> = new Set(["M2", "TW1", "TW2"]);

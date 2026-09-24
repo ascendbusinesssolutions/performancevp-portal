@@ -1,6 +1,6 @@
 {
   "name": "@performancevp/intake",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "license": "UNLICENSED",
   "description": "The intake package: turns raw survey rows, ratings, checklists and formal ratings into engine inputs; a pure mirror of the Survey Processing and Scoring Workbook plus the online-only rules",

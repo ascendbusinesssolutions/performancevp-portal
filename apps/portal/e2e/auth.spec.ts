@@ -185,7 +185,7 @@ test("a password link sets a new password, signs out everywhere, and the new pas
 
 test("a used or unknown password link is refused", async ({ page }) => {
   await page.goto("/auth/confirm?token_hash=not-a-real-token&type=recovery");
-  await expect(page).toHaveURL(/\/login\?notice=link-expired$/);
+  await expect(page).toHaveURL(/\/auth\/new-link\?notice=expired$/);
 });
 
 test("a wrong authenticator code is refused", async ({ page }) => {

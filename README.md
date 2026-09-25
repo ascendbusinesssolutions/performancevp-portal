@@ -139,6 +139,8 @@ Three guards, each independent, all proven on a deliberately violating file at M
 
 Deployment is through Vercel's Git integration, not from Actions. The Vercel project's root directory is `apps/portal`; `main` deploys to the project's temporary `*.vercel.app` URL, which serves as staging until cutover to `app.performancevp.com.au`; pull requests get preview URLs. `apps/portal/vercel.json` sets the function region to Sydney. `GET /api/health` reports the environment, the commit and the three package versions.
 
+The fonts are self-hosted, so the build makes no network call: Spectral, IBM Plex Sans and IBM Plex Mono load through `next/font/local` from `apps/portal/app/fonts`, latin subset, each family with its OFL licence beside its files. Fetching them from Google at build time failed on Vercel.
+
 ## Named placeholders
 
 Consequential decisions not yet settled are held as named placeholders rather than guessed (`CLAUDE.md` Section 10). Each is resolved deliberately by Michael.

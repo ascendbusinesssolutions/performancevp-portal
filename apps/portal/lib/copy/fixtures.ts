@@ -35,6 +35,503 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
     { slots: { unit: "Claims" }, expected: "Start from the context of Claims" },
   ],
   "units.tree.below": [{ slots: { parent: "Group" }, expected: "below Group" }],
+  "survey.bar.group": [{ slots: { g: 3, total: 12 }, expected: "Group 3 of 12" }],
+  "manager.index.row": [
+    {
+      slots: { campaign: "Annual baseline", date: "Monday 28 September" },
+      expected: "Annual baseline, closes Monday 28 September",
+    },
+  ],
+  "manager.eyebrow": [
+    {
+      slots: { campaign: "Annual baseline", units: "Member Services" },
+      expected: "Annual baseline · Member Services",
+    },
+  ],
+  "manager.meta": [
+    {
+      slots: { done: 3, total: 8, date: "Monday 28 September" },
+      expected: "3 of 8 done. Closes Monday 28 September. Your answers save as you go.",
+    },
+  ],
+  "manager.report.meta": [
+    {
+      slots: { family: "Claims officers", team: "North", fte: 1, start: "1 February 2022" },
+      expected: "Claims officers · North · 1 FTE · started 1 February 2022",
+    },
+  ],
+  "manager.report.metaNoTeam": [
+    {
+      slots: { family: "Claims officers", fte: 0.6, start: "1 February 2022" },
+      expected: "Claims officers · 0.6 FTE · started 1 February 2022",
+    },
+  ],
+  "manager.anchor": [{ slots: { value: 1, label: "Novice" }, expected: "1 Novice" }],
+  "manager.scale.value": [{ slots: { value: 5, label: "Expert" }, expected: "5, Expert" }],
+  "manager.formalRoute": [
+    {
+      slots: { unit: "Member Services" },
+      expected:
+        "Talent density for Member Services comes from your organisation's formal ratings this year, so no overall band is asked here.",
+    },
+  ],
+  "manager.next": [{ slots: { name: "Ana Lee" }, expected: "Done, next: Ana Lee" }],
+  "campaigns.monitor.state": [{ slots: { d: 9, total: 14 }, expected: "Open, day 9 of 14" }],
+  "campaigns.monitor.closes": [
+    {
+      slots: { date: "Monday 28 September", time: "5 pm" },
+      expected: "Closes Monday 28 September, 5 pm",
+    },
+  ],
+  "campaigns.monitor.size": [
+    { slots: { units: "2 units", people: "72 people" }, expected: "2 units, 72 people" },
+  ],
+  "campaigns.monitor.reminders": [
+    {
+      slots: { dates: "Friday 18 September", next: "Tuesday 22 September" },
+      expected: "Reminders sent Friday 18 September. Next: Tuesday 22 September",
+    },
+  ],
+  "campaigns.monitor.remindersNone": [
+    {
+      slots: { next: "Friday 18 September" },
+      expected: "No reminder sent yet. Next: Friday 18 September",
+    },
+  ],
+  "campaigns.monitor.remindersAll": [
+    {
+      slots: { dates: "Friday 18 September and Tuesday 22 September" },
+      expected: "Reminders sent Friday 18 September and Tuesday 22 September",
+    },
+  ],
+  "campaigns.monitor.extended": [
+    {
+      slots: { date: "Monday 5 October", time: "5 pm" },
+      expected: "Extended. It now closes Monday 5 October, 5 pm.",
+    },
+  ],
+  "campaigns.monitor.needsRate": [{ slots: { pct: "60%" }, expected: "needs 60%" }],
+  "campaigns.monitor.needsCount": [{ slots: { n: 12 }, expected: "needs 12" }],
+  "campaigns.monitor.needsLeadership": [{ slots: { pct: "75%" }, expected: "needs 75%, 3+" }],
+  "campaigns.monitor.pct": [{ slots: { pct: 78 }, expected: "78%" }],
+  "campaigns.monitor.of": [{ slots: { n: 47, total: 60 }, expected: "47 of 60" }],
+  "campaigns.monitor.more": [{ slots: { n: 3 }, expected: "3 more needed" }],
+  "campaigns.monitor.managers.row": [
+    { slots: { reports: 7, rated: 3 }, expected: "7 reports, 3 rated" },
+  ],
+  "campaigns.monitor.managers.rowNone": [
+    { slots: { reports: 7 }, expected: "7 reports, none rated" },
+  ],
+  "campaigns.monitor.managers.remindName": [
+    { slots: { name: "Liam North" }, expected: "Remind Liam North" },
+  ],
+  "campaigns.checklists.row": [
+    {
+      slots: { checklist: "Role architecture", units: "2 units" },
+      expected: "Role architecture, 2 units",
+    },
+  ],
+  "campaigns.checklists.status.some": [{ slots: { n: 1, total: 2 }, expected: "Saved for 1 of 2" }],
+  "campaigns.checklists.unitLink": [
+    {
+      slots: { checklist: "Capacity facts", unit: "Dispatch" },
+      expected: "Capacity facts for Dispatch",
+    },
+  ],
+  "campaigns.checklist.title": [
+    { slots: { unit: "Dispatch" }, expected: "Your checklists for Dispatch" },
+  ],
+  "campaigns.checklist.meta": [
+    {
+      slots: { campaign: "Baseline", date: "Thursday 8 October", time: "5 pm" },
+      expected: "Baseline. Closes Thursday 8 October, 5 pm.",
+    },
+  ],
+  "campaigns.checklist.intro.ADM-O1": [
+    {
+      slots: { unit: "Dispatch" },
+      expected:
+        "For each role family in Dispatch: whether its position description holds each of these.",
+    },
+  ],
+  "campaigns.checklist.intro.ADM-O2": [
+    {
+      slots: { unit: "Dispatch" },
+      expected: "For each of the primary systems Dispatch relies on.",
+    },
+  ],
+  "campaigns.checklist.saveName": [
+    { slots: { checklist: "Capacity facts" }, expected: "Save Capacity facts" },
+  ],
+  "survey.bar.decision": [{ slots: { g: 2, total: 8 }, expected: "Decision 2 of 8" }],
+  "survey.landing.eyebrow": [
+    {
+      slots: { organisation: "Northwind Mutual", unit: "Member Services" },
+      expected: "Northwind Mutual · Member Services",
+    },
+  ],
+  "survey.landing.title.members": [
+    { slots: { unit: "Member Services" }, expected: "How is work going in Member Services?" },
+  ],
+  "survey.landing.title.leadershipTeam": [
+    { slots: { unit: "Member Services" }, expected: "Who decides what in Member Services?" },
+  ],
+  "survey.landing.anonymous": [
+    {
+      slots: { floor: 5 },
+      expected: "No name, no email, no login. Answers are only shown for groups of 5 or more.",
+    },
+  ],
+  "survey.landing.minutes.title": [{ slots: { minutes: 15 }, expected: "About 15 minutes" }],
+  "survey.landing.questions": [
+    { slots: { items: 71, groups: 18 }, expected: "71 short questions in 18 groups." },
+  ],
+  "survey.landing.decisions": [
+    { slots: { n: 8 }, expected: "8 of the unit's decisions, with six short questions on each." },
+  ],
+  "survey.about.behalf": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected: "PerformanceVP runs this survey on behalf of Northwind Mutual.",
+    },
+  ],
+  "survey.about.shown": [
+    {
+      slots: { organisation: "Northwind Mutual", floor: 5 },
+      expected:
+        "Northwind Mutual sees results for the unit, and for groups of 5 or more, never one person's answers.",
+    },
+  ],
+  "survey.scale.value": [
+    { slots: { value: 1, label: "Strongly disagree" }, expected: "1, Strongly disagree" },
+  ],
+  "survey.partB.process": [
+    { slots: { process: "Claims intake" }, expected: "Thinking about Claims intake" },
+  ],
+  "email.footer": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected: "Sent by PerformanceVP for Northwind Mutual.",
+    },
+  ],
+  "email.survey.subject": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected: "A short survey for Northwind Mutual",
+    },
+  ],
+  "email.survey.intro": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected:
+        "Northwind Mutual has asked PerformanceVP to run a short survey about how work is going.",
+    },
+  ],
+  "email.survey.link.members_part_a": [
+    {
+      slots: { unit: "Member Services", minutes: 15 },
+      expected: "The survey about Member Services, about 15 minutes:",
+    },
+  ],
+  "email.survey.link.members_part_b": [
+    {
+      slots: { unit: "Member Services", minutes: 6 },
+      expected: "A second, shorter survey about Member Services, about 6 minutes:",
+    },
+  ],
+  "email.survey.link.team_leaders": [
+    {
+      slots: { unit: "Member Services", minutes: 15 },
+      expected: "Questions for team leaders in Member Services, about 15 minutes:",
+    },
+  ],
+  "email.survey.link.leadership_team": [
+    {
+      slots: { unit: "Member Services", minutes: 10 },
+      expected: "Questions for the leadership team of Member Services, about 10 minutes:",
+    },
+  ],
+  "email.survey.closes": [
+    {
+      slots: { date: "Monday 28 September", time: "5 pm" },
+      expected: "The survey closes Monday 28 September at 5 pm.",
+    },
+  ],
+  "email.survey.behalf": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected: "PerformanceVP runs this survey on behalf of Northwind Mutual.",
+    },
+  ],
+  "email.reminder.subject": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected: "A reminder: the survey for Northwind Mutual",
+    },
+  ],
+  "email.reminder.intro": [
+    {
+      slots: { organisation: "Northwind Mutual", date: "Monday 28 September", time: "5 pm" },
+      expected:
+        "The survey Northwind Mutual has asked PerformanceVP to run closes Monday 28 September at 5 pm. Here are your links to the parts you have not answered yet.",
+    },
+  ],
+  "email.manager.reminderSubject": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected: "A reminder: rate your team for Northwind Mutual",
+    },
+  ],
+  "email.manager.reminderIntro": [
+    {
+      slots: {
+        units: "Member Services",
+        organisation: "Northwind Mutual",
+        date: "Monday 28 September",
+        time: "5 pm",
+      },
+      expected:
+        "Some of your direct reports in Member Services are not rated yet, and your rating form for Northwind Mutual closes Monday 28 September at 5 pm.",
+    },
+  ],
+  "email.checklist.subject": [
+    { slots: { campaign: "Annual baseline" }, expected: "Checklists to finish: Annual baseline" },
+  ],
+  "email.checklist.body": [
+    {
+      slots: { campaign: "Annual baseline", date: "Monday 28 September", time: "5 pm" },
+      expected:
+        "Annual baseline closes Monday 28 September at 5 pm, and some of its checklists are not saved yet. Only an administrator can give these facts.",
+    },
+  ],
+  "email.schedule.subject": [
+    {
+      slots: { cadence: "Quarterly pulse", date: "Thursday 24 December" },
+      expected: "Quarterly pulse due Thursday 24 December",
+    },
+  ],
+  "email.schedule.body": [
+    {
+      slots: { date: "Thursday 24 December", cadence: "Quarterly pulse" },
+      expected:
+        "The calendar proposes a campaign for Thursday 24 December: Quarterly pulse. Nothing opens until you schedule it.",
+    },
+  ],
+  "email.manager.subject": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected: "Rate your team for Northwind Mutual",
+    },
+  ],
+  "email.manager.intro": [
+    {
+      slots: { organisation: "Northwind Mutual", units: "Member Services" },
+      expected:
+        "Northwind Mutual is asking you to rate the skills and knowledge of your direct reports in Member Services.",
+    },
+  ],
+  "email.manager.closes": [
+    {
+      slots: { date: "Monday 28 September", time: "5 pm" },
+      expected: "Rating closes Monday 28 September at 5 pm.",
+    },
+  ],
+  "email.refused.subject": [
+    { slots: { campaign: "Quarterly pulse" }, expected: "Quarterly pulse did not open" },
+  ],
+  "email.refused.body": [
+    {
+      slots: { campaign: "Quarterly pulse" },
+      expected:
+        "Quarterly pulse was scheduled to open, but the readiness check found something to fix first. It is a draft again.",
+    },
+  ],
+  "email.scores.subject": [
+    {
+      slots: { campaign: "Annual baseline" },
+      expected: "Results ready for review: Annual baseline",
+    },
+  ],
+  "email.scores.body": [
+    {
+      slots: { campaign: "Annual baseline" },
+      expected:
+        "Annual baseline has closed. Scores are calculated and held for your review. Nothing is visible to viewers until you release it.",
+    },
+  ],
+  "units.measurement.lineageNote": [
+    {
+      slots: { name: "Claims and Service" },
+      expected:
+        "Claims and Service has results from a campaign, so it is not changed in place. It is kept with its history, the new arrangement starts as a new measurement unit, and trends show the change as a break.",
+    },
+  ],
+  "units.measurement.combination.retireNote": [
+    {
+      slots: { name: "Claims and Service" },
+      expected:
+        "Claims and Service has results from a campaign. Undoing retires it, with its history and context kept, and its units are measured on their own again, each trend marked as a break.",
+    },
+  ],
+  "units.measurement.running": [
+    {
+      slots: { name: "Claims and Service" },
+      expected:
+        "A campaign is measuring Claims and Service. It can be changed after that campaign closes.",
+    },
+  ],
+  "units.measurement.split.name": [
+    { slots: { unit: "Claims" }, expected: "Measure Claims on its own" },
+  ],
+  "units.measurement.splitNote": [
+    {
+      slots: { unit: "Claims", people: "11 people" },
+      expected:
+        "Claims now has 11 people, enough to be measured on its own. The rest stay combined.",
+    },
+  ],
+  "units.measurement.splitNoteRest": [
+    {
+      slots: { unit: "Claims", people: "11 people" },
+      expected:
+        "Claims now has 11 people, enough to be measured on its own. The rest are measured on their own again.",
+    },
+  ],
+  "campaigns.calendar.due": [
+    {
+      slots: { cadence: "Quarterly pulse", date: "Thursday 24 December" },
+      expected: "Quarterly pulse, due Thursday 24 December",
+    },
+  ],
+  "campaigns.calendar.units": [
+    { slots: { list: "Claims and Service" }, expected: "For Claims and Service." },
+  ],
+  "campaigns.calendar.scheduleName": [
+    {
+      slots: { cadence: "Quarterly pulse", date: "Thursday 24 December" },
+      expected: "Schedule the Quarterly pulse due Thursday 24 December",
+    },
+  ],
+  "campaigns.calendar.scheduleNote": [
+    {
+      slots: { date: "Thursday 24 December", close: "Monday 28 December" },
+      expected: "It opens Thursday 24 December at 9 am and closes Monday 28 December at 5 pm.",
+    },
+  ],
+  "campaigns.calendar.dismissName": [
+    {
+      slots: { cadence: "Half-yearly check", date: "Wednesday 24 March 2027" },
+      expected: "Dismiss the Half-yearly check due Wednesday 24 March 2027",
+    },
+  ],
+  "campaigns.window.range": [
+    {
+      slots: { opens: "Tuesday 15 September", closes: "Monday 28 September" },
+      expected: "Tuesday 15 September to Monday 28 September",
+    },
+  ],
+  "campaigns.cadence.eventNamed": [
+    {
+      slots: { trigger: "Major process redesign" },
+      expected: "Event: Major process redesign",
+    },
+  ],
+  "campaigns.state.scheduled": [
+    { slots: { date: "Tuesday 6 October" }, expected: "Scheduled, opens Tuesday 6 October" },
+  ],
+  "campaigns.state.open": [
+    {
+      slots: { date: "Monday 28 September", time: "5 pm" },
+      expected: "Open, closes Monday 28 September, 5 pm",
+    },
+  ],
+  "campaigns.state.closed": [
+    {
+      slots: { date: "Monday 28 September" },
+      expected: "Closed Monday 28 September, under review",
+    },
+  ],
+  "campaigns.state.released": [
+    { slots: { date: "Friday 2 October" }, expected: "Released Friday 2 October" },
+  ],
+  "campaigns.draft.windowLine": [
+    {
+      slots: {
+        opens: "Tuesday 6 October",
+        openTime: "9 am",
+        closes: "Monday 19 October",
+        closeTime: "5 pm",
+      },
+      expected: "Opens Tuesday 6 October at 9 am. Closes Monday 19 October at 5 pm.",
+    },
+  ],
+  "campaigns.draft.launchNote": [
+    {
+      slots: { date: "Thursday 8 October", time: "5 pm" },
+      expected: "It opens now and closes Thursday 8 October at 5 pm.",
+    },
+  ],
+  "campaigns.draft.scheduleNote": [
+    {
+      slots: { date: "Tuesday 6 October", time: "9 am" },
+      expected: "It opens Tuesday 6 October at 9 am, once readiness passes then.",
+    },
+  ],
+  "campaigns.preview.needs": [{ slots: { n: 36 }, expected: "needs 36" }],
+  "campaigns.preview.fallback": [{ slots: { n: 1 }, expected: "1, the unit leader" }],
+  "campaigns.preview.formal": [
+    { slots: { n: 6 }, expected: "6; formal ratings for talent density" },
+  ],
+  "campaigns.preview.emailed": [
+    { slots: { people: "72 people" }, expected: "72 people receive the anonymous survey." },
+  ],
+  "campaigns.blocker.unitsChanged": [
+    {
+      slots: { list: "Claims and Service" },
+      expected:
+        "Claims and Service changed after this draft was made. Check the units below and save the draft before it launches.",
+    },
+  ],
+  "campaigns.blocker.notMeasured": [
+    {
+      slots: { unit: "Claims" },
+      expected:
+        "Claims is no longer measured as it was when the draft was made. Remove it, and add the unit that now measures its people.",
+    },
+  ],
+  "campaigns.blocker.needsFullRun": [
+    {
+      slots: { unit: "Claims" },
+      expected:
+        "Claims has no released baseline or annual result to carry forward from. Its first campaign is a baseline.",
+    },
+  ],
+  "campaigns.blocker.busy": [
+    {
+      slots: { unit: "Claims" },
+      expected: "Another campaign is measuring Claims. Launch this one after that campaign closes.",
+    },
+  ],
+  "campaigns.blocker.readiness": [
+    { slots: { check: "Work emails" }, expected: "Work emails: see the readiness check." },
+  ],
+  "campaigns.launched.accountsPending": [
+    {
+      slots: { n: 2 },
+      expected: "Sign-in is not yet ready for 2 managers. It is set up again automatically.",
+    },
+  ],
+  "campaigns.launched.meta": [
+    { slots: { date: "Tuesday 15 September" }, expected: "Launched Tuesday 15 September." },
+  ],
+  "readiness.teamSize.warning": [
+    {
+      slots: { unit: "Claims", teams: "Intake has 2 and Claims has 1" },
+      expected:
+        "Claims: Intake has 2 and Claims has 1. A team under 4 can never reach the 4 responses a team result needs, so its own results are never shown; its people still count for the unit. Merge it into another team.",
+    },
+  ],
+  "readiness.teamSize.team": [{ slots: { team: "Intake", n: 2 }, expected: "Intake has 2" }],
   "units.leader.option.above": [
     { slots: { name: "Ruth Root", unit: "Head Office" }, expected: "Ruth Root, Head Office" },
   ],

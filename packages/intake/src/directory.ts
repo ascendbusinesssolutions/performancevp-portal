@@ -15,6 +15,10 @@ export interface Headcounts {
   teamLeaders: number;
 }
 
+/**
+ * The leadership-team and team-leader counts are the frozen audiences where the snapshot carries
+ * them (a leader from a unit above counts there and nowhere else), and the members' flags otherwise.
+ */
 export function headcounts(snapshot: Snapshot): Headcounts {
   const managers = new Set<string>();
   let leadershipTeam = 0;
@@ -24,6 +28,10 @@ export function headcounts(snapshot: Snapshot): Headcounts {
     if (m.leadershipTeam === true) leadershipTeam += 1;
     if (m.teamLeader === true) teamLeaders += 1;
   }
+  const audiences = snapshot.audiences;
+  if (audiences?.leadershipTeam !== undefined)
+    leadershipTeam = new Set(audiences.leadershipTeam).size;
+  if (audiences?.teamLeaders !== undefined) teamLeaders = new Set(audiences.teamLeaders).size;
   return { members: snapshot.members.length, managers: managers.size, leadershipTeam, teamLeaders };
 }
 

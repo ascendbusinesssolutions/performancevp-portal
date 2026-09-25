@@ -202,6 +202,84 @@ begin
 end
 $$;
 
+-- What a launch freezes, for a fixture campaign whose units are singles (Milestone 5): each unit's
+-- teams as keys with their frozen headcount and FTE, the members with their team key and their
+-- managers, the unit context (every role family with its skills; the measurement unit's domains,
+-- decision types, processes and systems; the team keys), and a baseline deployment on the module
+-- route for talent density. The launch itself is tested through launch_campaign.
+create function tests.freeze_campaign(p_org text, p_campaign text)
+returns void
+language plpgsql
+as $$
+declare
+  v_org uuid := tests.id(p_org);
+  v_campaign uuid := tests.id(p_org || '_' || p_campaign);
+  v_snapshot uuid := tests.id(p_org || '_' || p_campaign || '_snapshot');
+  v_cu record;
+begin
+  for v_cu in
+    select cu.id, cu.measurement_unit_id, mu.single_unit_id, mu.name
+    from public.campaign_units cu
+    join public.measurement_units mu on mu.id = cu.measurement_unit_id
+    where cu.campaign_id = v_campaign
+  loop
+    insert into public.campaign_teams (organisation_id, campaign_unit_id, name, team_id, business_unit_id, kind, headcount, fte, position)
+    select v_org, v_cu.id, t.name, t.id, t.unit_id, 'team', count(sm.id), coalesce(sum(sm.fte), 0),
+           row_number() over (order by t.name, t.id)
+    from public.teams t
+    left join public.snapshot_members sm on sm.snapshot_id = v_snapshot and sm.team_id = t.id
+    where t.unit_id = v_cu.single_unit_id
+    group by t.id, t.name, t.unit_id;
+
+    insert into public.campaign_audience_members (organisation_id, campaign_unit_id, audience, snapshot_member_id, campaign_team_id)
+    select v_org, v_cu.id, 'members', sm.id, t.id
+    from public.snapshot_members sm
+    join public.campaign_teams t on t.campaign_unit_id = v_cu.id and t.team_id = sm.team_id
+    where sm.snapshot_id = v_snapshot and sm.unit_id = v_cu.single_unit_id;
+    insert into public.campaign_audience_members (organisation_id, campaign_unit_id, audience, snapshot_member_id)
+    select distinct v_org, v_cu.id, 'managers', sm.manager_snapshot_member_id
+    from public.campaign_audience_members cam
+    join public.snapshot_members sm on sm.id = cam.snapshot_member_id
+    where cam.campaign_unit_id = v_cu.id and cam.audience = 'members' and sm.manager_snapshot_member_id is not null;
+
+    insert into public.campaign_unit_contexts (organisation_id, campaign_unit_id, context, positions)
+    values (v_org, v_cu.id, jsonb_build_object(
+      'name', v_cu.name,
+      'roleFamilies', (
+        select coalesce(jsonb_agg(jsonb_build_object(
+          'id', rf.id, 'name', rf.name, 'peopleLeader', rf.is_people_leader,
+          'skills', (select coalesce(jsonb_agg(jsonb_build_object('id', s.id, 'name', s.name, 'critical', s.is_critical, 'kind', s.kind) order by s.name), '[]'::jsonb)
+                     from public.skills s where s.role_family_id = rf.id)
+        ) order by rf.name), '[]'::jsonb)
+        from public.role_families rf where rf.organisation_id = v_org
+      ),
+      'knowledgeDomains', (select coalesce(jsonb_agg(jsonb_build_object('id', k.id, 'name', k.name, 'criticality', k.criticality) order by k.name), '[]'::jsonb)
+                           from public.knowledge_domains k where k.measurement_unit_id = v_cu.measurement_unit_id),
+      'decisionTypes', (select coalesce(jsonb_agg(jsonb_build_object('id', d.id, 'name', d.name) order by d.name), '[]'::jsonb)
+                        from public.decision_types d where d.measurement_unit_id = v_cu.measurement_unit_id),
+      'processes', (select coalesce(jsonb_agg(jsonb_build_object('id', p.id, 'name', p.name) order by p.name), '[]'::jsonb)
+                    from public.critical_processes p where p.measurement_unit_id = v_cu.measurement_unit_id),
+      'systems', (select coalesce(jsonb_agg(jsonb_build_object('id', x.id, 'name', x.name) order by x.name), '[]'::jsonb)
+                  from public.primary_systems x where x.measurement_unit_id = v_cu.measurement_unit_id),
+      'teams', (select coalesce(jsonb_agg(jsonb_build_object('id', t.id, 'name', t.name) order by t.position), '[]'::jsonb)
+                from public.campaign_teams t where t.campaign_unit_id = v_cu.id)
+    ), '[]'::jsonb);
+
+    insert into public.campaign_audiences (organisation_id, campaign_unit_id, audience, items)
+    values
+      (v_org, v_cu.id, 'members_part_a', array(select code from public.ref_survey_items where in_baseline order by position)),
+      (v_org, v_cu.id, 'managers', array['c1', 'c2', 'c3']),
+      (v_org, v_cu.id, 'admin_checklists', array['ADM-O1', 'ADM-O2', 'ADM-O4']);
+
+    update public.campaign_units
+    set c3_route = 'module',
+        headcount = (select count(*) from public.campaign_audience_members where campaign_unit_id = v_cu.id and audience = 'members'),
+        fte = (select coalesce(sum(fte), 0) from public.campaign_teams where campaign_unit_id = v_cu.id)
+    where id = v_cu.id;
+  end loop;
+end
+$$;
+
 -- Per organisation, twenty people:
 --   E001 heads R (leadership team). E002 (the manager persona, mgr@) runs C1: E003 to E008, E014
 --   and, until deactivated, E019. E009 (mgr2@) runs C2: E010 to E013 and E020. E014 runs G1: E015
@@ -245,15 +323,17 @@ begin
       (v_org_id, tests.id(v_org || '_E005'), 'Meets', private.today() - 60),
       (v_org_id, tests.id(v_org || '_E019'), 'Meets', private.today() - 60);
 
-    -- The closed baseline: everyone active.
+    -- The closed baseline: everyone active. Entered as open, and closed once its ratings are in
+    -- (seed_ratings), because a campaign never reopens.
     insert into public.campaigns (organisation_id, cadence, status, opens_at, closes_at, launched_at, closed_at)
-    values (v_org_id, 'baseline', 'closed', now() - interval '80 days', now() - interval '60 days',
+    values (v_org_id, 'baseline', 'open', now() - interval '80 days', now() - interval '60 days',
             now() - interval '80 days', now() - interval '60 days')
     returning id into v_campaign;
     perform tests.remember(v_org || '_closed', v_campaign);
     insert into public.campaign_units (organisation_id, campaign_id, measurement_unit_id)
     select v_org_id, v_campaign, tests.mu(v_org || '_' || u) from unnest(array['C1', 'C2', 'G1']) as u;
     perform tests.remember(v_org || '_closed_snapshot', private.take_directory_snapshot(v_campaign));
+    perform tests.freeze_campaign(v_org, 'closed');
 
     -- Two leave.
     update public.employees set status = 'inactive' where id in (tests.id(v_org || '_E019'), tests.id(v_org || '_E020'));
@@ -268,6 +348,7 @@ begin
     insert into public.campaign_units (organisation_id, campaign_id, measurement_unit_id)
     select v_org_id, v_campaign, tests.mu(v_org || '_' || u) from unnest(array['C1', 'C2', 'G1']) as u;
     perform tests.remember(v_org || '_open_snapshot', private.take_directory_snapshot(v_campaign));
+    perform tests.freeze_campaign(v_org, 'open');
 
     insert into public.directory_uploads (
       id, organisation_id, file_name, byte_size, sha256, storage_path, status, row_count, uploaded_by, decided_at
@@ -341,7 +422,6 @@ begin
       (v_org_id, v_session, tests.member(v_org, 'open', 'E004'), 5, 'Consistently leads the hardest client work');
 
     -- The closed campaign's ratings were entered while it was open.
-    update public.campaigns set status = 'open' where id = tests.id(v_org || '_closed');
     insert into public.rating_sessions (organisation_id, campaign_id, manager_snapshot_member_id, manager_employee_id, status, submitted_at)
     values (v_org_id, tests.id(v_org || '_closed'), tests.member(v_org, 'closed', 'E002'), tests.id(v_org || '_E002'), 'submitted', now() - interval '61 days')
     returning id into v_session;
@@ -349,30 +429,31 @@ begin
     insert into public.skill_ratings (organisation_id, rating_session_id, subject_snapshot_member_id, skill_id, rating, evidence_note)
     values
       (v_org_id, v_session, tests.member(v_org, 'closed', 'E003'), tests.id(v_org || '_skill_modelling'), 3, null),
-      (v_org_id, v_session, tests.member(v_org, 'closed', 'E019'), tests.id(v_org || '_skill_modelling'), 4, null);
+      (v_org_id, v_session, tests.member(v_org, 'closed', 'E019'),
+       (select id from public.skills where organisation_id = v_org_id and name = 'Coaching'), 4, null);
     insert into public.knowledge_ratings (organisation_id, rating_session_id, subject_snapshot_member_id, knowledge_domain_id, rating, evidence_note)
     values (v_org_id, v_session, tests.member(v_org, 'closed', 'E019'), tests.id(v_org || '_domain_c1'), 5, 'Wrote the reporting procedures');
     insert into public.talent_bands (organisation_id, rating_session_id, subject_snapshot_member_id, band, evidence_note)
     values (v_org_id, v_session, tests.member(v_org, 'closed', 'E019'), 1, 'Performance plan in place');
-    update public.campaigns set status = 'closed' where id = tests.id(v_org || '_closed');
 
     -- Invitations, members Part A, open campaign.
     select id into v_cu from public.campaign_units where campaign_id = tests.id(v_org || '_open') and measurement_unit_id = tests.mu(v_org || '_C1');
-    insert into public.invitations (organisation_id, campaign_unit_id, audience, snapshot_member_id, email, token_hash, status, sent_at)
+    insert into public.invitations (organisation_id, campaign_unit_id, audience, snapshot_member_id, email, status, sent_at)
     select v_org_id, v_cu, 'members_part_a', tests.member(v_org, 'open', r), lower(r) || '@' || v_org || '.test',
-           encode(sha256(convert_to(v_org || r, 'UTF8')), 'hex'),
-           case when r in ('E003', 'E004', 'E005') then 'responded' else 'sent' end, now() - interval '2 days'
+           'sent', now() - interval '2 days'
     from unnest(array['E003', 'E004', 'E005', 'E006', 'E007', 'E008']) as r;
-    insert into public.invitations (organisation_id, campaign_unit_id, audience, snapshot_member_id, email, token_hash, status, sent_at)
+    insert into public.invitations (organisation_id, campaign_unit_id, audience, snapshot_member_id, email, status, sent_at)
     select v_org_id, cu.id, 'members_part_a', tests.member(v_org, 'open', r), lower(r) || '@' || v_org || '.test',
-           encode(sha256(convert_to(v_org || r, 'UTF8')), 'hex'), 'sent', now() - interval '2 days'
+           'sent', now() - interval '2 days'
     from public.campaign_units cu, unnest(array['E010', 'E011', 'E012', 'E013']) as r
     where cu.campaign_id = tests.id(v_org || '_open') and cu.measurement_unit_id = tests.mu(v_org || '_C2');
 
     -- Anonymous responses.
     for i in 1..3 loop
-      insert into public.survey_responses (organisation_id, campaign_unit_id, audience, team_id, completion_seconds)
-      values (v_org_id, v_cu, 'members_part_a', tests.id(v_org || '_C1_T1'), 600 + i * 30)
+      insert into public.survey_responses (organisation_id, campaign_unit_id, audience, campaign_team_id, completion_seconds)
+      values (v_org_id, v_cu, 'members_part_a',
+              (select t.id from public.campaign_teams t where t.campaign_unit_id = v_cu and t.team_id = tests.id(v_org || '_C1_T1')),
+              600 + i * 30)
       returning id into v_response;
       insert into public.survey_item_responses (organisation_id, response_id, item_code, value)
       values (v_org_id, v_response, 'CII-01', 4), (v_org_id, v_response, 'MI2-03', 2);
@@ -398,6 +479,9 @@ begin
   values (tests.id('alpha'), tests.id('alpha_closed'), tests.member('alpha', 'closed', 'E019'), tests.id('alpha_E019'), 'submitted')
   returning id into v_session;
   perform tests.remember('alpha_closed_session_gone', v_session);
+
+  update public.campaigns set status = 'closed'
+  where id in (tests.id('alpha_closed'), tests.id('beta_closed'));
 end
 $$;
 

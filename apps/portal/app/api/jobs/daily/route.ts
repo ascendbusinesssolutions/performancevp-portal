@@ -1,8 +1,7 @@
-import { timingSafeEqual } from "node:crypto";
-
 import { type NextRequest, NextResponse } from "next/server";
 
 import { DIRECTORY_BUCKET } from "@/lib/directory/storage";
+import { cronAuthorised } from "@/lib/jobs";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
@@ -12,17 +11,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * a gap. Milestones 5, 8 and 9 add their jobs here.
  */
 
-function authorised(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
-  const header = request.headers.get("authorization") ?? "";
-  if (!secret) return false;
-  const expected = Buffer.from(`Bearer ${secret}`);
-  const given = Buffer.from(header);
-  return given.length === expected.length && timingSafeEqual(given, expected);
-}
-
 export async function GET(request: NextRequest) {
-  if (!authorised(request)) return new NextResponse(null, { status: 401 });
+  if (!cronAuthorised(request)) return new NextResponse(null, { status: 401 });
   const admin = createAdminClient();
 
   const expired = await admin.rpc("expire_directory_uploads");

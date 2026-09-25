@@ -314,8 +314,12 @@ test("units under 10 reach a passing readiness check by the administrator's choi
   await expect(page.getByTestId("check-grouping")).toContainText(
     "Tasman Water groups the units below it and is not measured.",
   );
+  // Inside the combination Field Division, with no teams of its own, is one team of 2: it can
+  // never reach the team floor, so readiness suggests merging it (Milestone 5).
+  await expect(page.getByTestId("check-teamSize")).toHaveAttribute("data-level", "warning");
+  await expect(page.getByTestId("check-teamSize")).toContainText("Field Division has 2.");
   await expect(page.getByTestId("readiness-summary")).toHaveText(
-    "Blockers 0 · Warnings 0 · Passed 13",
+    "Blockers 0 · Warnings 1 · Passed 13",
   );
   await shot(page, info, "4b-04-readiness-passed");
   await go(page, "Setup");

@@ -46,8 +46,13 @@ export { buildAggregates } from "./aggregates";
 export { buildMethodology } from "./methodology";
 export { headcounts, unitFte, teamFte, roleFamilyFte } from "./directory";
 
-/** Recorded on every stored calculation run as intake_version. 1.0.0: the Milestone 2 exit criteria met on 22 September 2026. */
-export const INTAKE_VERSION = "1.1.0";
+/**
+ * Recorded on every stored calculation run as intake_version. 1.0.0: the Milestone 2 exit criteria
+ * met on 22 September 2026. 1.1.0: the setup counts (Milestone 4). 1.2.0: a separately submitted
+ * Part B and the frozen audience lists (Milestone 5, D1 and D2); both additive, no scoring changed
+ * where they are absent.
+ */
+export const INTAKE_VERSION = "1.2.0";
 
 /** The intake end to end for one unit and one campaign. */
 export function assembleUnit(input: IntakeInput): IntakeResult {
@@ -85,6 +90,9 @@ export function resultFrom(input: IntakeInput, assembly: Assembly): IntakeResult
     engineInput: assembly.engineInput,
     screening: {
       members: assembly.workbook.screening.members.summary,
+      ...(assembly.workbook.screening.membersPartB === undefined
+        ? {}
+        : { membersPartB: assembly.workbook.screening.membersPartB.summary }),
       teamLeaders: assembly.teamLeaderScreening.summary,
     },
     instruments: assembly.instruments,

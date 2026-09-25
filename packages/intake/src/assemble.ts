@@ -201,7 +201,7 @@ export function assemble(input: IntakeInput): Assembly {
     rate: Cell,
   ): InstrumentResult => {
     if (!partB.has(firstItem)) return notDeployed();
-    const count = validRows.filter((r) =>
+    const count = workbook.partBValid.filter((r) =>
       isNumber((r.items as Partial<Record<string, number>>)[firstItem]),
     ).length;
     const decided = rateStatus(
@@ -232,7 +232,7 @@ export function assemble(input: IntakeInput): Assembly {
   // PF: each process needs the anonymity floor; the mean is over the processes that reach it.
   const processIds = new Set(deployed.partB?.processIds ?? []);
   const pfProcesses = workbook.typeC.processFriction.processes.map((p) => {
-    const answered = validRows.filter((r) =>
+    const answered = workbook.partBValid.filter((r) =>
       r.processes?.some((x) => x.processId === p.processId),
     ).length;
     const enough = answered >= anonymityFloorFor("PF");

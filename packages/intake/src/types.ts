@@ -142,7 +142,15 @@ export interface LeadershipRow {
 }
 
 export interface Responses {
+  /** Part A, or Part A and Part B on one row as the workbook lays them out. */
   members?: MemberResponse[];
+  /**
+   * Part B submitted as its own survey with its own token (Online Measurement Specification Part 2),
+   * never linked to a Part A row. Screened on its own, so its speed check compares Part B times with
+   * Part B times, and scored with the Part B items of `members` (intake 1.2.0). Absent, nothing
+   * changes: the workbook fixtures carry Part B on the members' rows.
+   */
+  membersPartB?: MemberResponse[];
   teamLeaders?: TeamLeaderResponse[];
   leadershipTeam?: LeadershipRow[];
 }
@@ -270,6 +278,14 @@ export interface Member {
 }
 export interface Snapshot {
   members: Member[];
+  /**
+   * The leadership-team and team-leader audiences as frozen at launch, by employee reference,
+   * members of the unit or not (intake 1.2.0). They are the response-rate denominators for M-O1-LT
+   * and M-C5-TL. A leader from a unit above belongs to an audience without being a member, and a
+   * unit leader who takes the team-leader module because no team leader is flagged is not flagged
+   * (Online Measurement Specification 6.1). Absent, the members' flags count, as in the workbook.
+   */
+  audiences?: { leadershipTeam?: string[]; teamLeaders?: string[] };
 }
 
 export interface FormalRatings {
@@ -318,7 +334,7 @@ export interface IntakeInput {
 // ---------------------------------------------------------------------------------------------
 
 /** The screened survey audiences; the leadership survey and the manager modules are not screened. */
-export type Audience = "members" | "teamLeaders";
+export type Audience = "members" | "membersPartB" | "teamLeaders";
 
 export interface ScreeningSummary {
   received: number;

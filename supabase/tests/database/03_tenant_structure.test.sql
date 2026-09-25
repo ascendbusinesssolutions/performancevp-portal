@@ -24,8 +24,7 @@ insert into nullable_organisation values
 
 -- Unique indexes on tenant tables that need not lead with organisation_id, with the reason.
 create temp table global_unique_indexes (name text primary key, reason text not null);
-insert into global_unique_indexes values
-  ('invitations_token_hash_key', 'a survey link is resolved by its token hash alone, before the organisation is known');
+-- (None since Milestone 5: invitations no longer hold a token hash, and live tokens are private.)
 
 create temp view public_tables as
   select c.oid, c.relname

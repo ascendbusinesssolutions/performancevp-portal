@@ -15,3 +15,5 @@ packages/engine/fixtures/
 packages/intake/fixtures/
 # Generated from the database schema by `supabase gen types`.
 apps/portal/lib/supabase/database.types.ts
+# Generated from the source documents by apps/portal/lib/reference (checked byte for byte).
+apps/portal/lib/reference/reference.json

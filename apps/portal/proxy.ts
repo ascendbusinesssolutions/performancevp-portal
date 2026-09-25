@@ -10,6 +10,9 @@ import { contentSecurityPolicy } from "@/lib/security/csp";
  *   1. sets the content security policy with a fresh nonce;
  *   2. refreshes the Supabase session cookie, verifying the token (getClaims);
  *   3. sends a visitor with no session to sign in, except on the public paths.
+ * The anonymous survey (/s and /api/survey) is public and never touches the session at all: a
+ * respondent who is also signed in to the portal sends their cookie with the request, and nothing
+ * about a survey request may read, refresh or set it (Milestone 5 plan, 4.2).
  * Which roles a person holds, and whether their session carries the assurance those roles need,
  * is decided in the signed-in layout from the database (lib/auth/access.ts), and enforced again by
  * the database itself on every query.
@@ -24,8 +27,14 @@ const PUBLIC_PATHS = [
   "/api/jobs",
 ];
 
+const SURVEY_PATHS = ["/s", "/api/survey"];
+
+function under(paths: readonly string[], pathname: string): boolean {
+  return paths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+}
+
 function isPublic(pathname: string): boolean {
-  return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  return under(PUBLIC_PATHS, pathname);
 }
 
 export async function proxy(request: NextRequest) {
@@ -44,6 +53,9 @@ export async function proxy(request: NextRequest) {
   };
 
   const { pathname } = request.nextUrl;
+  if (under(SURVEY_PATHS, pathname)) {
+    return withHeaders(NextResponse.next({ request: { headers: requestHeaders } }));
+  }
   if (!supabaseConfigured()) {
     return withHeaders(
       isPublic(pathname)

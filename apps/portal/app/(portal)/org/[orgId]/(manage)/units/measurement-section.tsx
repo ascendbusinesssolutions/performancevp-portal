@@ -1,3 +1,4 @@
+import { constants } from "@performancevp/intake";
 import Link from "next/link";
 
 import { ActionForm } from "@/components/action-form";
@@ -10,7 +11,7 @@ import { commonCopy, peopleCount } from "@/lib/copy/common";
 import { fillNodes } from "@/lib/copy/nodes";
 import { fill, listOf } from "@/lib/copy/template";
 import { unitsCopy } from "@/lib/copy/units";
-import type { Person } from "@/lib/setup/data";
+import { headcountByUnit, type Person } from "@/lib/setup/data";
 import {
   branchOk,
   candidates,
@@ -27,6 +28,7 @@ import {
   keepGrouping,
   renameCombination,
   setCombinationLeader,
+  splitOut,
   undoCombination,
 } from "./measurement-actions";
 
@@ -36,7 +38,24 @@ const LIST_WORDS = {
   more: (n: number) => fill(commonCopy["list.more"], { n }),
 };
 
-export type MeasurementNotice = "combined" | "undone" | "kept" | "withdrawn";
+export type MeasurementNotice = "combined" | "undone" | "kept" | "withdrawn" | "split" | "retired";
+
+const MIN_STAFF = constants.SETUP.minUnitStaff;
+
+/** The confirmation a change that breaks a trend needs (Milestone 5 plan, 2.5). */
+function LineageConfirm() {
+  return (
+    <label className="mt-2 flex items-start gap-3 text-sm text-slate">
+      <input
+        type="checkbox"
+        name="confirmLineage"
+        required
+        className="mt-0.5 size-4 shrink-0 accent-slate focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate"
+      />
+      <span>{unitsCopy["measurement.lineageConfirm"]}</span>
+    </label>
+  );
+}
 
 /** A unit under 10 with units below it, and people of its own to measure: a choice to make. */
 function undecided(view: MeasurementView): boolean {
@@ -79,7 +98,9 @@ function leaderText(view: MeasurementView, people: readonly Person[]): string {
  * The measurement units section of the units screen (Online Measurement Specification 6.2;
  * Milestone 4b plan, Section 6): every measurement unit with what it holds, the units under 10
  * with the units each could be measured with, the grouping choice, and each combination's name,
- * leader and undo. The readiness check links here.
+ * leader and undo. The readiness check links here. A unit with campaign results changes only
+ * through lineage, once the person confirms the break in its trend, and a unit a running campaign
+ * measures does not change at all (Milestone 5 plan, 2.5).
  */
 export function MeasurementSection({
   orgId,
@@ -89,6 +110,8 @@ export function MeasurementSection({
   people,
   notice,
   noticeUnitId,
+  measured,
+  running,
 }: {
   orgId: string;
   writable: boolean;
@@ -97,7 +120,12 @@ export function MeasurementSection({
   people: readonly Person[];
   notice: MeasurementNotice | null;
   noticeUnitId: string | null;
+  /** Measurement units a campaign has named. */
+  measured: ReadonlySet<string>;
+  /** Measurement units a scheduled, open or scoring campaign holds fixed. */
+  running: ReadonlySet<string>;
 }) {
+  const headcount = headcountByUnit(people);
   const short = model.views.filter((v) => v.state === "short" || undecided(v));
   const kept = model.views.filter((v) => v.state === "groupingKept");
   const combinations = model.views.filter((v) => v.combined);
@@ -175,7 +203,11 @@ export function MeasurementSection({
             </p>
             <ul className="mt-4 divide-y divide-grey-20 border-y border-grey-20">
               {short.map((view) => {
-                const offered = candidates(model, view, undecided(view) ? ["below"] : undefined);
+                const offered = candidates(
+                  model,
+                  view,
+                  undecided(view) ? ["below"] : undefined,
+                ).filter((c) => !running.has(c.view.row.id));
                 return (
                   <li key={view.row.id} className="py-4" data-testid={`short-${view.row.code}`}>
                     <p className="text-sm font-medium text-slate">
@@ -189,7 +221,16 @@ export function MeasurementSection({
                         {unitsCopy["measurement.short.grouping"]}
                       </p>
                     ) : null}
-                    {offered.length === 0 ? (
+                    {measured.has(view.row.id) ? (
+                      <p className="mt-1 max-w-3xl text-sm text-grey">
+                        {fill(unitsCopy["measurement.lineageNote"], { name: view.row.name })}
+                      </p>
+                    ) : null}
+                    {running.has(view.row.id) ? (
+                      <p className="mt-1 text-sm text-grey">
+                        {fill(unitsCopy["measurement.running"], { name: view.row.name })}
+                      </p>
+                    ) : offered.length === 0 ? (
                       <p className="mt-1 text-sm text-grey">
                         {unitsCopy["measurement.short.noCandidates"]}
                       </p>
@@ -213,6 +254,16 @@ export function MeasurementSection({
                               >
                                 {hidden(view)}
                                 <input type="hidden" name="candidateId" value={c.view.row.id} />
+                                {measured.has(c.view.row.id) && !measured.has(view.row.id) ? (
+                                  <p className="mt-1 max-w-3xl text-sm text-grey">
+                                    {fill(unitsCopy["measurement.lineageNote"], {
+                                      name: c.view.row.name,
+                                    })}
+                                  </p>
+                                ) : null}
+                                {measured.has(view.row.id) || measured.has(c.view.row.id) ? (
+                                  <LineageConfirm />
+                                ) : null}
                               </ActionForm>
                             ) : null}
                           </li>
@@ -378,12 +429,54 @@ export function MeasurementSection({
                     </div>
                   )}
 
-                  {writable ? (
+                  {writable && running.has(view.row.id) ? (
+                    <p className="max-w-3xl text-sm text-grey">
+                      {fill(unitsCopy["measurement.running"], { name: view.row.name })}
+                    </p>
+                  ) : null}
+
+                  {writable && !running.has(view.row.id) && measured.has(view.row.id)
+                    ? view.units
+                        .filter((u) => (headcount.get(u.id) ?? 0) >= MIN_STAFF)
+                        .map((u) => (
+                          <div key={u.id} data-testid={`split-${u.unit_code}`}>
+                            <p className="max-w-3xl text-sm text-grey">
+                              {fill(
+                                unitsCopy[
+                                  view.units.length > 2
+                                    ? "measurement.splitNote"
+                                    : "measurement.splitNoteRest"
+                                ],
+                                { unit: u.name, people: peopleCount(headcount.get(u.id) ?? 0) },
+                              )}{" "}
+                              {fill(unitsCopy["measurement.lineageNote"], { name: view.row.name })}
+                            </p>
+                            <ActionForm
+                              action={splitOut}
+                              submitLabel={unitsCopy["measurement.split"]}
+                              submitName={fill(unitsCopy["measurement.split.name"], {
+                                unit: u.name,
+                              })}
+                              variant="secondary"
+                            >
+                              {hidden(view)}
+                              <input type="hidden" name="unitId" value={u.id} />
+                              <LineageConfirm />
+                            </ActionForm>
+                          </div>
+                        ))
+                    : null}
+
+                  {writable && !running.has(view.row.id) ? (
                     <div>
                       <p className="max-w-3xl text-sm text-grey">
-                        {fill(unitsCopy["measurement.combination.undoNote"], {
-                          name: view.row.name,
-                        })}
+                        {measured.has(view.row.id)
+                          ? fill(unitsCopy["measurement.combination.retireNote"], {
+                              name: view.row.name,
+                            })
+                          : fill(unitsCopy["measurement.combination.undoNote"], {
+                              name: view.row.name,
+                            })}
                       </p>
                       <ActionForm
                         action={undoCombination}
@@ -391,6 +484,7 @@ export function MeasurementSection({
                         variant="secondary"
                       >
                         {hidden(view)}
+                        {measured.has(view.row.id) ? <LineageConfirm /> : null}
                       </ActionForm>
                     </div>
                   ) : null}

@@ -1,12 +1,16 @@
 import { authCopy } from "./auth";
+import { campaignsCopy } from "./campaigns";
 import { commonCopy } from "./common";
 import { consoleCopy } from "./console";
 import { contextCopy } from "./context";
 import { directoryCopy } from "./directory";
+import { emailCopy } from "./email";
+import { managerCopy } from "./manager";
 import { ratingsMapCopy } from "./ratings-map";
 import { readinessCopy } from "./readiness";
 import { setupCopy } from "./setup";
 import { shellCopy } from "./shell";
+import { surveyCopy } from "./survey";
 import { unitsCopy } from "./units";
 
 /**
@@ -19,13 +23,17 @@ export const COPY_TABLES: Readonly<
   Record<string, { table: Readonly<Record<string, string>>; footer?: boolean }>
 > = {
   auth: { table: authCopy },
+  campaigns: { table: campaignsCopy },
   common: { table: commonCopy },
   console: { table: consoleCopy },
   context: { table: contextCopy },
   directory: { table: directoryCopy },
+  email: { table: emailCopy },
+  manager: { table: managerCopy },
   "ratings-map": { table: ratingsMapCopy },
   readiness: { table: readinessCopy },
   setup: { table: setupCopy },
   shell: { table: shellCopy },
+  survey: { table: surveyCopy },
   units: { table: unitsCopy },
 };

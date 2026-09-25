@@ -348,7 +348,7 @@ test("a new organisation reaches a passing readiness check through the screens a
   await expect(page.getByTestId("check-context")).toHaveAttribute("data-level", "passed");
   await expect(page.getByTestId("check-formalRatings")).toHaveAttribute("data-level", "passed");
   await expect(page.getByTestId("readiness-summary")).toHaveText(
-    "Blockers 3 · Warnings 2 · Passed 8",
+    "Blockers 3 · Warnings 2 · Passed 9",
   );
   await shot(page, info, "04-readiness-blocked");
 
@@ -381,7 +381,7 @@ test("a new organisation reaches a passing readiness check through the screens a
   await expect(page.getByTestId("readiness-passed")).toBeVisible();
   await expect(page.getByTestId("check-units")).toContainText("3 units of 10 or more.");
   await expect(page.getByTestId("readiness-summary")).toHaveText(
-    "Blockers 0 · Warnings 2 · Passed 11",
+    "Blockers 0 · Warnings 2 · Passed 12",
   );
   await shot(page, info, "05-readiness-passed");
   await go(page, "Setup");

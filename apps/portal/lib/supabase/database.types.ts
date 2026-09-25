@@ -309,6 +309,70 @@ export type Database = {
           },
         ]
       }
+      campaign_reminders: {
+        Row: {
+          audience: string | null
+          campaign_id: string
+          campaign_unit_id: string | null
+          emails: number | null
+          id: string
+          kind: string
+          organisation_id: string
+          reminder_day: number | null
+          requested_at: string
+          requested_by: string | null
+          sent_at: string | null
+        }
+        Insert: {
+          audience?: string | null
+          campaign_id: string
+          campaign_unit_id?: string | null
+          emails?: number | null
+          id?: string
+          kind: string
+          organisation_id: string
+          reminder_day?: number | null
+          requested_at?: string
+          requested_by?: string | null
+          sent_at?: string | null
+        }
+        Update: {
+          audience?: string | null
+          campaign_id?: string
+          campaign_unit_id?: string | null
+          emails?: number | null
+          id?: string
+          kind?: string
+          organisation_id?: string
+          reminder_day?: number | null
+          requested_at?: string
+          requested_by?: string | null
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_reminders_organisation_id_campaign_id_fkey"
+            columns: ["organisation_id", "campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "campaign_reminders_organisation_id_campaign_unit_id_fkey"
+            columns: ["organisation_id", "campaign_unit_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_units"
+            referencedColumns: ["organisation_id", "id"]
+          },
+          {
+            foreignKeyName: "campaign_reminders_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_schedule: {
         Row: {
           anchor_campaign_id: string
@@ -1948,6 +2012,7 @@ export type Database = {
           campaign_id: string
           created_at: string
           id: string
+          last_reminded_at: string | null
           manager_employee_id: string | null
           manager_snapshot_member_id: string
           organisation_id: string
@@ -1958,6 +2023,7 @@ export type Database = {
           campaign_id: string
           created_at?: string
           id?: string
+          last_reminded_at?: string | null
           manager_employee_id?: string | null
           manager_snapshot_member_id: string
           organisation_id: string
@@ -1968,6 +2034,7 @@ export type Database = {
           campaign_id?: string
           created_at?: string
           id?: string
+          last_reminded_at?: string | null
           manager_employee_id?: string | null
           manager_snapshot_member_id?: string
           organisation_id?: string
@@ -3505,6 +3572,10 @@ export type Database = {
         Returns: boolean
       }
       cancel_campaign: { Args: { p_campaign_id: string }; Returns: undefined }
+      claim_automatic_reminder: {
+        Args: { p_campaign_id: string; p_day: number }
+        Returns: string
+      }
       claim_outbox: {
         Args: { p_campaign_id?: string; p_limit: number }
         Returns: Json
@@ -3581,6 +3652,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      invitations_for_reminders: {
+        Args: {
+          p_audience?: string
+          p_campaign_id: string
+          p_campaign_unit_id?: string
+        }
+        Returns: Json
+      }
       invitations_for_tokens: {
         Args: { p_campaign_id: string }
         Returns: {
@@ -3632,6 +3711,17 @@ export type Database = {
       }
       my_rating_form: { Args: { p_campaign_id: string }; Returns: Json }
       new_link_kind: { Args: { p_email: string }; Returns: string }
+      open_campaigns: {
+        Args: never
+        Returns: {
+          cadence: string
+          campaign_id: string
+          closes_at: string
+          opens_at: string
+          organisation_id: string
+          tokens_issued: boolean
+        }[]
+      }
       open_support_session: {
         Args: { p_organisation_id: string; p_reason: string }
         Returns: string
@@ -3643,6 +3733,15 @@ export type Database = {
       outbox_sent: {
         Args: { p_outbox_id: string; p_provider_message_id: string }
         Returns: undefined
+      }
+      pending_survey_reminders: {
+        Args: never
+        Returns: {
+          audience: string
+          campaign_id: string
+          campaign_unit_id: string
+          reminder_id: string
+        }[]
       }
       provision_organisation: {
         Args: {
@@ -3660,6 +3759,7 @@ export type Database = {
         }[]
       }
       purge_deactivated_employees: { Args: { p_as_of?: string }; Returns: Json }
+      queue_schedule_notices: { Args: never; Returns: number }
       read_formal_ratings: {
         Args: {
           p_employee_id?: string
@@ -3790,9 +3890,21 @@ export type Database = {
         Args: { p_campaign_id: string; p_measurement_unit_ids?: string[] }
         Returns: number
       }
+      remind_managers: {
+        Args: { p_campaign_id: string; p_session_id?: string }
+        Returns: number
+      }
       replace_account_owner: {
         Args: { p_email: string; p_organisation_id: string }
         Returns: boolean
+      }
+      request_survey_reminder: {
+        Args: {
+          p_audience?: string
+          p_campaign_id: string
+          p_campaign_unit_id?: string
+        }
+        Returns: string
       }
       reset_factors: { Args: { p_user_id: string }; Returns: undefined }
       revoke_membership: {
@@ -3887,6 +3999,10 @@ export type Database = {
         Returns: string
       }
       survey_for_token: { Args: { p_token_hash: string }; Returns: Json }
+      survey_reminder_sent: {
+        Args: { p_emails: number; p_reminder_id: string }
+        Returns: undefined
+      }
       survey_tokens_live: {
         Args: { p_campaign_id: string; p_hashes: string[] }
         Returns: string[]

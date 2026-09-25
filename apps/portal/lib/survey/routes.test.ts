@@ -15,6 +15,7 @@ const PATHS = [
   "lib/survey",
   "lib/campaigns/tokens.ts",
   "lib/campaigns/sender.ts",
+  "lib/campaigns/reminders.ts",
   "lib/email",
 ];
 

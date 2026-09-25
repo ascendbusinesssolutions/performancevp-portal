@@ -4,6 +4,10 @@ import {
   addDays,
   dateLabel,
   dayLabel,
+  dayOfWindow,
+  nextReminder,
+  reminderDue,
+  sameTimeDaysLater,
   daysSpanned,
   proposedOpening,
   sydneyInstant,
@@ -74,5 +78,42 @@ describe("the calendar's words", () => {
     expect(dateLabel("2026-12-24", now)).toBe("Thursday 24 December");
     expect(timeLabel("2026-09-28T07:00:00Z")).toBe("5 pm");
     expect(timeLabel("2026-09-28T07:30:00Z")).toBe("5:30 pm");
+  });
+});
+
+describe("the reminder days (D12)", () => {
+  const opens = "2026-09-14T23:00:00.000Z"; // 09:00 Tuesday 15 September in Sydney
+  const closes = "2026-09-28T07:00:00.000Z";
+  it("counts the window's days from the opening day", () => {
+    expect(dayOfWindow(opens, new Date("2026-09-15T02:00:00Z"))).toBe(1);
+    expect(dayOfWindow(opens, new Date("2026-09-23T02:00:00Z"))).toBe(9);
+  });
+
+  it("is due from 09:00 on a reminder day", () => {
+    const days = [4, 8, 11];
+    expect(reminderDue(days, opens, new Date("2026-09-17T22:30:00Z"))).toBeNull(); // 8:30 on day 4
+    expect(reminderDue(days, opens, new Date("2026-09-17T23:05:00Z"))).toBe(4); // 9:05 on day 4
+    expect(reminderDue(days, opens, new Date("2026-09-19T23:05:00Z"))).toBeNull(); // day 6
+  });
+
+  it("names the next reminder still to go before the close", () => {
+    const days = [4, 8, 11];
+    expect(
+      nextReminder(days, opens, closes, new Date("2026-09-16T00:00:00Z"), [])?.toISOString(),
+    ).toBe("2026-09-17T23:00:00.000Z");
+    expect(
+      nextReminder(days, opens, closes, new Date("2026-09-18T01:00:00Z"), [4])?.toISOString(),
+    ).toBe("2026-09-21T23:00:00.000Z");
+    expect(
+      nextReminder(days, opens, closes, new Date("2026-09-27T01:00:00Z"), [4, 8, 11]),
+    ).toBeNull();
+  });
+});
+
+describe("extending by a week", () => {
+  it("keeps 5 pm in Sydney across daylight saving", () => {
+    expect(sameTimeDaysLater("2026-09-28T07:00:00.000Z", 7).toISOString()).toBe(
+      "2026-10-05T06:00:00.000Z",
+    );
   });
 });

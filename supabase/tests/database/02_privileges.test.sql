@@ -367,7 +367,17 @@ insert into expected_grants values
   -- Milestone 5, step 6: the manager's rating form.
   ('my_rating_campaigns(uuid)', 'authenticated', 'EXECUTE'),
   ('my_rating_form(uuid)', 'authenticated', 'EXECUTE'),
-  ('save_manager_ratings(uuid,uuid,jsonb)', 'authenticated', 'EXECUTE');
+  ('save_manager_ratings(uuid,uuid,jsonb)', 'authenticated', 'EXECUTE'),
+  -- Milestone 5, step 7: monitoring, reminders and the job.
+  ('public.campaign_reminders', 'authenticated', 'SELECT'),
+  ('remind_managers(uuid,uuid)', 'authenticated', 'EXECUTE'),
+  ('request_survey_reminder(uuid,uuid,text)', 'authenticated', 'EXECUTE'),
+  ('open_campaigns()', 'service_role', 'EXECUTE'),
+  ('claim_automatic_reminder(uuid,integer)', 'service_role', 'EXECUTE'),
+  ('pending_survey_reminders()', 'service_role', 'EXECUTE'),
+  ('invitations_for_reminders(uuid,uuid,text)', 'service_role', 'EXECUTE'),
+  ('survey_reminder_sent(uuid,integer)', 'service_role', 'EXECUTE'),
+  ('queue_schedule_notices()', 'service_role', 'EXECUTE');
 
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,

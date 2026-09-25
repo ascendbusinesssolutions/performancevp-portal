@@ -18,6 +18,7 @@ import type { createClient } from "@/lib/supabase/server";
 
 import { asCadence, type CampaignCadence } from "./cadence";
 import { type ChecklistCode, CHECKLISTS } from "./checklist-answers";
+import type { MonitoringData, UnitContextCounts } from "./monitoring";
 import type { AudienceKey } from "./deployment";
 import type { CampaignToLaunch, LaunchData, PreviewUnit, UnitChange } from "./plan";
 
@@ -516,5 +517,88 @@ export async function loadChecklistUnit(
     codes,
     latest,
     previous,
+  };
+}
+
+export interface ReminderRow {
+  kind: "automatic" | "manual";
+  reminder_day: number | null;
+  requested_at: string;
+  sent_at: string | null;
+}
+
+/**
+ * What the monitoring screen reads: campaign_monitoring's counts, the units' names, what each
+ * report needs (from the frozen contexts), whether team leaders were flagged, and the reminders
+ * sent. Counts only; no response and no rating value.
+ */
+export async function loadMonitoring(
+  supabase: Client,
+  orgId: string,
+  campaignId: string,
+): Promise<{
+  data: MonitoringData;
+  names: Map<string, string>;
+  contexts: Map<string, UnitContextCounts>;
+  flaggedTeamLeaders: Set<string>;
+  reminders: ReminderRow[];
+}> {
+  const [{ data: monitoring }, { data: units }] = await Promise.all([
+    supabase.rpc("campaign_monitoring", { p_campaign_id: campaignId }),
+    supabase
+      .from("campaign_units")
+      .select("id, measurement_units(name)")
+      .eq("organisation_id", orgId)
+      .eq("campaign_id", campaignId),
+  ]);
+  const ids = (units ?? []).map((u) => u.id);
+  const [{ data: contexts }, { data: leaders }, { data: reminders }] = await Promise.all([
+    supabase
+      .from("campaign_unit_contexts")
+      .select("campaign_unit_id, context")
+      .eq("organisation_id", orgId)
+      .in("campaign_unit_id", ids),
+    supabase
+      .from("campaign_audience_members")
+      .select("campaign_unit_id, snapshot_members(is_team_leader)")
+      .eq("organisation_id", orgId)
+      .eq("audience", "team_leaders")
+      .in("campaign_unit_id", ids),
+    supabase
+      .from("campaign_reminders")
+      .select("kind, reminder_day, requested_at, sent_at")
+      .eq("organisation_id", orgId)
+      .eq("campaign_id", campaignId)
+      .order("requested_at"),
+  ]);
+  return {
+    data: (monitoring ?? { units: [], sessions: [] }) as unknown as MonitoringData,
+    names: new Map(
+      (units ?? []).map((u) => [
+        u.id,
+        (u.measurement_units as { name: string } | null)?.name ?? "",
+      ]),
+    ),
+    contexts: new Map(
+      (contexts ?? []).map((c) => {
+        const ctx = c.context as {
+          roleFamilies?: Array<{ id: string; skills?: unknown[] }>;
+          knowledgeDomains?: unknown[];
+        };
+        return [
+          c.campaign_unit_id,
+          {
+            skills: new Map((ctx.roleFamilies ?? []).map((f) => [f.id, f.skills?.length ?? 0])),
+            domains: ctx.knowledgeDomains?.length ?? 0,
+          },
+        ];
+      }),
+    ),
+    flaggedTeamLeaders: new Set(
+      (leaders ?? [])
+        .filter((l) => (l.snapshot_members as { is_team_leader: boolean } | null)?.is_team_leader)
+        .map((l) => l.campaign_unit_id),
+    ),
+    reminders: (reminders ?? []) as ReminderRow[],
   };
 }

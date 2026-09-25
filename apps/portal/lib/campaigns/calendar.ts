@@ -137,3 +137,47 @@ export function timeLabel(instant: Date | string): string {
   // ICU may put a narrow no-break space before "pm"; the copy uses a plain one.
   return TIME.format(date).replace(":00", "").replace(/\s/g, " ");
 }
+
+/** The day of a window on the Sydney calendar: 1 on the opening day. */
+export function dayOfWindow(opensAt: string, now: Date): number {
+  return daysSpanned(sydneyDate(opensAt), sydneyDate(now));
+}
+
+/**
+ * The reminder day due now, if any: today is one of the cadence's reminder days (D12) and it is
+ * 09:00 or later in Sydney.
+ */
+export function reminderDue(days: readonly number[], opensAt: string, now: Date): number | null {
+  const day = dayOfWindow(opensAt, now);
+  if (!days.includes(day)) return null;
+  return now.getTime() >= sydneyInstant(sydneyDate(now), OPEN_TIME).getTime() ? day : null;
+}
+
+/** When the next automatic reminder goes, if one is left before the close. */
+export function nextReminder(
+  days: readonly number[],
+  opensAt: string,
+  closesAt: string,
+  now: Date,
+  sentDays: readonly number[],
+): Date | null {
+  for (const day of days) {
+    if (sentDays.includes(day)) continue;
+    const at = sydneyInstant(addDays(sydneyDate(opensAt), day - 1), OPEN_TIME);
+    if (at.getTime() + 86_400_000 > now.getTime() && at.getTime() < Date.parse(closesAt)) return at;
+  }
+  return null;
+}
+
+const CLOCK = new Intl.DateTimeFormat("en-GB", {
+  timeZone: ZONE,
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+/** The same Sydney wall-clock time a number of days later, across a daylight-saving change. */
+export function sameTimeDaysLater(instant: string, days: number): Date {
+  const date = new Date(instant);
+  return sydneyInstant(addDays(sydneyDate(date), days), CLOCK.format(date));
+}

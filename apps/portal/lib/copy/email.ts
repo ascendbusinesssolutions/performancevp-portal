@@ -25,6 +25,10 @@ export const emailCopy = {
   "survey.closes": "The survey closes {date} at {time}.",
   "survey.behalf": "PerformanceVP runs this survey on behalf of {organisation}.",
 
+  "reminder.subject": "A reminder: the survey for {organisation}",
+  "reminder.intro":
+    "The survey {organisation} has asked PerformanceVP to run closes {date} at {time}. Here are your links to the parts you have not answered yet.",
+
   "manager.subject": "Rate your team for {organisation}",
   "manager.intro":
     "{organisation} is asking you to rate the skills and knowledge of your direct reports in {units}.",
@@ -32,6 +36,19 @@ export const emailCopy = {
     "Your ratings carry your name and your administrators can see them. They are separate from the anonymous staff survey.",
   "manager.signIn": "Sign in with a one-time code sent to this address:",
   "manager.closes": "Rating closes {date} at {time}.",
+  "manager.reminderSubject": "A reminder: rate your team for {organisation}",
+  "manager.reminderIntro":
+    "Some of your direct reports in {units} are not rated yet, and your rating form for {organisation} closes {date} at {time}.",
+
+  "checklist.subject": "Checklists to finish: {campaign}",
+  "checklist.body":
+    "{campaign} closes {date} at {time}, and some of its checklists are not saved yet. Only an administrator can give these facts.",
+  "checklist.link": "Open the campaign:",
+
+  "schedule.subject": "{cadence} due {date}",
+  "schedule.body":
+    "The calendar proposes a campaign for {date}: {cadence}. Nothing opens until you schedule it.",
+  "schedule.link": "See the calendar:",
 
   "refused.subject": "{campaign} did not open",
   "refused.body":

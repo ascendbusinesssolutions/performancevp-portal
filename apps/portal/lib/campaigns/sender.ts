@@ -21,7 +21,7 @@ type Admin = ReturnType<typeof createAdminClient>;
 
 const CLAIM = 100;
 
-function transport(): Transport {
+export function transport(): Transport {
   const name = emailCopy["from.name"];
   return appEnv() === "local"
     ? mailpitTransport(mailpitUrl(), name)

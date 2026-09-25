@@ -76,6 +76,55 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
     },
   ],
   "manager.next": [{ slots: { name: "Ana Lee" }, expected: "Done, next: Ana Lee" }],
+  "campaigns.monitor.state": [{ slots: { d: 9, total: 14 }, expected: "Open, day 9 of 14" }],
+  "campaigns.monitor.closes": [
+    {
+      slots: { date: "Monday 28 September", time: "5 pm" },
+      expected: "Closes Monday 28 September, 5 pm",
+    },
+  ],
+  "campaigns.monitor.size": [
+    { slots: { units: "2 units", people: "72 people" }, expected: "2 units, 72 people" },
+  ],
+  "campaigns.monitor.reminders": [
+    {
+      slots: { dates: "Friday 18 September", next: "Tuesday 22 September" },
+      expected: "Reminders sent Friday 18 September. Next: Tuesday 22 September",
+    },
+  ],
+  "campaigns.monitor.remindersNone": [
+    {
+      slots: { next: "Friday 18 September" },
+      expected: "No reminder sent yet. Next: Friday 18 September",
+    },
+  ],
+  "campaigns.monitor.remindersAll": [
+    {
+      slots: { dates: "Friday 18 September and Tuesday 22 September" },
+      expected: "Reminders sent Friday 18 September and Tuesday 22 September",
+    },
+  ],
+  "campaigns.monitor.extended": [
+    {
+      slots: { date: "Monday 5 October", time: "5 pm" },
+      expected: "Extended. It now closes Monday 5 October, 5 pm.",
+    },
+  ],
+  "campaigns.monitor.needsRate": [{ slots: { pct: "60%" }, expected: "needs 60%" }],
+  "campaigns.monitor.needsCount": [{ slots: { n: 12 }, expected: "needs 12" }],
+  "campaigns.monitor.needsLeadership": [{ slots: { pct: "75%" }, expected: "needs 75%, 3+" }],
+  "campaigns.monitor.pct": [{ slots: { pct: 78 }, expected: "78%" }],
+  "campaigns.monitor.of": [{ slots: { n: 47, total: 60 }, expected: "47 of 60" }],
+  "campaigns.monitor.more": [{ slots: { n: 3 }, expected: "3 more needed" }],
+  "campaigns.monitor.managers.row": [
+    { slots: { reports: 7, rated: 3 }, expected: "7 reports, 3 rated" },
+  ],
+  "campaigns.monitor.managers.rowNone": [
+    { slots: { reports: 7 }, expected: "7 reports, none rated" },
+  ],
+  "campaigns.monitor.managers.remindName": [
+    { slots: { name: "Liam North" }, expected: "Remind Liam North" },
+  ],
   "campaigns.checklists.row": [
     {
       slots: { checklist: "Role architecture", units: "2 units" },
@@ -212,6 +261,60 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
     {
       slots: { organisation: "Northwind Mutual" },
       expected: "PerformanceVP runs this survey on behalf of Northwind Mutual.",
+    },
+  ],
+  "email.reminder.subject": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected: "A reminder: the survey for Northwind Mutual",
+    },
+  ],
+  "email.reminder.intro": [
+    {
+      slots: { organisation: "Northwind Mutual", date: "Monday 28 September", time: "5 pm" },
+      expected:
+        "The survey Northwind Mutual has asked PerformanceVP to run closes Monday 28 September at 5 pm. Here are your links to the parts you have not answered yet.",
+    },
+  ],
+  "email.manager.reminderSubject": [
+    {
+      slots: { organisation: "Northwind Mutual" },
+      expected: "A reminder: rate your team for Northwind Mutual",
+    },
+  ],
+  "email.manager.reminderIntro": [
+    {
+      slots: {
+        units: "Member Services",
+        organisation: "Northwind Mutual",
+        date: "Monday 28 September",
+        time: "5 pm",
+      },
+      expected:
+        "Some of your direct reports in Member Services are not rated yet, and your rating form for Northwind Mutual closes Monday 28 September at 5 pm.",
+    },
+  ],
+  "email.checklist.subject": [
+    { slots: { campaign: "Annual baseline" }, expected: "Checklists to finish: Annual baseline" },
+  ],
+  "email.checklist.body": [
+    {
+      slots: { campaign: "Annual baseline", date: "Monday 28 September", time: "5 pm" },
+      expected:
+        "Annual baseline closes Monday 28 September at 5 pm, and some of its checklists are not saved yet. Only an administrator can give these facts.",
+    },
+  ],
+  "email.schedule.subject": [
+    {
+      slots: { cadence: "Quarterly pulse", date: "Thursday 24 December" },
+      expected: "Quarterly pulse due Thursday 24 December",
+    },
+  ],
+  "email.schedule.body": [
+    {
+      slots: { date: "Thursday 24 December", cadence: "Quarterly pulse" },
+      expected:
+        "The calendar proposes a campaign for Thursday 24 December: Quarterly pulse. Nothing opens until you schedule it.",
     },
   ],
   "email.manager.subject": [

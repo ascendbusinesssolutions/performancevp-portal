@@ -13,8 +13,10 @@ import {
   loadChecklistOverview,
   loadFrozenAudiences,
   loadLaunchData,
+  loadMonitoring,
   toLaunch,
 } from "@/lib/campaigns/data";
+import { monitoringModel } from "@/lib/campaigns/monitoring";
 import { campaignTitle, cadenceName, stateLine } from "@/lib/campaigns/display";
 import { type CampaignBlocker, prepareLaunch } from "@/lib/campaigns/plan";
 import { campaignsCopy } from "@/lib/copy/campaigns";
@@ -27,6 +29,7 @@ import { loadActivePeople, loadMeasurementUnits, loadUnits } from "@/lib/setup/d
 import { measurementModel } from "@/lib/setup/measurement";
 import { createClient } from "@/lib/supabase/server";
 
+import { CampaignMonitoring } from "./monitoring";
 import {
   cancelCampaign,
   launchCampaign,
@@ -125,6 +128,41 @@ export default async function CampaignPage({
       ) : null}
     </PageHeader>
   );
+
+  if (campaign.status === "open") {
+    const [monitoring, checklists] = await Promise.all([
+      loadMonitoring(supabase, orgId, campaignId),
+      loadChecklistOverview(supabase, orgId, campaignId),
+    ]);
+    const model = monitoringModel({ cadence: campaign.cadence, ...monitoring });
+    const accountsPending = Number(typeof pending === "string" ? pending : 0);
+    return (
+      <>
+        {notice === "launched" ? (
+          <div className="pt-6">
+            <Notice>
+              {campaignsCopy["launched.notice"]}
+              {accountsPending > 0
+                ? ` ${fill(campaignsCopy["launched.accountsPending"], { n: accountsPending })}`
+                : ""}
+            </Notice>
+          </div>
+        ) : null}
+        <CampaignMonitoring
+          orgId={orgId}
+          orgName={org.name}
+          campaign={campaign}
+          rows={model.rows}
+          managers={model.managers}
+          people={model.people}
+          reminders={monitoring.reminders}
+          checklists={checklists}
+          writable={org.writable}
+          now={now}
+        />
+      </>
+    );
+  }
 
   if (!beforeLaunch) {
     const [audiences, checklists] = await Promise.all([

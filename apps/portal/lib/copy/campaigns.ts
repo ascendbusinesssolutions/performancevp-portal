@@ -163,6 +163,59 @@ export const campaignsCopy = {
   "error.checklist":
     "Those answers could not be saved. Check that each is one of the choices, and each figure a number.",
 
+  // Monitoring (PORTAL_COPY_SPEC.md C1 to C4; layout notes of 24 September 2026). C2's {valid}
+  // is {received}: validity is known only at close (D19); C3's fixed line as D14 amends it.
+  "monitor.state": "Open, day {d} of {total}",
+  "monitor.closes": "Closes {date}, {time}",
+  "monitor.size": "{units}, {people}",
+  "monitor.reminders": "Reminders sent {dates}. Next: {next}",
+  "monitor.remindersNone": "No reminder sent yet. Next: {next}",
+  "monitor.remindersAll": "Reminders sent {dates}",
+  "monitor.remind": "Send a reminder now",
+  "monitor.reminded":
+    "A reminder is going to everyone who still has a part of the survey to answer. No one who has answered is emailed.",
+  "monitor.remindLimit": "A reminder went less than a day ago. Send the next one tomorrow.",
+  "monitor.extend": "Extend by a week",
+  "monitor.extended": "Extended. It now closes {date}, {time}.",
+  "monitor.response.title": "Response against the thresholds that will apply",
+  "monitor.countsOnly": "Counts only. No response is linked to a person.",
+  "monitor.col.unit": "Unit",
+  "monitor.col.members_part_a": "Members part A",
+  "monitor.col.members_part_b": "Members part B",
+  "monitor.col.managers": "Managers",
+  "monitor.col.team_leaders": "Team leaders",
+  "monitor.col.leadership_team": "Leadership team",
+  "monitor.col.checklists": "Checklists",
+  "monitor.needsRate": "needs {pct}",
+  "monitor.needsCount": "needs {n}",
+  "monitor.needsLeadership": "needs {pct}, 3+",
+  "monitor.pct": "{pct}%",
+  "monitor.of": "{n} of {total}",
+  "monitor.more": "{n} more needed",
+  "monitor.leadershipMinimum": "3 needed to score",
+  "monitor.fallback": "None flagged; unit leader instead",
+  "monitor.notAsked": "Not asked",
+  "monitor.checklistsDone": "Done",
+  "monitor.foot":
+    "Amber is below what the close needs. The counts are responses received; the validity checks at close may exclude some.",
+  "monitor.managers.title": "Managers outstanding",
+  "monitor.managers.remindAll": "Remind all",
+  "monitor.managers.row": "{reports} reports, {rated} rated",
+  "monitor.managers.rowNone": "{reports} reports, none rated",
+  "monitor.managers.remind": "Remind",
+  "monitor.managers.remindName": "Remind {name}",
+  "monitor.managers.reminded": "Reminder sent.",
+  "monitor.managers.limit": "Everyone outstanding was reminded less than a day ago.",
+  "monitor.managers.none": "Every manager has rated their reports.",
+  "monitor.managers.fixed":
+    "Only the manager can rate. Reports left unrated at close count as not rated.",
+  "monitor.close.title": "At close",
+  "monitor.close.body":
+    "Scores are calculated and held for your review. Nothing is visible to viewers until you release it.",
+  "monitor.closeNow": "Close it now",
+  "monitor.closeNowNote":
+    "Closing now stops the surveys and the rating forms at once, and scores what has been received.",
+
   "launched.title": "Who was asked",
   "launched.notice": "Launched. The campaign is open, on the directory as it stood at launch.",
   "launched.accountsPending":

@@ -9,15 +9,20 @@ import type { FormState } from "@/lib/auth/form-state";
 import { asCadence } from "@/lib/campaigns/cadence";
 import { answersFromForm, CHECKLISTS } from "@/lib/campaigns/checklist-answers";
 import {
+  dayLabel,
   proposedOpening,
+  sameTimeDaysLater,
   sydneyInstant,
+  timeLabel,
   windowFrom,
   windowLaunchedNow,
 } from "@/lib/campaigns/calendar";
 import { loadCampaign } from "@/lib/campaigns/data";
 import { launchNow } from "@/lib/campaigns/launch";
+import { runReminders } from "@/lib/campaigns/reminders";
 import { sendOutbox } from "@/lib/campaigns/sender";
 import { campaignsCopy, type CampaignsCopyKey } from "@/lib/copy/campaigns";
+import { fill } from "@/lib/copy/template";
 import { setupCopy } from "@/lib/copy/setup";
 import { sydneyToday } from "@/lib/dates";
 import { requireOrgManager } from "@/lib/org/context";
@@ -41,6 +46,7 @@ const RULES: readonly ErrorRule<CampaignsCopyKey | "readOnly">[] = [
   ["22023", "only a draft", "error.state"],
   ["22023", "only a scheduled", "error.state"],
   ["22023", "close has passed", "error.window"],
+  ["22023", "less than a day ago", "monitor.remindLimit"],
   ["23514", "name", "error.name"],
   ["42501", null, "readOnly"],
 ];
@@ -285,4 +291,73 @@ export async function saveChecklist(_previous: FormState, formData: FormData): P
   }
   revalidatePath(`${campaignPath(orgId, campaignId)}`, "layout");
   return { message: campaignsCopy["checklist.saved"] };
+}
+
+/** "Send a reminder now": to everyone who still has a part to answer, at most once a day. */
+export async function requestReminder(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const orgId = text(formData, "organisationId");
+  const campaignId = text(formData, "campaignId");
+  await requireOrgManager(orgId);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("request_survey_reminder", { p_campaign_id: campaignId });
+  if (error) return failure(error);
+  // It goes now rather than at the job's next run.
+  after(() => runReminders());
+  revalidatePath(campaignPath(orgId, campaignId));
+  return { message: campaignsCopy["monitor.reminded"] };
+}
+
+/** "Extend by a week": the same time of day, seven days later. */
+export async function extendWeek(_previous: FormState, formData: FormData): Promise<FormState> {
+  const orgId = text(formData, "organisationId");
+  const campaignId = text(formData, "campaignId");
+  await requireOrgManager(orgId);
+  const supabase = await createClient();
+  const campaign = await loadCampaign(supabase, orgId, campaignId);
+  if (!campaign?.closes_at) return { error: campaignsCopy["error.state"] };
+  const closesAt = sameTimeDaysLater(campaign.closes_at, 7);
+  const { error } = await supabase.rpc("extend_campaign", {
+    p_campaign_id: campaignId,
+    p_closes_at: closesAt.toISOString(),
+  });
+  if (error) return failure(error);
+  revalidatePath(campaignPath(orgId, campaignId));
+  return {
+    message: fill(campaignsCopy["monitor.extended"], {
+      date: dayLabel(closesAt),
+      time: timeLabel(closesAt),
+    }),
+  };
+}
+
+/** A reminder to one manager, or to every manager with reports still to rate: once a day each. */
+export async function remindManagers(_previous: FormState, formData: FormData): Promise<FormState> {
+  const orgId = text(formData, "organisationId");
+  const campaignId = text(formData, "campaignId");
+  const sessionId = text(formData, "sessionId");
+  await requireOrgManager(orgId);
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("remind_managers", {
+    p_campaign_id: campaignId,
+    ...(sessionId ? { p_session_id: sessionId } : {}),
+  });
+  if (error) return failure(error);
+  if (!data) return { error: campaignsCopy["monitor.managers.limit"] };
+  after(() => sendOutbox({ campaignId, budgetMs: 60_000 }));
+  return { message: campaignsCopy["monitor.managers.reminded"] };
+}
+
+/** "Close it now": the surveys and rating forms stop, and scoring follows. */
+export async function closeNow(_previous: FormState, formData: FormData): Promise<FormState> {
+  const orgId = text(formData, "organisationId");
+  const campaignId = text(formData, "campaignId");
+  await requireOrgManager(orgId);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("close_campaign_now", { p_campaign_id: campaignId });
+  if (error) return failure(error);
+  revalidatePath(campaignPath(orgId), "layout");
+  redirect(campaignPath(orgId, campaignId));
 }

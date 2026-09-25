@@ -70,8 +70,10 @@ test("a baseline is previewed and launched, and the calendar's scheduled pulse i
   await hydrated(page);
   await page.getByRole("button", { name: "Launch now" }).click();
   await expect(page.getByText("Launched. The campaign is open")).toBeVisible();
-  await expect(page.getByTestId("campaign-state")).toHaveText(/^Open, closes \w+ \d+ \w+, 5 pm$/);
-  await expect(page.getByRole("heading", { name: "Who was asked" })).toBeVisible();
+  await expect(page.getByTestId("campaign-state")).toHaveText(
+    /^Open, day 1 of 14 · Closes \w+ \d+ \w+, 5 pm · 1 unit, 12 people · No reminder sent yet\. Next: /,
+  );
+  await expect(page.getByTestId("monitoring")).toBeVisible();
   expect(
     await sql<{ name: string; kind: string; headcount: number }>(
       `select t.name, t.kind, t.headcount from public.campaign_teams t
@@ -89,7 +91,6 @@ test("a baseline is previewed and launched, and the calendar's scheduled pulse i
     ),
   ).toEqual([{ n: 3 }]);
   await scan(page, "launched campaign");
-  await shot(page, info, "02-launched");
 
   // A unit a running campaign measures says so on the units screen.
   await go(page, "Units");

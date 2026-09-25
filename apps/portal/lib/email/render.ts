@@ -1,4 +1,4 @@
-import { dayLabel, timeLabel } from "@/lib/campaigns/calendar";
+import { dateLabel, dayLabel, timeLabel } from "@/lib/campaigns/calendar";
 import { cadenceName } from "@/lib/campaigns/display";
 import { asCadence } from "@/lib/campaigns/cadence";
 import { commonCopy } from "@/lib/copy/common";
@@ -34,6 +34,7 @@ export interface ClaimedEmail {
     status: string;
   } | null;
   email: string | null;
+  schedule?: { cadence: string; dueOn: string } | null;
   invitations: Array<{
     id: string;
     salt: string;
@@ -144,6 +145,42 @@ export function renderEmail(
         fill(emailCopy["manager.closes"], closing(row, now)),
         footer,
       ]);
+    case "manager_reminder":
+      return compose(fill(emailCopy["manager.reminderSubject"], { organisation }), [
+        fill(emailCopy["manager.reminderIntro"], {
+          units: listOf(
+            [...row.units].sort((a, b) => a.localeCompare(b, "en-AU")),
+            LIST_WORDS,
+          ),
+          organisation,
+          ...closing(row, now),
+        }),
+        emailCopy["manager.identified"],
+        { line: emailCopy["manager.signIn"], href: `${base}/login/code` },
+        footer,
+      ]);
+    case "checklist_reminder":
+      return compose(fill(emailCopy["checklist.subject"], { campaign: campaignName(row) }), [
+        fill(emailCopy["checklist.body"], { campaign: campaignName(row), ...closing(row, now) }),
+        {
+          line: emailCopy["checklist.link"],
+          href: `${base}/org/${row.organisationId}/campaigns/${row.campaign?.id ?? ""}#checklists`,
+        },
+        footer,
+      ]);
+    case "schedule_notice": {
+      if (!row.schedule) return null;
+      const cadence = cadenceName(asCadence(row.schedule.cadence) ?? "annual");
+      const date = dateLabel(row.schedule.dueOn, now);
+      return compose(fill(emailCopy["schedule.subject"], { cadence, date }), [
+        fill(emailCopy["schedule.body"], { date, cadence }),
+        {
+          line: emailCopy["schedule.link"],
+          href: `${base}/org/${row.organisationId}/campaigns#calendar`,
+        },
+        footer,
+      ]);
+    }
     case "launch_refused":
       return compose(fill(emailCopy["refused.subject"], { campaign: campaignName(row) }), [
         fill(emailCopy["refused.body"], { campaign: campaignName(row) }),
@@ -163,7 +200,37 @@ export function renderEmail(
         footer,
       ]);
     default:
-      // Reminders and schedule notices join in step 7.
+      // Survey reminders are never in the outbox: the job sends them from memory (step 7).
       return null;
   }
+}
+
+/**
+ * A survey reminder: the parts a person has not answered yet, each with its link. Sent by the job
+ * straight from its memory, never through the outbox, so no row records who had not answered.
+ */
+export function renderSurveyReminder(
+  organisation: string,
+  closesAt: string,
+  invitations: ClaimedEmail["invitations"],
+  links: ReadonlyMap<string, string>,
+  base: string,
+  now: Date = new Date(),
+): Rendered {
+  return compose(fill(emailCopy["reminder.subject"], { organisation }), [
+    fill(emailCopy["reminder.intro"], {
+      organisation,
+      date: dayLabel(closesAt, now),
+      time: timeLabel(closesAt),
+    }),
+    ...invitations.map((i) => ({
+      line: fill(emailCopy[`survey.link.${i.audience}`], {
+        unit: i.unitName,
+        minutes: minutesFor(i.audience, i.itemCount),
+      }),
+      href: links.get(i.id) ?? `${base}/s`,
+    })),
+    emailCopy["survey.once"],
+    fill(emailCopy["survey.behalf"], { organisation }),
+  ]);
 }

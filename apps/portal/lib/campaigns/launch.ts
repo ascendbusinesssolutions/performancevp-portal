@@ -184,3 +184,23 @@ async function launchScheduled(admin: Admin, campaignId: string): Promise<string
   }
   return "changed";
 }
+
+/**
+ * Accounts and memberships for managers still without them, on every open campaign (the five-minute
+ * job). Returns how many are still waiting.
+ */
+export async function retryManagerAccounts(): Promise<number> {
+  const admin = createAdminClient();
+  const { data: open } = await admin.rpc("open_campaigns");
+  let waiting = 0;
+  for (const campaign of open ?? []) {
+    const { data } = await admin.rpc("grant_manager_memberships", {
+      p_campaign_id: campaign.campaign_id,
+    });
+    const missing = (Array.isArray(data) ? data : []) as Array<{ email: string }>;
+    if (missing.length > 0) {
+      waiting += await provideManagerAccounts(admin, campaign.campaign_id, missing);
+    }
+  }
+  return waiting;
+}

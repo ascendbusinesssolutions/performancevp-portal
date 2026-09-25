@@ -21,7 +21,12 @@ export async function GET(request: NextRequest) {
   const opened = await launchDueCampaigns();
   const sent = await sendOutbox({ budgetMs: 200_000 });
   const detail = { opened, sent };
-  await createAdminClient().rpc("record_job_run", { p_job: "campaigns", p_detail: detail });
+  // Every run is recorded; only a run that changed a campaign's state is audited (checkpoint 2).
+  await createAdminClient().rpc("record_job_run", {
+    p_job: "campaigns",
+    p_detail: detail,
+    p_changed: opened.launched + opened.refused > 0,
+  });
   const failed = opened.failed.length > 0 || sent.errors.length > 0;
   return NextResponse.json(detail, { status: failed ? 500 : 200 });
 }

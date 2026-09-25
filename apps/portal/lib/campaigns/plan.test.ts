@@ -136,6 +136,7 @@ function campaign(extra: Partial<CampaignToLaunch> = {}): CampaignToLaunch {
     event_trigger: null,
     closes_at: "2026-10-08T06:00:00Z",
     measurementUnitIds: ["mu-U2", "mu-U1"],
+    unit_changes: null,
     ...extra,
   };
 }
@@ -223,7 +224,42 @@ describe("the launch plan", () => {
     });
   });
 
-  it("refuses on any readiness blocker", () => {
+  it("refuses a draft whose units changed after it was made, until it is saved again", () => {
+    const prep = prepareLaunch(
+      data(),
+      campaign({ unit_changes: [{ id: "mu-X", name: "Claims and Service", dropped: true }] }),
+      NOW,
+    );
+    expect(prep.blockers).toEqual([{ kind: "unitsChanged", units: ["Claims and Service"] }]);
+    expect(prep.ready).toBe(false);
+  });
+
+  it("scopes readiness to the campaign's units and the people, managers and leaders in them", () => {
+    // Someone in U2 without a work email blocks a campaign of U2, not one of U1 alone.
+    const d = data();
+    d.people = d.people.map((p) => (p.id === "c3" ? { ...p, work_email: null } : p));
+    const u1 = prepareLaunch(d, campaign({ measurementUnitIds: ["mu-U1"] }), NOW);
+    expect(u1.ready).toBe(true);
+    expect(u1.readiness.checks.find((c) => c.key === "workEmails")?.level).toBe("passed");
+
+    // U2's members' manager and its leader, A1, sits in U1: without an email, A1 blocks U2 too.
+    const e = data();
+    e.people = e.people.map((p) => (p.id === "a1" ? { ...p, work_email: null } : p));
+    const u2 = prepareLaunch(e, campaign({ measurementUnitIds: ["mu-U2"] }), NOW);
+    expect(u2.ready).toBe(false);
+    expect(u2.readiness.checks.find((c) => c.key === "workEmails")?.findings).toEqual([
+      { kind: "noEmail", people: [{ id: "a1", name: "Person a1" }] },
+    ]);
+
+    // A unit elsewhere still under 10 blocks nothing here.
+    const f = data();
+    f.people = f.people.filter((p) => !["c8", "c9"].includes(p.id));
+    const u1only = prepareLaunch(f, campaign({ measurementUnitIds: ["mu-U1"] }), NOW);
+    expect(u1only.ready).toBe(true);
+    expect(u1only.readiness.checks.find((c) => c.key === "units")?.level).toBe("passed");
+  });
+
+  it("refuses on a readiness blocker in its own units", () => {
     const d = data();
     d.people = d.people.map((p) => (p.id === "c3" ? { ...p, work_email: null } : p));
     const prep = prepareLaunch(d, campaign(), NOW);

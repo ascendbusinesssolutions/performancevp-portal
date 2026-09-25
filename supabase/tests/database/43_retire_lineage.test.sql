@@ -2,8 +2,9 @@
 -- unit is never changed in place. Extending a measured combination retires it and records a combine
 -- row to its successor; undoing one retires it, keeps its context and returns its units to their
 -- singles with a separate row each; splitting out a unit that has grown retires the combination and
--- leaves the rest combined; a measured single combined records its row too. Nothing a scheduled,
--- open or scoring campaign measures changes at all.
+-- leaves the rest combined; a measured single combined records its row too. Measured means a
+-- campaign open, being scored, under review or released (checkpoint 2); nothing an open or scoring
+-- campaign measures changes at all.
 begin;
 \ir helpers/tests.psql
 \ir helpers/fixture.psql

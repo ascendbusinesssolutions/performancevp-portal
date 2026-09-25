@@ -99,8 +99,8 @@ describe("the survey a link opens", () => {
     expect(content.questionCount).toBe(5 + 6 + 18);
     const headings = content.screens.map((s) => (s.kind === "items" ? s.heading : ""));
     expect(headings).toEqual([
-      "Where the unit is heading",
-      "Where the unit is heading",
+      "How your work connects to the strategy",
+      "How your work connects to the strategy",
       "The information you need",
       "The information you need",
       "Thinking about Claims intake",

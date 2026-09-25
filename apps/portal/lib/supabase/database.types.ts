@@ -561,6 +561,7 @@ export type Database = {
           setup_version: number | null
           status: string
           tokens_issued_at: string | null
+          unit_changes: Json | null
         }
         Insert: {
           approved_at?: string | null
@@ -584,6 +585,7 @@ export type Database = {
           setup_version?: number | null
           status?: string
           tokens_issued_at?: string | null
+          unit_changes?: Json | null
         }
         Update: {
           approved_at?: string | null
@@ -607,6 +609,7 @@ export type Database = {
           setup_version?: number | null
           status?: string
           tokens_issued_at?: string | null
+          unit_changes?: Json | null
         }
         Relationships: [
           {
@@ -3746,7 +3749,7 @@ export type Database = {
         }[]
       }
       record_job_run: {
-        Args: { p_detail: Json; p_job: string }
+        Args: { p_changed?: boolean; p_detail: Json; p_job: string }
         Returns: undefined
       }
       record_launch_refusal: {

@@ -18,7 +18,7 @@ import type { createClient } from "@/lib/supabase/server";
 
 import { asCadence, type CampaignCadence } from "./cadence";
 import type { AudienceKey } from "./deployment";
-import type { CampaignToLaunch, LaunchData, PreviewUnit } from "./plan";
+import type { CampaignToLaunch, LaunchData, PreviewUnit, UnitChange } from "./plan";
 
 /**
  * The campaign reads. The screens read as the signed-in person, under row level security; a
@@ -45,6 +45,7 @@ export interface Campaign {
   pulse_rotation: number | null;
   event_trigger: string | null;
   launch_blockers: unknown;
+  unit_changes: UnitChange[] | null;
   created_at: string;
   measurementUnitIds: string[];
 }
@@ -60,7 +61,7 @@ export interface Proposal {
 
 const CAMPAIGN_COLUMNS =
   "id, organisation_id, cadence, name, status, opens_at, closes_at, launched_at, closed_at, " +
-  "pulse_rotation, event_trigger, launch_blockers, created_at";
+  "pulse_rotation, event_trigger, launch_blockers, unit_changes, created_at";
 
 interface CampaignRow extends Omit<Campaign, "measurementUnitIds" | "cadence" | "status"> {
   cadence: string;
@@ -152,6 +153,7 @@ export function toLaunch(campaign: Campaign): CampaignToLaunch {
     event_trigger: campaign.event_trigger,
     closes_at: campaign.closes_at,
     measurementUnitIds: campaign.measurementUnitIds,
+    unit_changes: campaign.unit_changes,
   };
 }
 
@@ -259,6 +261,7 @@ export async function loadLaunchDataAsService(
       pulse_rotation: number | null;
       event_trigger: string | null;
       closes_at: string | null;
+      unit_changes: UnitChange[] | null;
       measurementUnitIds: string[];
     };
   };
@@ -339,8 +342,9 @@ export async function loadFrozenAudiences(
 }
 
 /**
- * The measurement units campaigns have measured (any campaign that names them: such a unit changes
- * through lineage, never in place) and those a scheduled, open or scoring campaign holds fixed.
+ * The measurement units campaigns have measured (one open, being scored, under review or released:
+ * such a unit changes through lineage, never in place) and those an open or scoring campaign holds
+ * fixed (checkpoint 2). A draft or scheduled campaign measures nothing; it follows its units.
  */
 export async function loadMeasuredUnits(
   supabase: Client,
@@ -357,11 +361,11 @@ export async function loadMeasuredUnits(
   const measured = new Set<string>();
   const running = new Set<string>();
   for (const row of rows) {
-    measured.add(row.measurement_unit_id);
-    const status = (row.campaigns as { status: string } | null)?.status;
-    if (status === "scheduled" || status === "open" || status === "closed") {
-      running.add(row.measurement_unit_id);
+    const status = (row.campaigns as { status: string } | null)?.status ?? "";
+    if (["open", "closed", "under_review", "released"].includes(status)) {
+      measured.add(row.measurement_unit_id);
     }
+    if (status === "open" || status === "closed") running.add(row.measurement_unit_id);
   }
   return { measured, running };
 }

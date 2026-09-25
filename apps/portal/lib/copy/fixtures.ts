@@ -304,6 +304,13 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
   "campaigns.preview.emailed": [
     { slots: { people: "72 people" }, expected: "72 people receive the anonymous survey." },
   ],
+  "campaigns.blocker.unitsChanged": [
+    {
+      slots: { list: "Claims and Service" },
+      expected:
+        "Claims and Service changed after this draft was made. Check the units below and save the draft before it launches.",
+    },
+  ],
   "campaigns.blocker.notMeasured": [
     {
       slots: { unit: "Claims" },

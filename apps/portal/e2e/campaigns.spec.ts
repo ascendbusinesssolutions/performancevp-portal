@@ -11,6 +11,9 @@ import { clearMail, hydrated, resetPersonas, sql } from "./support";
 // scheduled opening into the past, as the clock would. The organisation is Kestrel Logistics, from
 // e2e/campaign-helpers.ts.
 
+// The review screenshots are 1440 wide, as Milestone 4's are.
+test.use({ viewport: { width: 1440, height: 900 } });
+
 test.beforeEach(async () => {
   await resetPersonas([OWNER]);
   await clearMail();
@@ -61,7 +64,7 @@ test("a baseline is previewed and launched, and the calendar's scheduled pulse i
   );
   await expect(page.getByTestId("no-blockers")).toBeVisible();
   await scan(page, "launch preview");
-  await shot(page, info, "m5-01-launch-preview");
+  await shot(page, info, "01-launch-preview");
 
   // Launched now: open today, the teams frozen with their headcounts, the managers given sign-ins.
   await hydrated(page);
@@ -86,7 +89,7 @@ test("a baseline is previewed and launched, and the calendar's scheduled pulse i
     ),
   ).toEqual([{ n: 3 }]);
   await scan(page, "launched campaign");
-  await shot(page, info, "m5-02-launched");
+  await shot(page, info, "02-launched");
 
   // A unit a running campaign measures says so on the units screen.
   await go(page, "Units");
@@ -106,7 +109,7 @@ test("a baseline is previewed and launched, and the calendar's scheduled pulse i
   await expect(page.getByTestId("proposals").getByRole("listitem")).toHaveCount(3);
   await expect(page.getByTestId("campaigns")).toContainText(/Scheduled, opens/);
   await scan(page, "campaigns hub with the calendar");
-  await shot(page, info, "m5-03-hub");
+  await shot(page, info, "03-campaigns-hub");
 
   // At its opening the job reruns readiness: the baseline still runs and nothing has been
   // released, so the pulse goes back to draft with its blockers.
@@ -129,7 +132,7 @@ test("a baseline is previewed and launched, and the calendar's scheduled pulse i
   );
   await expect(page.getByRole("button", { name: "Launch now" })).toHaveCount(0);
   await scan(page, "refused draft");
-  await shot(page, info, "m5-04-refused");
+  await shot(page, info, "04-refused-draft");
 
   // Cancelled, the proposal returns to the calendar.
   await hydrated(page);

@@ -14,7 +14,8 @@ import { type CampaignBlocker, prepareLaunch } from "@/lib/campaigns/plan";
 import { campaignsCopy } from "@/lib/copy/campaigns";
 import { peopleCount } from "@/lib/copy/common";
 import { readinessCopy } from "@/lib/copy/readiness";
-import { fill } from "@/lib/copy/template";
+import { commonCopy } from "@/lib/copy/common";
+import { fill, listOf } from "@/lib/copy/template";
 import { requireOrgManager } from "@/lib/org/context";
 import { loadActivePeople, loadMeasurementUnits, loadUnits } from "@/lib/setup/data";
 import { measurementModel } from "@/lib/setup/measurement";
@@ -29,11 +30,24 @@ import {
 } from "../actions";
 
 const LINK = "text-slate underline underline-offset-4 hover:text-gold-deep";
+const LIST_WORDS = {
+  and: commonCopy["list.and"],
+  more: (n: number) => fill(commonCopy["list.more"], { n }),
+};
 
 function blockerLine(orgId: string, blocker: CampaignBlocker) {
   switch (blocker.kind) {
     case "noUnits":
       return campaignsCopy["blocker.noUnits"];
+    case "unitsChanged":
+      return (
+        <>
+          {fill(campaignsCopy["blocker.unitsChanged"], { list: listOf(blocker.units, LIST_WORDS) })}{" "}
+          <Link className={LINK} href="#edit">
+            {campaignsCopy["draft.edit"]}
+          </Link>
+        </>
+      );
     case "windowPassed":
       return campaignsCopy["blocker.windowPassed"];
     case "notMeasured":

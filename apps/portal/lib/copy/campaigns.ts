@@ -121,6 +121,8 @@ export const campaignsCopy = {
   "blockers.title": "Before it can launch",
   "blockers.none": "Nothing blocks the launch.",
   "blocker.noUnits": "The campaign measures no unit. Choose at least one.",
+  "blocker.unitsChanged":
+    "{list} changed after this draft was made. Check the units below and save the draft before it launches.",
   "blocker.notMeasured":
     "{unit} is no longer measured as it was when the draft was made. Remove it, and add the unit that now measures its people.",
   "blocker.needsFullRun":

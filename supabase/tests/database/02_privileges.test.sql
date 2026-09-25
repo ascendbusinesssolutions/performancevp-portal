@@ -246,7 +246,7 @@ insert into expected_grants values
 -- Step 9: the directory screens and the daily job.
 insert into expected_grants values
   ('can_manage_directory(uuid)', 'authenticated', 'EXECUTE'),
-  ('record_job_run(text,jsonb)', 'service_role', 'EXECUTE');
+  ('record_job_run(text,jsonb,boolean)', 'service_role', 'EXECUTE');
 
 -- Milestone 4: the setup flows. read_formal_ratings gained p_employee_id (above).
 insert into expected_grants values

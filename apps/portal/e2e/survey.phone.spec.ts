@@ -73,7 +73,7 @@ test("the invitations arrive, and each survey is answered once on a phone", asyn
 }, info) => {
   test.setTimeout(300_000);
   const desk = await (
-    await browser.newContext({ viewport: { width: 1280, height: 900 } })
+    await browser.newContext({ viewport: { width: 1440, height: 900 } })
   ).newPage();
   const stamp = Date.now();
   const { organisation, org } = await readyKestrel(desk, stamp);
@@ -106,7 +106,7 @@ test("the invitations arrive, and each survey is answered once on a phone", asyn
     ),
   ).toBeVisible();
   await scan(page, "survey landing");
-  await shot(page, info, "m5-phone-01-landing");
+  await shot(page, info, "phone-01-landing");
   await page.getByRole("button", { name: "Start" }).click();
   await expect(page.getByRole("heading", { name: "Which team are you part of?" })).toBeVisible();
   await page.getByRole("radio", { name: "North" }).check();
@@ -116,12 +116,12 @@ test("the invitations arrive, and each survey is answered once on a phone", asyn
   await expect(page.locator("fieldset")).toHaveCount(4);
   await answerScreen(page, 4, true);
   await scan(page, "survey item group");
-  await shot(page, info, "m5-phone-02-group");
+  await shot(page, info, "phone-02-item-group");
   await page.getByRole("button", { name: "Next" }).click();
   await finish(page, 4, true);
   await expect(page.getByText("The same email holds a second, shorter survey")).toBeVisible();
   await scan(page, "survey completion");
-  await shot(page, info, "m5-phone-05-done");
+  await shot(page, info, "phone-05-completion");
 
   // The link works once.
   await page.goto(linkFor(member, "The survey about"));
@@ -153,7 +153,7 @@ test("the invitations arrive, and each survey is answered once on a phone", asyn
     ),
   ).toBeVisible();
   await scan(page, "leadership disclosure");
-  await shot(page, info, "m5-phone-03-disclosure");
+  await shot(page, info, "phone-03-leadership-disclosure");
   await page.getByRole("button", { name: "Start" }).click();
   await expect(page.getByText(/^Decision 1 of 8$/)).toBeVisible();
   const decides = page.locator("fieldset").filter({ hasText: "Who Decides" });
@@ -165,7 +165,7 @@ test("the invitations arrive, and each survey is answered once on a phone", asyn
     .check();
   await tap(page.getByRole("radio", { name: "4" }));
   await scan(page, "leadership decision");
-  await shot(page, info, "m5-phone-04-decision");
+  await shot(page, info, "phone-04-leadership-decision");
   await page.getByRole("button", { name: "Next" }).click();
   await finish(page, 4, false);
 

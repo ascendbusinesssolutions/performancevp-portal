@@ -53,7 +53,8 @@ export const surveyCopy = {
   "scale.5": "Strongly agree",
   "scale.value": "{value}, {label}",
 
-  "partB.cascade": "Where the unit is heading",
+  // Michael, checkpoint 2: the cascade section's heading.
+  "partB.cascade": "How your work connects to the strategy",
   "partB.informationAccess": "The information you need",
   "partB.process": "Thinking about {process}",
   "partB.optOut": "I do not work on this process",

@@ -5,11 +5,12 @@ import type { TestCell } from "../lib/directory/test-workbook";
 import { go, OWNER, provision, uploadFromTemplate } from "./setup-helpers";
 import { clearMail, hydrated, resetPersonas, sql } from "./support";
 
-// Retire-and-lineage on the units screen (Milestone 5 plan, 2.5): a combination a campaign has
-// measured is never changed in place. While a campaign holds it, nothing changes; afterwards,
-// measuring a grown unit on its own retires the combination with a separate row to each successor,
-// and undoing one retires it too; each needs the person to confirm the break in the trend. The test
-// marks a combination as measured by writing a campaign that names it, as a launch would.
+// Retire-and-lineage on the units screen (Milestone 5 plan, 2.5; checkpoint 2): a combination a
+// campaign has measured (open, being scored, under review or released) is never changed in place.
+// While an open campaign holds it, nothing changes; afterwards, measuring a grown unit on its own
+// retires the combination with a separate row to each successor, and undoing one retires it too;
+// each needs the person to confirm the break in the trend. The test marks a combination as measured
+// by writing a campaign that names it, and moves that campaign on, as a launch and close would.
 //
 //   Tern Air (TOP: the head)  >  Alpha Ops (A, 12)  and  Beta Ops (B, 5)
 
@@ -77,10 +78,10 @@ async function sitUnder(page: Page, unit: string) {
 }
 
 /** A campaign that names the measurement unit, in the given state, as a launch would leave it. */
-async function measuredBy(org: string, code: string, status: "scheduled" | "cancelled") {
+async function measuredBy(org: string, code: string, status: "open" | "released") {
   const [campaign] = await sql<{ id: string }>(
-    `insert into public.campaigns (organisation_id, cadence, status, opens_at, closes_at, approved_at)
-     values ($1, 'baseline', $2, now() + interval '1 day', now() + interval '14 days', now())
+    `insert into public.campaigns (organisation_id, cadence, status, opens_at, closes_at, launched_at)
+     values ($1, 'baseline', $2, now() - interval '1 day', now() + interval '14 days', now() - interval '1 day')
      returning id`,
     [org, status],
   );
@@ -121,8 +122,8 @@ test("a measured combination changes only through lineage, and not while a campa
   await page.getByRole("button", { name: "Combine Beta Ops with Alpha Ops" }).click();
   await expect(page.getByText(/^Combined\./)).toBeVisible();
 
-  // A scheduled campaign holds it: nothing about it can change.
-  const scheduled = await measuredBy(org, "A+B", "scheduled");
+  // An open campaign holds it: nothing about it can change.
+  const running = await measuredBy(org, "A+B", "open");
   await page.reload();
   const combination = page.getByTestId("combination-A+B");
   await expect(combination).toContainText(
@@ -130,9 +131,12 @@ test("a measured combination changes only through lineage, and not while a campa
   );
   await expect(combination.getByRole("button", { name: "Undo the combination" })).toHaveCount(0);
 
-  // Once no campaign holds it, Alpha Ops, grown past 10, can be measured on its own, with the
+  // Once the campaign has closed, Alpha Ops, grown past 10, can be measured on its own, with the
   // break in the trend confirmed.
-  await sql(`update public.campaigns set status = 'cancelled' where id = $1`, [scheduled]);
+  await sql(`update public.campaigns set status = 'closed', closed_at = now() where id = $1`, [
+    running,
+  ]);
+  await sql(`update public.campaigns set status = 'under_review' where id = $1`, [running]);
   await page.reload();
   await hydrated(page);
   await expect(combination).toContainText("Alpha Ops now has 12 people");
@@ -163,7 +167,7 @@ test("a measured combination changes only through lineage, and not while a campa
   // Combined again, measured, then undone: it is retired, not removed.
   await page.getByRole("button", { name: "Combine Beta Ops with Alpha Ops" }).click();
   await expect(page.getByText(/^Combined\./)).toBeVisible();
-  await measuredBy(org, "A+B#2", "cancelled");
+  await measuredBy(org, "A+B#2", "released");
   await page.reload();
   await hydrated(page);
   const again = page.getByTestId("combination-A+B#2");

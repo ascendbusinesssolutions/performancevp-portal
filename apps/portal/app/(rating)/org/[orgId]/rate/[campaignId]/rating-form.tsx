@@ -31,7 +31,8 @@ import { type RatingsToSave, saveRatings } from "./actions";
 export interface Anchors {
   skill: Array<{ value: number; label: string }>;
   knowledge: Array<{ value: number; label: string }>;
-  band: Array<{ value: number; label: string }>;
+  /** The bands, each with Module Library 4.2's one-line descriptor. */
+  band: Array<{ value: number; label: string; description: string | null }>;
 }
 
 interface Value {
@@ -471,6 +472,9 @@ export function RatingFormView({
                       />
                       <span className="font-mono text-lg">{a.value}</span>
                       <span>{a.label}</span>
+                      {a.description ? (
+                        <span className="text-[13px] leading-snug text-grey">{a.description}</span>
+                      ) : null}
                     </label>
                   ))}
                 </div>

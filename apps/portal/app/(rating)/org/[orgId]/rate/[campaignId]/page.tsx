@@ -14,10 +14,11 @@ import { createClient } from "@/lib/supabase/server";
 
 import { type Anchors, RatingFormView } from "./rating-form";
 
-function anchorsOf(code: string): Anchors["skill"] {
+function anchorsOf(code: string): Anchors["band"] {
   return (REFERENCE.module_items.find((i) => i.code === code)?.anchors ?? []).map((a) => ({
     value: a.value,
     label: a.label,
+    description: a.description,
   }));
 }
 

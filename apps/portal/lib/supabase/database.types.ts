@@ -3626,6 +3626,11 @@ export type Database = {
         Returns: undefined
       }
       my_access: { Args: never; Returns: Json }
+      my_rating_campaigns: {
+        Args: { p_organisation_id: string }
+        Returns: Json
+      }
+      my_rating_form: { Args: { p_campaign_id: string }; Returns: Json }
       new_link_kind: { Args: { p_email: string }; Returns: string }
       open_support_session: {
         Args: { p_organisation_id: string; p_reason: string }
@@ -3801,6 +3806,14 @@ export type Database = {
           p_checklist: string
         }
         Returns: number
+      }
+      save_manager_ratings: {
+        Args: {
+          p_ratings: Json
+          p_session_id: string
+          p_subject_snapshot_member_id: string
+        }
+        Returns: undefined
       }
       schedule_campaign: { Args: { p_campaign_id: string }; Returns: undefined }
       set_data_contribution_opt_out: {

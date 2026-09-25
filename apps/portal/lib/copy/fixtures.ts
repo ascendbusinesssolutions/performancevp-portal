@@ -36,6 +36,84 @@ export const COPY_FIXTURES: Readonly<Record<string, readonly CopyFixture[]>> = {
   ],
   "units.tree.below": [{ slots: { parent: "Group" }, expected: "below Group" }],
   "survey.bar.group": [{ slots: { g: 3, total: 12 }, expected: "Group 3 of 12" }],
+  "manager.index.row": [
+    {
+      slots: { campaign: "Annual baseline", date: "Monday 28 September" },
+      expected: "Annual baseline, closes Monday 28 September",
+    },
+  ],
+  "manager.eyebrow": [
+    {
+      slots: { campaign: "Annual baseline", units: "Member Services" },
+      expected: "Annual baseline · Member Services",
+    },
+  ],
+  "manager.meta": [
+    {
+      slots: { done: 3, total: 8, date: "Monday 28 September" },
+      expected: "3 of 8 done. Closes Monday 28 September. Your answers save as you go.",
+    },
+  ],
+  "manager.report.meta": [
+    {
+      slots: { family: "Claims officers", team: "North", fte: 1, start: "1 February 2022" },
+      expected: "Claims officers · North · 1 FTE · started 1 February 2022",
+    },
+  ],
+  "manager.report.metaNoTeam": [
+    {
+      slots: { family: "Claims officers", fte: 0.6, start: "1 February 2022" },
+      expected: "Claims officers · 0.6 FTE · started 1 February 2022",
+    },
+  ],
+  "manager.anchor": [{ slots: { value: 1, label: "Novice" }, expected: "1 Novice" }],
+  "manager.scale.value": [{ slots: { value: 5, label: "Expert" }, expected: "5, Expert" }],
+  "manager.formalRoute": [
+    {
+      slots: { unit: "Member Services" },
+      expected:
+        "Talent density for Member Services comes from your organisation's formal ratings this year, so no overall band is asked here.",
+    },
+  ],
+  "manager.next": [{ slots: { name: "Ana Lee" }, expected: "Done, next: Ana Lee" }],
+  "campaigns.checklists.row": [
+    {
+      slots: { checklist: "Role architecture", units: "2 units" },
+      expected: "Role architecture, 2 units",
+    },
+  ],
+  "campaigns.checklists.status.some": [{ slots: { n: 1, total: 2 }, expected: "Saved for 1 of 2" }],
+  "campaigns.checklists.unitLink": [
+    {
+      slots: { checklist: "Capacity facts", unit: "Dispatch" },
+      expected: "Capacity facts for Dispatch",
+    },
+  ],
+  "campaigns.checklist.title": [
+    { slots: { unit: "Dispatch" }, expected: "Your checklists for Dispatch" },
+  ],
+  "campaigns.checklist.meta": [
+    {
+      slots: { campaign: "Baseline", date: "Thursday 8 October", time: "5 pm" },
+      expected: "Baseline. Closes Thursday 8 October, 5 pm.",
+    },
+  ],
+  "campaigns.checklist.intro.ADM-O1": [
+    {
+      slots: { unit: "Dispatch" },
+      expected:
+        "For each role family in Dispatch: whether its position description holds each of these.",
+    },
+  ],
+  "campaigns.checklist.intro.ADM-O2": [
+    {
+      slots: { unit: "Dispatch" },
+      expected: "For each of the primary systems Dispatch relies on.",
+    },
+  ],
+  "campaigns.checklist.saveName": [
+    { slots: { checklist: "Capacity facts" }, expected: "Save Capacity facts" },
+  ],
   "survey.bar.decision": [{ slots: { g: 2, total: 8 }, expected: "Decision 2 of 8" }],
   "survey.landing.eyebrow": [
     {

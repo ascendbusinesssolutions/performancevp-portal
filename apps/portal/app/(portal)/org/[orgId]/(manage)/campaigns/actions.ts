@@ -7,6 +7,7 @@ import { after } from "next/server";
 import { requireAccess } from "@/lib/auth/access";
 import type { FormState } from "@/lib/auth/form-state";
 import { asCadence } from "@/lib/campaigns/cadence";
+import { answersFromForm, CHECKLISTS } from "@/lib/campaigns/checklist-answers";
 import {
   proposedOpening,
   sydneyInstant,
@@ -251,4 +252,37 @@ export async function decideProposal(_previous: FormState, formData: FormData): 
   if (error || !data) return failure(error);
   revalidatePath(campaignPath(orgId));
   redirect(campaignPath(orgId, data));
+}
+
+/**
+ * Saves one checklist for one unit (Online Measurement Specification 4.2 to 4.3a; plan 3.4). Each
+ * save is a new version; save_checklist checks the answers against the unit's frozen role families
+ * and systems and refuses once the campaign has closed.
+ */
+export async function saveChecklist(_previous: FormState, formData: FormData): Promise<FormState> {
+  const orgId = text(formData, "organisationId");
+  const campaignId = text(formData, "campaignId");
+  const campaignUnitId = text(formData, "campaignUnitId");
+  await requireOrgManager(orgId);
+  const code = CHECKLISTS.find((c) => c === text(formData, "checklist"));
+  if (!code) return { error: campaignsCopy["error.checklist"] };
+  const subjects = formData.getAll("subject").filter((v): v is string => typeof v === "string");
+  const answers = answersFromForm(code, formData, subjects);
+  if (!answers) return { error: campaignsCopy["error.checklist"] };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("save_checklist", {
+    p_campaign_unit_id: campaignUnitId,
+    p_checklist: code,
+    p_answers: answers as never,
+  });
+  if (error) {
+    if (error.code === "42501") return failure(error);
+    return {
+      error: error.message.includes("completed while the campaign is open")
+        ? campaignsCopy["checklist.closed"]
+        : campaignsCopy["error.checklist"],
+    };
+  }
+  revalidatePath(`${campaignPath(orgId, campaignId)}`, "layout");
+  return { message: campaignsCopy["checklist.saved"] };
 }

@@ -8,11 +8,17 @@ import { homeCrumb, PageHeader, Section } from "@/components/page";
 import { findingLine } from "@/components/readiness-checks";
 import { Field, Notice } from "@/components/ui";
 import { dayLabel, sydneyDate, timeLabel, windowLaunchedNow } from "@/lib/campaigns/calendar";
-import { loadCampaign, loadFrozenAudiences, loadLaunchData, toLaunch } from "@/lib/campaigns/data";
+import {
+  loadCampaign,
+  loadChecklistOverview,
+  loadFrozenAudiences,
+  loadLaunchData,
+  toLaunch,
+} from "@/lib/campaigns/data";
 import { campaignTitle, cadenceName, stateLine } from "@/lib/campaigns/display";
 import { type CampaignBlocker, prepareLaunch } from "@/lib/campaigns/plan";
 import { campaignsCopy } from "@/lib/copy/campaigns";
-import { peopleCount } from "@/lib/copy/common";
+import { peopleCount, unitCount } from "@/lib/copy/common";
 import { readinessCopy } from "@/lib/copy/readiness";
 import { commonCopy } from "@/lib/copy/common";
 import { fill, listOf } from "@/lib/copy/template";
@@ -121,7 +127,10 @@ export default async function CampaignPage({
   );
 
   if (!beforeLaunch) {
-    const audiences = await loadFrozenAudiences(supabase, orgId, campaignId);
+    const [audiences, checklists] = await Promise.all([
+      loadFrozenAudiences(supabase, orgId, campaignId),
+      loadChecklistOverview(supabase, orgId, campaignId),
+    ]);
     const accountsPending = Number(typeof pending === "string" ? pending : 0);
     return (
       <main>
@@ -147,6 +156,69 @@ export default async function CampaignPage({
             {campaignsCopy["preview.snapshotNote"]}
           </p>
         </Section>
+        {checklists.length > 0 ? (
+          <Section
+            id="checklists"
+            title={campaignsCopy["checklists.title"]}
+            intro={campaignsCopy["checklists.intro"]}
+          >
+            <ul
+              className="divide-y divide-grey-20 border-y border-grey-20"
+              data-testid="checklists"
+            >
+              {checklists.map(({ code, units }) => {
+                const saved = units.filter((u) => u.savedAt).length;
+                const name = campaignsCopy[`checklist.${code}`];
+                return (
+                  <li
+                    key={code}
+                    className="grid gap-2 py-4 text-sm sm:grid-cols-[minmax(0,1fr)_12rem_minmax(0,1fr)]"
+                    data-testid={`checklist-${code}`}
+                  >
+                    <span className="text-slate">
+                      {fill(campaignsCopy["checklists.row"], {
+                        checklist: name,
+                        units: unitCount(units.length),
+                      })}
+                    </span>
+                    <span className="text-grey">
+                      {saved === 0
+                        ? campaignsCopy["checklists.status.none"]
+                        : saved === units.length
+                          ? campaignsCopy["checklists.status.all"]
+                          : fill(campaignsCopy["checklists.status.some"], {
+                              n: saved,
+                              total: units.length,
+                            })}
+                    </span>
+                    <span className="space-x-4 sm:text-right">
+                      {units.map((u) => (
+                        <Link
+                          key={u.campaignUnitId}
+                          className={LINK}
+                          href={`/org/${orgId}/campaigns/${campaignId}/checklists/${u.campaignUnitId}#${code}`}
+                        >
+                          {units.length > 1
+                            ? u.name
+                            : u.savedAt
+                              ? campaignsCopy["checklists.review"]
+                              : campaignsCopy["checklists.continue"]}
+                          <span className="sr-only">
+                            {" "}
+                            {fill(campaignsCopy["checklists.unitLink"], {
+                              checklist: name,
+                              unit: u.name,
+                            })}
+                          </span>
+                        </Link>
+                      ))}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </Section>
+        ) : null}
       </main>
     );
   }

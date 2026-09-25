@@ -363,7 +363,11 @@ insert into expected_grants values
   ('campaigns_awaiting_tokens()', 'service_role', 'EXECUTE'),
   ('claim_outbox(integer,uuid)', 'service_role', 'EXECUTE'),
   ('outbox_sent(uuid,text)', 'service_role', 'EXECUTE'),
-  ('outbox_failed(uuid,text,boolean)', 'service_role', 'EXECUTE');
+  ('outbox_failed(uuid,text,boolean)', 'service_role', 'EXECUTE'),
+  -- Milestone 5, step 6: the manager's rating form.
+  ('my_rating_campaigns(uuid)', 'authenticated', 'EXECUTE'),
+  ('my_rating_form(uuid)', 'authenticated', 'EXECUTE'),
+  ('save_manager_ratings(uuid,uuid,jsonb)', 'authenticated', 'EXECUTE');
 
 create temp view actual_grants as
   select format('%I.%I', r.nspname, r.relname) as object, a.grantee::regrole::text as grantee,

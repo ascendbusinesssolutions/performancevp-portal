@@ -133,6 +133,36 @@ export const campaignsCopy = {
   "blocker.readiness": "{check}: see the readiness check.",
   "blocker.readOnly": "The subscription is read-only.",
 
+  // The administrator checklists (Online Measurement Specification 4.2 to 4.3a; plan 3.4). The
+  // facts' wording and choices are the source's, from the reference tables.
+  "checklists.title": "Your checklists",
+  "checklists.intro":
+    "Facts about each unit's roles, systems and capacity that only you can give. Each save is kept, and the close uses the latest.",
+  "checklists.row": "{checklist}, {units}",
+  "checklists.status.none": "Not started",
+  "checklists.status.some": "Saved for {n} of {total}",
+  "checklists.status.all": "Done",
+  "checklists.continue": "Continue",
+  "checklists.review": "Review",
+  "checklists.unitLink": "{checklist} for {unit}",
+  "checklist.title": "Your checklists for {unit}",
+  "checklist.meta": "{campaign}. Closes {date}, {time}.",
+  "checklist.intro.ADM-O1":
+    "For each role family in {unit}: whether its position description holds each of these.",
+  "checklist.intro.ADM-O2": "For each of the primary systems {unit} relies on.",
+  "checklist.intro.ADM-O4":
+    "The unit's capacity facts, as figures from your own records. Leave out any you do not hold; three or more are needed for a score.",
+  "checklist.save": "Save",
+  "checklist.saveName": "Save {checklist}",
+  "checklist.saved": "Saved. The close uses the latest save.",
+  "checklist.prefilled": "Filled in from the last save. Check each answer still holds.",
+  "checklist.unanswered": "Not answered",
+  "checklist.notApplicable": "Not applicable",
+  "checklist.closed": "The campaign has closed, so its checklists are fixed.",
+  "checklist.back": "Back to the campaign",
+  "error.checklist":
+    "Those answers could not be saved. Check that each is one of the choices, and each figure a number.",
+
   "launched.title": "Who was asked",
   "launched.notice": "Launched. The campaign is open, on the directory as it stood at launch.",
   "launched.accountsPending":

@@ -17,6 +17,7 @@ import { allRows } from "@/lib/supabase/all-rows";
 import type { createClient } from "@/lib/supabase/server";
 
 import { asCadence, type CampaignCadence } from "./cadence";
+import { type ChecklistCode, CHECKLISTS } from "./checklist-answers";
 import type { AudienceKey } from "./deployment";
 import type { CampaignToLaunch, LaunchData, PreviewUnit, UnitChange } from "./plan";
 
@@ -368,4 +369,152 @@ export async function loadMeasuredUnits(
     if (status === "open" || status === "closed") running.add(row.measurement_unit_id);
   }
   return { measured, running };
+}
+
+export interface ChecklistUnitStatus {
+  campaignUnitId: string;
+  name: string;
+  savedAt: string | null;
+}
+
+/** Per checklist, the units a campaign asks it of and whether each has been saved. */
+export async function loadChecklistOverview(
+  supabase: Client,
+  orgId: string,
+  campaignId: string,
+): Promise<Array<{ code: ChecklistCode; units: ChecklistUnitStatus[] }>> {
+  const { data: units } = await supabase
+    .from("campaign_units")
+    .select("id, measurement_units(name)")
+    .eq("organisation_id", orgId)
+    .eq("campaign_id", campaignId);
+  const ids = (units ?? []).map((u) => u.id);
+  if (ids.length === 0) return [];
+  const [{ data: audiences }, { data: responses }] = await Promise.all([
+    supabase
+      .from("campaign_audiences")
+      .select("campaign_unit_id, items")
+      .eq("organisation_id", orgId)
+      .eq("audience", "admin_checklists")
+      .in("campaign_unit_id", ids),
+    supabase
+      .from("checklist_responses")
+      .select("campaign_unit_id, checklist_code, entered_at")
+      .eq("organisation_id", orgId)
+      .in("campaign_unit_id", ids)
+      .order("entered_at", { ascending: false }),
+  ]);
+  const nameOf = new Map(
+    (units ?? []).map((u) => [u.id, (u.measurement_units as { name: string } | null)?.name ?? ""]),
+  );
+  return CHECKLISTS.flatMap((code) => {
+    const asked = (audiences ?? [])
+      .filter((a) => a.items.includes(code))
+      .map((a) => ({
+        campaignUnitId: a.campaign_unit_id,
+        name: nameOf.get(a.campaign_unit_id) ?? "",
+        savedAt:
+          (responses ?? []).find(
+            (r) => r.campaign_unit_id === a.campaign_unit_id && r.checklist_code === code,
+          )?.entered_at ?? null,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, "en-AU"));
+    return asked.length > 0 ? [{ code, units: asked }] : [];
+  });
+}
+
+export interface ChecklistUnit {
+  campaignUnitId: string;
+  name: string;
+  roleFamilies: Array<{ id: string; name: string }>;
+  systems: Array<{ id: string; name: string }>;
+  codes: ChecklistCode[];
+  /** The latest save in this campaign, per checklist. */
+  latest: Partial<
+    Record<ChecklistCode, { version: number; answers: Record<string, unknown>; enteredAt: string }>
+  >;
+  /** The latest save for the same measurement unit in an earlier campaign, for the pre-fill. */
+  previous: Partial<Record<ChecklistCode, Record<string, unknown>>>;
+}
+
+/** One campaign unit's checklists, with what was saved and the pre-fill. */
+export async function loadChecklistUnit(
+  supabase: Client,
+  orgId: string,
+  campaignUnitId: string,
+): Promise<ChecklistUnit | null> {
+  const { data: unit } = await supabase
+    .from("campaign_units")
+    .select("id, campaign_id, measurement_unit_id, measurement_units(name)")
+    .eq("organisation_id", orgId)
+    .eq("id", campaignUnitId)
+    .maybeSingle();
+  if (!unit) return null;
+  const [{ data: context }, { data: audience }, { data: responses }, { data: earlier }] =
+    await Promise.all([
+      supabase
+        .from("campaign_unit_contexts")
+        .select("context")
+        .eq("organisation_id", orgId)
+        .eq("campaign_unit_id", campaignUnitId)
+        .maybeSingle(),
+      supabase
+        .from("campaign_audiences")
+        .select("items")
+        .eq("organisation_id", orgId)
+        .eq("campaign_unit_id", campaignUnitId)
+        .eq("audience", "admin_checklists")
+        .maybeSingle(),
+      supabase
+        .from("checklist_responses")
+        .select("checklist_code, version, answers, entered_at")
+        .eq("organisation_id", orgId)
+        .eq("campaign_unit_id", campaignUnitId)
+        .order("version", { ascending: false }),
+      supabase
+        .from("campaign_units")
+        .select("id, campaigns!inner(launched_at)")
+        .eq("organisation_id", orgId)
+        .eq("measurement_unit_id", unit.measurement_unit_id)
+        .neq("id", campaignUnitId)
+        .not("campaigns.launched_at", "is", null),
+    ]);
+  const earlierIds = (earlier ?? []).map((e) => e.id);
+  const { data: earlierResponses } =
+    earlierIds.length > 0
+      ? await supabase
+          .from("checklist_responses")
+          .select("checklist_code, answers, entered_at")
+          .eq("organisation_id", orgId)
+          .in("campaign_unit_id", earlierIds)
+          .order("entered_at", { ascending: false })
+      : { data: [] };
+  const ctx = (context?.context ?? {}) as {
+    roleFamilies?: Array<{ id: string; name: string }>;
+    systems?: Array<{ id: string; name: string }>;
+  };
+  const codes = CHECKLISTS.filter((c) => (audience?.items ?? []).includes(c));
+  const latest: ChecklistUnit["latest"] = {};
+  const previous: ChecklistUnit["previous"] = {};
+  for (const code of codes) {
+    const own = (responses ?? []).find((r) => r.checklist_code === code);
+    if (own) {
+      latest[code] = {
+        version: own.version,
+        answers: own.answers as Record<string, unknown>,
+        enteredAt: own.entered_at,
+      };
+    }
+    const before = (earlierResponses ?? []).find((r) => r.checklist_code === code);
+    if (before) previous[code] = before.answers as Record<string, unknown>;
+  }
+  return {
+    campaignUnitId,
+    name: (unit.measurement_units as { name: string } | null)?.name ?? "",
+    roleFamilies: (ctx.roleFamilies ?? []).map((f) => ({ id: f.id, name: f.name })),
+    systems: ctx.systems ?? [],
+    codes,
+    latest,
+    previous,
+  };
 }

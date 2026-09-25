@@ -2,6 +2,7 @@ import { expect, type Page, test } from "@playwright/test";
 
 import {
   emailText,
+  kestrelEmail,
   launchBaseline,
   linkFor,
   readyKestrel,
@@ -80,15 +81,15 @@ test("the invitations arrive, and each survey is answered once on a phone", asyn
   await launchBaseline(desk);
 
   // One email a person, listing each survey; the manager's is separate.
-  const member = await surveyLinks("d004@kestrel.test", 2);
+  const member = await surveyLinks(kestrelEmail("D004", stamp), 2);
   expect(member.map((l) => l.line)).toEqual([
     "The survey about Dispatch, about 15 minutes:",
     "A second, shorter survey about Dispatch, about 6 minutes:",
   ]);
-  const memberEmail = await emailText("d004@kestrel.test", "A short survey");
+  const memberEmail = await emailText(kestrelEmail("D004", stamp), "A short survey");
   expect(memberEmail).toContain(`PerformanceVP runs this survey on behalf of ${organisation}.`);
   expect(memberEmail).toContain("Each link works once and is yours alone");
-  const managerEmail = await emailText("d002@kestrel.test", "Rate your team");
+  const managerEmail = await emailText(kestrelEmail("D002", stamp), "Rate your team");
   expect(managerEmail).toContain("Your ratings carry your name");
   expect(managerEmail).toContain("/login/code");
 
@@ -143,7 +144,7 @@ test("the invitations arrive, and each survey is answered once on a phone", asyn
   await finish(page, 3, true);
 
   // The leadership team: the disclosure before the first decision.
-  const head = await surveyLinks("d001@kestrel.test", 3);
+  const head = await surveyLinks(kestrelEmail("D001", stamp), 3);
   await start(page, linkFor(head, "Questions for the leadership team"));
   await expect(page.getByRole("heading", { name: "Who decides what in Dispatch?" })).toBeVisible();
   await expect(
@@ -170,7 +171,7 @@ test("the invitations arrive, and each survey is answered once on a phone", asyn
   await finish(page, 4, false);
 
   // A team leader, the only one: the small-group line.
-  const lead = await surveyLinks("d002@kestrel.test", 4);
+  const lead = await surveyLinks(kestrelEmail("D002", stamp), 4);
   await start(page, linkFor(lead, "Questions for team leaders"));
   await expect(page.getByRole("heading", { name: "How does your team learn?" })).toBeVisible();
   await expect(
@@ -182,7 +183,7 @@ test("the invitations arrive, and each survey is answered once on a phone", asyn
   await finish(page, 3, true);
 
   // South, a team of 3: its answers count for the unit and carry no team.
-  const south = await surveyLinks("d011@kestrel.test", 2);
+  const south = await surveyLinks(kestrelEmail("D011", stamp), 2);
   await start(page, linkFor(south, "The survey about"));
   await page.getByRole("button", { name: "Start" }).click();
   await page.getByRole("radio", { name: "South" }).check();
@@ -212,7 +213,7 @@ test("the invitations arrive, and each survey is answered once on a phone", asyn
     `update public.campaigns set closes_at = now() - interval '1 second', status = 'closed', closed_at = now()
      where organisation_id = ${org} and status = 'open'`,
   );
-  const late = await surveyLinks("d005@kestrel.test", 2);
+  const late = await surveyLinks(kestrelEmail("D005", stamp), 2);
   await page.goto(linkFor(late, "The survey about"));
   await expect(page.getByRole("heading", { name: "This survey has closed" })).toBeVisible();
 });

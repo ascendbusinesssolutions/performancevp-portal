@@ -69,7 +69,12 @@ export function people(): Person[] {
   return list;
 }
 
-export function rows(list: Person[]): TestCell[][] {
+/** A person's work email, unique to the run, since every run makes a new organisation. */
+export function kestrelEmail(ref: string, stamp: number): string {
+  return `${ref.toLowerCase()}.${stamp}@kestrel.test`;
+}
+
+export function rows(list: Person[], stamp: number): TestCell[][] {
   return list.map((p) =>
     COLUMNS.map((c): TestCell => {
       switch (c.key) {
@@ -80,7 +85,7 @@ export function rows(list: Person[]): TestCell[][] {
         case "last_name":
           return p.last;
         case "work_email":
-          return `${p.ref.toLowerCase()}@kestrel.test`;
+          return kestrelEmail(p.ref, stamp);
         case "unit_code":
           return "DSP";
         case "unit_name":
@@ -122,7 +127,7 @@ export async function readyKestrel(
   const organisation = `Kestrel Logistics ${stamp}`;
   await provision(page, organisation, `kestrel.ao.${stamp}@local.test`, stamp);
   await page.getByRole("link", { name: "Setup", exact: true }).click();
-  await uploadFromTemplate(page, rows(people()), "kestrel.xlsx");
+  await uploadFromTemplate(page, rows(people(), stamp), "kestrel.xlsx");
   await page.getByRole("button", { name: "Apply the changes" }).click();
   await expect(page.getByTestId("directory-counts")).toContainText("12 active");
   await go(page, "Units");

@@ -5,6 +5,7 @@ import { consoleCopy } from "./console";
 import { contextCopy } from "./context";
 import { directoryCopy } from "./directory";
 import { emailCopy } from "./email";
+import { managerCopy } from "./manager";
 import { ratingsMapCopy } from "./ratings-map";
 import { readinessCopy } from "./readiness";
 import { setupCopy } from "./setup";
@@ -28,6 +29,7 @@ export const COPY_TABLES: Readonly<
   context: { table: contextCopy },
   directory: { table: directoryCopy },
   email: { table: emailCopy },
+  manager: { table: managerCopy },
   "ratings-map": { table: ratingsMapCopy },
   readiness: { table: readinessCopy },
   setup: { table: setupCopy },

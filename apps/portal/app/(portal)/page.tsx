@@ -5,6 +5,7 @@ import { requireAccess } from "@/lib/auth/access";
 import { authCopy } from "@/lib/copy/auth";
 import { consoleCopy } from "@/lib/copy/console";
 import { directoryCopy } from "@/lib/copy/directory";
+import { managerCopy } from "@/lib/copy/manager";
 import { shellCopy } from "@/lib/copy/shell";
 
 /**
@@ -51,6 +52,10 @@ export default async function PortalHome() {
                           {consoleCopy["nav.access"]}
                         </TextLink>
                       </span>
+                    ) : m.role === "manager_respondent" ? (
+                      <TextLink href={`/org/${m.organisationId}/rate`}>
+                        {managerCopy["index.title"]}
+                      </TextLink>
                     ) : null}
                   </Td>
                 </Row>

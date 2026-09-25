@@ -1,29 +1,70 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans, Spectral } from "next/font/google";
+import localFont from "next/font/local";
 
 import { HydrationMark } from "@/components/hydration-mark";
 
 import "./globals.css";
 
-// The same three families as the marketing site, self-hosted by next/font at build time
-// and exposed as the CSS variables that globals.css maps to the Tailwind font tokens.
-const spectral = Spectral({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+// The same three families as the marketing site, self-hosted from app/fonts (latin subset, each
+// family's OFL licence beside its files), so the build fetches nothing. They are exposed as the CSS
+// variables that globals.css maps to the Tailwind font tokens.
+const spectral = localFont({
+  src: [
+    { path: "./fonts/spectral/spectral-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/spectral/spectral-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/spectral/spectral-latin-600-normal.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/spectral/spectral-latin-700-normal.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-spectral",
   display: "swap",
+  adjustFontFallback: "Times New Roman",
 });
 
-const plexSans = IBM_Plex_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const plexSans = localFont({
+  src: [
+    {
+      path: "./fonts/ibm-plex-sans/ibm-plex-sans-latin-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/ibm-plex-sans/ibm-plex-sans-latin-500-normal.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/ibm-plex-sans/ibm-plex-sans-latin-600-normal.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "./fonts/ibm-plex-sans/ibm-plex-sans-latin-700-normal.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
   variable: "--font-plex-sans",
   display: "swap",
 });
 
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+const plexMono = localFont({
+  src: [
+    {
+      path: "./fonts/ibm-plex-mono/ibm-plex-mono-latin-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/ibm-plex-mono/ibm-plex-mono-latin-500-normal.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/ibm-plex-mono/ibm-plex-mono-latin-600-normal.woff2",
+      weight: "600",
+      style: "normal",
+    },
+  ],
   variable: "--font-plex-mono",
   display: "swap",
 });
